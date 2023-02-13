@@ -1,6 +1,8 @@
 import { Controller, Get, Body, Post } from "@nestjs/common";
 import { Request } from "express";
 import { AssignedTreePlantService } from "./assignedTreePlant.service";
+import { CreateTreePlantDto } from "./dtos/create-treePlant.dto";
+
 @Controller()
 export class AssignedTreePlantController {
   constructor(private assignedTreePlantService: AssignedTreePlantService) {}
@@ -11,8 +13,8 @@ export class AssignedTreePlantController {
   }
 
   @Post("treePlant/plant")
-  Plant(@Body() body) {
-    return this.assignedTreePlantService.plant(body);
+  Plant(@Body() dto: CreateTreePlantDto) {
+    return this.assignedTreePlantService.plant(dto);
   }
 
   @Post("offchainPlanting/update")
