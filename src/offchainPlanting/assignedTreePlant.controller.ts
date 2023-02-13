@@ -7,9 +7,9 @@ import { CreateTreePlantDto } from "./dtos/create-treePlant.dto";
 export class AssignedTreePlantController {
   constructor(private assignedTreePlantService: AssignedTreePlantService) {}
 
-  @Post("me")
+  @Post("assignedTree/add")
   GetMe(@Body() body) {
-    return this.assignedTreePlantService.create(body);
+    return this.assignedTreePlantService.plantAssignedTree(body);
   }
 
   @Post("regular/add")
