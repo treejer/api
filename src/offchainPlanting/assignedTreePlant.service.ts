@@ -168,11 +168,7 @@ export class AssignedTreePlantService {
   }
 
   async plant(dto: CreateTreePlantDto) {
-    let user = await this.userService.findUserByWallet(dto.signer, {
-      _id: null,
-    });
-
-    console.log("user", user);
+    let user = await this.userService.findUserByWallet(dto.signer);
 
     if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
@@ -205,7 +201,7 @@ export class AssignedTreePlantService {
       status: 0,
     });
 
-    if (planterData.plantedCount + count > planterData.supplyCap)
+    if (planterData.plantedCount + count >= planterData.supplyCap)
       throw new ForbiddenException(OffChainPlantingErrorMessage.SUPPLY_ERROR);
 
     await this.userService.updateUserById(user._id, {
