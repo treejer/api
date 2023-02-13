@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { CreateAssiggnedTreePlantDto, CreateTreePlantDto } from "./dtos";
+import {
+  CreateAssiggnedTreePlantDto,
+  CreateTreePlantDto,
+  UpdateTreeDto,
+} from "./dtos";
 import { AssignedTreePlant, TreePlant } from "./schemas";
 import {
   AssignedTreePlantRepository,
@@ -24,10 +28,16 @@ export class AssignedTreePlantService {
     private userService: UserService
   ) {}
 
-  async updateTree(dto: CreateAssiggnedTreePlantDto) {
+  async updateTree(dto: UpdateTreeDto) {
     let tree = await getTreeData(dto.treeId);
+    console.log(
+      "dto.signer",
+
+      ethUtil.toChecksumAddress(dto.signer)
+    );
 
     let user = await this.userService.findUserByWallet(dto.signer);
+    console.log("user", user);
 
     if (!user) return "not-found user";
 
@@ -37,13 +47,10 @@ export class AssignedTreePlantService {
         nonce: dto.nonce,
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
-        birthDate: dto.birthDate,
-        countryCode: dto.countryCode,
       },
-      1
+      3
     );
 
-    console.log("signer", signer);
     if (
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(dto.signer)
@@ -51,6 +58,26 @@ export class AssignedTreePlantService {
       return "invalid signer";
 
     if (tree.treeStatus > 3) return "invalid-tree status";
+
+    if (
+      ethUtil.toChecksumAddress(tree.planter) !==
+      ethUtil.toChecksumAddress(dto.signer)
+    )
+      return "invalid planter";
+
+    let now = Math.floor(new Date().getTime() / 1000);
+
+    if (now < tree.plantDate + tree.treeStatus * 3600 + 604800)
+      return "early update";
+
+    let pendingUpdates = await this.updateTreeRepository.findOne({
+      status: 1,
+      treeId: dto.treeId,
+    });
+
+    console.log("sdssssss", pendingUpdates);
+
+    await this.updateTreeRepository.create({ ...dto });
   }
 
   async create(dto: CreateAssiggnedTreePlantDto) {
