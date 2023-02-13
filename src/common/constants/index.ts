@@ -1,4 +1,2 @@
-import Messages from "./messages";
-
-export * from "./routes";
-export { Messages };
+export * from "./messages";
+export * from "./errorMessages";
