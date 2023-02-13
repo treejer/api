@@ -15,7 +15,7 @@ import {
 } from "./assignedTreePlant.repository";
 import { DatabaseModule } from "../database/database.module";
 import { MongooseModule } from "@nestjs/mongoose";
-import { UserModule } from "src/user/user.module";
+import { UserModule } from "../user/user.module";
 import { TreePlantRepository } from "./treePlant.repository";
 
 @Module({

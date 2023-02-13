@@ -1,4 +1,3 @@
-
 import {
   CreateAssiggnedTreePlantDto,
   CreateTreePlantDto,
@@ -21,7 +20,7 @@ import {
   getPlanterOrganization,
   getSigner,
   getTreeData,
-} from "src/common/helpers";
+} from "../common/helpers";
 import { UserService } from "./../user/user.service";
 import { TreePlantRepository } from "./treePlant.repository";
 
@@ -38,7 +37,7 @@ export class AssignedTreePlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   async updateTree(dto: UpdateTreeDto) {
@@ -61,11 +60,7 @@ export class AssignedTreePlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-<<<<<<< HEAD
       3
-=======
-      1,
->>>>>>> 9f90c55f905bbd8658db292104dea8b5f904ed55
     );
 
     if (
@@ -113,7 +108,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1,
+      1
     );
 
     if (
@@ -185,7 +180,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2,
+      2
     );
 
     if (
@@ -198,7 +193,7 @@ export class AssignedTreePlantService {
 
     if (planterData.status != 1)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER,
+        OffChainPlantingErrorMessage.INVALID_PLANTER
       );
 
     let count: number = await this.pendingListCount({
