@@ -1,4 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+
 import { CreateAssiggnedTreePlantDto, CreateTreePlantDto } from "./dtos";
 import { AssignedTreePlant, TreePlant } from "./schemas";
 import {
@@ -13,6 +19,9 @@ import {
 } from "src/common/helpers";
 import { UserService } from "./../user/user.service";
 import { TreePlantRepository } from "./treePlant.repository";
+
+import { AuthErrorMessages } from "./../common/constants";
+
 var ethUtil = require("ethereumjs-util");
 
 @Injectable()
@@ -21,7 +30,7 @@ export class AssignedTreePlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async updateTree(dto: CreateAssiggnedTreePlantDto) {
@@ -40,7 +49,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     console.log("signer", signer);
@@ -69,7 +78,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (
@@ -130,7 +139,7 @@ export class AssignedTreePlantService {
   async plant(dto: CreateTreePlantDto) {
     let user = await this.userService.findUserByWallet(dto.signer);
 
-    if (!user) return "not-found user";
+    if (!user) throw new NotFoundException(AuthErrorMessages.USER_NOT_EXIST);
 
     const signer = await getSigner(
       dto.signature,
@@ -140,7 +149,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (

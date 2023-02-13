@@ -12,7 +12,6 @@ import { CreateUserDto } from "./../user/dtos";
 import { LoginDto, LoginWithWalletDto } from "./dtos";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
-import { authControllerRoute } from "src/common/constants";
 
 @Controller()
 export class AuthController {
@@ -54,22 +53,22 @@ export class AuthController {
     return this.authService.getPlanterData(wallet);
   }
 
-  @Get(authControllerRoute.GET_NONCE)
+  @Get("auth/nonce/:wallet")
   getNonce(@Param("wallet") wallet: string) {
     return this.authService.getNonce(wallet);
   }
 
-  @Post(authControllerRoute.POST_LOGIN_WALLET)
+  @Post("auth/login/:wallet")
   loginWithWallet(
     @Param("wallet") wallet: string,
-    @Body() dto: LoginWithWalletDto
+    @Body() dto: LoginWithWalletDto,
   ) {
     const signature: string = dto.signature;
     return this.authService.loginWithWallet(wallet, signature);
   }
 
   @UseGuards(AuthGuard("jwt"))
-  @Get(authControllerRoute.GET_AUTH_ME)
+  @Get("auth/me")
   getMe(@Req() req: Request) {
     const user = req.user;
 
