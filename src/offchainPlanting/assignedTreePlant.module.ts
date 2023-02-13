@@ -6,8 +6,13 @@ import {
   AssignedTreePlantSchema,
   TreePlant,
   TreePlantSchema,
+  UpdateTree,
+  UpdateTreeSchema,
 } from "./schemas";
-import { AssignedTreePlantRepository } from "./assignedTreePlant.repository";
+import {
+  AssignedTreePlantRepository,
+  UpdateTreeRepository,
+} from "./assignedTreePlant.repository";
 import { DatabaseModule } from "../database/database.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "src/user/user.module";
@@ -22,12 +27,18 @@ import { TreePlantRepository } from "./treePlant.repository";
     MongooseModule.forFeature([
       { name: TreePlant.name, schema: TreePlantSchema },
     ]),
+
+    MongooseModule.forFeature([
+      { name: UpdateTree.name, schema: UpdateTreeSchema },
+    ]),
+
     DatabaseModule,
   ],
   controllers: [AssignedTreePlantController],
   providers: [
     AssignedTreePlantService,
     AssignedTreePlantRepository,
+    UpdateTreeRepository,
     TreePlantRepository,
   ],
   exports: [AssignedTreePlantService],
