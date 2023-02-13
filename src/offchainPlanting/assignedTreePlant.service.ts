@@ -37,7 +37,7 @@ export class AssignedTreePlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async updateTree(dto: UpdateTreeDto) {
@@ -45,7 +45,7 @@ export class AssignedTreePlantService {
     console.log(
       "dto.signer",
 
-      ethUtil.toChecksumAddress(dto.signer)
+      ethUtil.toChecksumAddress(dto.signer),
     );
 
     let user = await this.userService.findUserByWallet(dto.signer);
@@ -60,7 +60,7 @@ export class AssignedTreePlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (
@@ -108,7 +108,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (
@@ -184,7 +184,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (
@@ -197,7 +197,7 @@ export class AssignedTreePlantService {
 
     if (planterData.status != 1)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER
+        OffChainPlantingErrorMessage.INVALID_PLANTER,
       );
 
     let count: number = await this.pendingListCount({
