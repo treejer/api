@@ -3,7 +3,7 @@ import { Request } from "express";
 import { AssignedTreePlantService } from "./assignedTreePlant.service";
 import { CreateTreePlantDto } from "./dtos/create-treePlant.dto";
 
-@Controller()
+@Controller("plant")
 export class AssignedTreePlantController {
   constructor(private assignedTreePlantService: AssignedTreePlantService) {}
 
@@ -12,7 +12,7 @@ export class AssignedTreePlantController {
     return this.assignedTreePlantService.create(body);
   }
 
-  @Post("treePlant/plant")
+  @Post("regular/add")
   Plant(@Body() dto: CreateTreePlantDto) {
     return this.assignedTreePlantService.plant(dto);
   }

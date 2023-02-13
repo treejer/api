@@ -15,8 +15,14 @@ export class UserService {
     return await this.userRepository.findOne({ username });
   }
 
-  async findUserByWallet(walletAddress: string) {
-    return await this.userRepository.findOne({ walletAddress });
+  async findUserByWallet(
+    walletAddress: string,
+    projection?: Record<string, null>,
+  ) {
+    return await this.userRepository.findOne(
+      { walletAddress },
+      { ...projection },
+    );
   }
 
   async findUserById(userId: string) {
