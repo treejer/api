@@ -20,7 +20,10 @@ import {
 import { UserService } from "./../user/user.service";
 import { TreePlantRepository } from "./treePlant.repository";
 
-import { AuthErrorMessages } from "./../common/constants";
+import {
+  AuthErrorMessages,
+  OffChainPlantingErrorMessage,
+} from "./../common/constants";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -99,6 +102,7 @@ export class AssignedTreePlantService {
     console.log("planterDa", planterData);
 
     if (planterData.status != 1) return "invalid planter";
+
     console.log("signer", signer);
     console.log("tree.planter", tree.planter);
 
@@ -139,7 +143,7 @@ export class AssignedTreePlantService {
   async plant(dto: CreateTreePlantDto) {
     let user = await this.userService.findUserByWallet(dto.signer);
 
-    if (!user) throw new NotFoundException(AuthErrorMessages.USER_NOT_EXIST);
+    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
     const signer = await getSigner(
       dto.signature,
@@ -156,11 +160,14 @@ export class AssignedTreePlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(dto.signer)
     )
-      return "invalid signer";
+      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
     const planterData = await getPlanterData(signer);
 
-    if (planterData.status != 1) return "invalid planter";
+    if (planterData.status != 1)
+      throw new ForbiddenException(
+        OffChainPlantingErrorMessage.INVALID_PLANTER,
+      );
 
     let count: number = await this.pendingListCount({
       signer: dto.signer,
@@ -168,7 +175,7 @@ export class AssignedTreePlantService {
     });
 
     if (planterData.plantedCount + count >= planterData.supplyCap)
-      return "supply error";
+      throw new ForbiddenException(OffChainPlantingErrorMessage.SUPPLY_ERROR);
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,
