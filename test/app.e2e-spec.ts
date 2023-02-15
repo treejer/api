@@ -9,6 +9,17 @@ const request = require("supertest");
 import { Messages } from "./../src/common/constants";
 import Jwt from "jsonwebtoken";
 
+import { checkPublicKey } from "./../src/common/helpers/checkPublicKey";
+
+jest.mock("./../src/common/helpers/checkPublicKey", () => ({
+  ...jest.requireActual<
+    typeof import("./../src/common/helpers/checkPublicKey")
+  >("./../src/common/helpers/checkPublicKey"),
+  checkPublicKey: jest.fn(),
+}));
+
+// (checkPublicKey as jest.Mock).mockReturnValue("reza");
+
 const ganache = require("ganache");
 
 describe("App e2e", () => {
