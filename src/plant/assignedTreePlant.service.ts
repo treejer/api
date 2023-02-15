@@ -21,13 +21,13 @@ import {
   getSigner,
   getTreeData,
 } from "../common/helpers";
-import { UserService } from "./../user/user.service";
+import { UserService } from "../user/user.service";
 import { TreePlantRepository } from "./treePlant.repository";
 
 import {
   AuthErrorMessages,
   OffChainPlantingErrorMessage,
-} from "./../common/constants";
+} from "../common/constants";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -37,7 +37,7 @@ export class AssignedTreePlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
@@ -56,7 +56,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (
@@ -67,7 +67,7 @@ export class AssignedTreePlantService {
 
     if (tree.treeStatus != 2)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_TREE_STATUS
+        OffChainPlantingErrorMessage.INVALID_TREE_STATUS,
       );
 
     let pendingPlantsCount: number = await this.pendingListCount({
@@ -79,7 +79,7 @@ export class AssignedTreePlantService {
 
     if (planterData.status != 1)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER
+        OffChainPlantingErrorMessage.INVALID_PLANTER,
       );
 
     if (
@@ -93,7 +93,7 @@ export class AssignedTreePlantService {
         )
       )
         throw new ForbiddenException(
-          OffChainPlantingErrorMessage.INVALID_PLANTER
+          OffChainPlantingErrorMessage.INVALID_PLANTER,
         );
     }
 
@@ -112,6 +112,8 @@ export class AssignedTreePlantService {
 
     if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
+    console.log("111111111111");
+
     const signer = await getSigner(
       dto.signature,
       {
@@ -120,8 +122,10 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
+
+    console.log("2222222222222");
 
     if (
       ethUtil.toChecksumAddress(signer) !==
@@ -133,7 +137,7 @@ export class AssignedTreePlantService {
 
     if (planterData.status != 1)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER
+        OffChainPlantingErrorMessage.INVALID_PLANTER,
       );
 
     let count: number = await this.pendingListCount({
@@ -165,7 +169,7 @@ export class AssignedTreePlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (
@@ -176,7 +180,7 @@ export class AssignedTreePlantService {
 
     if (tree.treeStatus > 3)
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_TREE_STATUS
+        OffChainPlantingErrorMessage.INVALID_TREE_STATUS,
       );
 
     if (
@@ -184,7 +188,7 @@ export class AssignedTreePlantService {
       ethUtil.toChecksumAddress(dto.signer)
     )
       throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER
+        OffChainPlantingErrorMessage.INVALID_PLANTER,
       );
 
     if (
