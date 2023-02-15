@@ -4,3 +4,4 @@ export * from "./getPlanterData";
 export * from "./getTreeData";
 export * from "./getSigner";
 export * from "./getPlanterOrganization";
+export * from "./getEIP712Sign";

@@ -30,3 +30,13 @@ export class UpdateTreeRepository extends EntityRepository<UpdateTreeDocument> {
     super(updateTreeModel);
   }
 }
+
+@Injectable()
+export class TreePlantRepository extends EntityRepository<TreePlantDocument> {
+  constructor(
+    @InjectModel(TreePlant.name)
+    treePlantModel: Model<TreePlantDocument>
+  ) {
+    super(treePlantModel);
+  }
+}

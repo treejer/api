@@ -3,13 +3,13 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
 import { DatabaseModule } from "./database/database.module";
 import { UserModule } from "./user/user.module";
-import { AssignedTreePlantModule } from "./plant/assignedTreePlant.module";
+import { PlantModule } from "./plant/plant.module";
 @Module({
   imports: [
     DatabaseModule,
     UserModule,
     AuthModule,
-    AssignedTreePlantModule,
+    PlantModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [],

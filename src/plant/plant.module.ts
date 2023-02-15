@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { AssignedTreePlantController } from "./assignedTreePlant.controller";
-import { AssignedTreePlantService } from "./assignedTreePlant.service";
+import { PlantController } from "./plant.controller";
+import { PlantService } from "./plant.service";
 import {
   AssignedTreePlant,
   AssignedTreePlantSchema,
@@ -12,11 +12,11 @@ import {
 import {
   AssignedTreePlantRepository,
   UpdateTreeRepository,
-} from "./assignedTreePlant.repository";
+  TreePlantRepository,
+} from "./plant.repository";
 import { DatabaseModule } from "../database/database.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "../user/user.module";
-import { TreePlantRepository } from "./treePlant.repository";
 
 @Module({
   imports: [
@@ -34,13 +34,13 @@ import { TreePlantRepository } from "./treePlant.repository";
 
     DatabaseModule,
   ],
-  controllers: [AssignedTreePlantController],
+  controllers: [PlantController],
   providers: [
-    AssignedTreePlantService,
+    PlantService,
     AssignedTreePlantRepository,
     UpdateTreeRepository,
     TreePlantRepository,
   ],
-  exports: [AssignedTreePlantService],
+  exports: [PlantService],
 })
-export class AssignedTreePlantModule {}
+export class PlantModule {}

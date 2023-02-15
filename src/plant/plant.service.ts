@@ -14,30 +14,27 @@ import { AssignedTreePlant, TreePlant } from "./schemas";
 import {
   AssignedTreePlantRepository,
   UpdateTreeRepository,
-} from "./assignedTreePlant.repository";
+  TreePlantRepository,
+} from "./plant.repository";
+
 import {
   getPlanterData,
   getPlanterOrganization,
-  getSigner,
   getTreeData,
 } from "../common/helpers";
 import { UserService } from "../user/user.service";
-import { TreePlantRepository } from "./treePlant.repository";
-
-import {
-  AuthErrorMessages,
-  OffChainPlantingErrorMessage,
-} from "../common/constants";
+import { getSigner } from "../common/helpers/getSigner";
+import { AuthErrorMessages, PlantErrorMessage } from "../common/constants";
 
 var ethUtil = require("ethereumjs-util");
 
 @Injectable()
-export class AssignedTreePlantService {
+export class PlantService {
   constructor(
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
@@ -56,7 +53,7 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1,
+      1
     );
 
     if (
@@ -66,9 +63,7 @@ export class AssignedTreePlantService {
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
     if (tree.treeStatus != 2)
-      throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_TREE_STATUS,
-      );
+      throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     let pendingPlantsCount: number = await this.pendingListCount({
       signer: dto.signer,
@@ -78,9 +73,7 @@ export class AssignedTreePlantService {
     const planterData = await getPlanterData(signer);
 
     if (planterData.status != 1)
-      throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER,
-      );
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
     if (
       ethUtil.toChecksumAddress(tree.planter) !==
@@ -92,13 +85,11 @@ export class AssignedTreePlantService {
           tree.planter == (await getPlanterOrganization(signer))
         )
       )
-        throw new ForbiddenException(
-          OffChainPlantingErrorMessage.INVALID_PLANTER,
-        );
+        throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
     }
 
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
-      throw new ForbiddenException(OffChainPlantingErrorMessage.SUPPLY_ERROR);
+      throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,
@@ -112,8 +103,6 @@ export class AssignedTreePlantService {
 
     if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
-    console.log("111111111111");
-
     const signer = await getSigner(
       dto.signature,
       {
@@ -122,10 +111,8 @@ export class AssignedTreePlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2,
+      2
     );
-
-    console.log("2222222222222");
 
     if (
       ethUtil.toChecksumAddress(signer) !==
@@ -136,9 +123,7 @@ export class AssignedTreePlantService {
     const planterData = await getPlanterData(signer);
 
     if (planterData.status != 1)
-      throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER,
-      );
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
     let count: number = await this.pendingListCount({
       signer: dto.signer,
@@ -146,13 +131,15 @@ export class AssignedTreePlantService {
     });
 
     if (planterData.plantedCount + count >= planterData.supplyCap)
-      throw new ForbiddenException(OffChainPlantingErrorMessage.SUPPLY_ERROR);
+      throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,
     });
 
-    await this.treePlantRepository.create({ ...dto });
+    const plantData = await this.treePlantRepository.create({ ...dto });
+
+    return plantData._id;
   }
 
   async updateTree(dto: UpdateTreeDto) {
@@ -169,7 +156,7 @@ export class AssignedTreePlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3,
+      3
     );
 
     if (
@@ -179,23 +166,19 @@ export class AssignedTreePlantService {
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
     if (tree.treeStatus > 3)
-      throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_TREE_STATUS,
-      );
+      throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     if (
       ethUtil.toChecksumAddress(tree.planter) !==
       ethUtil.toChecksumAddress(dto.signer)
     )
-      throw new ForbiddenException(
-        OffChainPlantingErrorMessage.INVALID_PLANTER,
-      );
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
     if (
       Math.floor(new Date().getTime() / 1000) <
       tree.plantDate + tree.treeStatus * 3600 + 604800
     )
-      throw new ForbiddenException(OffChainPlantingErrorMessage.EARLY_UPDATE);
+      throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
 
     let pendingUpdates = await this.updateTreeRepository.findOne({
       status: 1,
@@ -203,7 +186,7 @@ export class AssignedTreePlantService {
     });
 
     if (pendingUpdates)
-      throw new ForbiddenException(OffChainPlantingErrorMessage.PENDING_UPDATE);
+      throw new ForbiddenException(PlantErrorMessage.PENDING_UPDATE);
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,

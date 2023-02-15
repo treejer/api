@@ -23,7 +23,7 @@ export class TreePlant extends Document {
   @Prop({ type: String })
   signature;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, default: 0 })
   status;
 
   @Prop({ type: Date, default: Date.now })

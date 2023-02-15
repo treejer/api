@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
-export type AssignedTreePlantDocument = AssignedTreePlant & Document;
+export type UpdateTreeDocument = UpdateTree & Document;
 
 @Schema()
-export class AssignedTreePlant extends Document {
+export class UpdateTree extends Document {
   @Prop({ type: String })
   signer;
 
@@ -16,12 +16,6 @@ export class AssignedTreePlant extends Document {
 
   @Prop({ type: String })
   treeSpecs;
-
-  @Prop({ type: Number })
-  birthDate;
-
-  @Prop({ type: Number })
-  countryCode;
 
   @Prop({ type: String })
   signature;
@@ -36,5 +30,4 @@ export class AssignedTreePlant extends Document {
   updatedAt;
 }
 
-export const AssignedTreePlantSchema =
-  SchemaFactory.createForClass(AssignedTreePlant);
+export const UpdateTreeSchema = SchemaFactory.createForClass(UpdateTree);

@@ -1,6 +1,12 @@
-var sigUtil = require("eth-sig-util");
+const { getMessage } = require("eip-712");
+const { ecsign } = require("ethereumjs-util");
 
-export async function getSigner(signature: string, message, selector: Number) {
+export async function getEIP712Sign(
+  verifyingContract: string,
+  account,
+  messageParams,
+  selector: number
+) {
   let primaryTypeObj;
   let primaryType;
 
@@ -30,7 +36,7 @@ export async function getSigner(signature: string, message, selector: Number) {
     ];
   }
 
-  const msgParams = JSON.stringify({
+  const msgParams = {
     types: {
       EIP712Domain: [
         { name: "name", type: "string" },
@@ -40,6 +46,7 @@ export async function getSigner(signature: string, message, selector: Number) {
       ],
       [primaryType]: primaryTypeObj,
     },
+
     primaryType,
     domain: {
       name: process.env.EIP712_DOMAIN_NAME,
@@ -47,13 +54,17 @@ export async function getSigner(signature: string, message, selector: Number) {
       chainId: Number(process.env.CHAIN_ID),
       verifyingContract: process.env.VERIFYING_CONTRACT,
     },
-    message,
-  });
+    message: messageParams,
+  };
 
-  const recovered = sigUtil.recoverTypedSignature({
-    data: JSON.parse(msgParams),
-    sig: signature,
-  });
+  const message = getMessage(msgParams, true);
 
-  return recovered;
+  const sign = ecsign(
+    Buffer.from(message),
+    Buffer.from(account.privateKey.split("0x")[1], "hex")
+  );
+
+  return `0x${sign.r.toString("hex")}${sign.s.toString("hex")}${sign.v.toString(
+    16
+  )}`;
 }

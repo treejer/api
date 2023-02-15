@@ -12,7 +12,7 @@ export const StatusErrorMessage = {
   NOT_FOUND: "Not Found",
 };
 
-export const OffChainPlantingErrorMessage = {
+export const PlantErrorMessage = {
   INVALID_PLANTER: "invalid planter",
   SUPPLY_ERROR: "supply error",
   INVALID_TREE_STATUS: "invalid tree status",

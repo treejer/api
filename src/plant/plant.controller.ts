@@ -1,11 +1,11 @@
 import { Controller, Get, Body, Post } from "@nestjs/common";
 import { Request } from "express";
-import { AssignedTreePlantService } from "./assignedTreePlant.service";
+import { PlantService } from "./plant.service";
 import { CreateTreePlantDto } from "./dtos/create-treePlant.dto";
 
 @Controller("plant")
-export class AssignedTreePlantController {
-  constructor(private assignedTreePlantService: AssignedTreePlantService) {}
+export class PlantController {
+  constructor(private assignedTreePlantService: PlantService) {}
 
   @Post("assignedTree/add")
   GetMe(@Body() body) {
