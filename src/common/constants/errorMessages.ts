@@ -15,4 +15,7 @@ export const StatusErrorMessage = {
 export const OffChainPlantingErrorMessage = {
   INVALID_PLANTER: "invalid planter",
   SUPPLY_ERROR: "supply error",
+  INVALID_TREE_STATUS: "invalid tree status",
+  EARLY_UPDATE: "early update",
+  PENDING_UPDATE: "you have pending update",
 };

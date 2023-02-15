@@ -1,6 +1,6 @@
-import { IsEmail, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
-export class CreateAssiggnedTreePlantDto {
+export class CreateAssignedTreePlantDto {
   @IsString()
   signer: string;
 
