@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
-import { Connection, connect, Types } from "mongoose";
+import { Connection, connect, Types, now } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 const Web3 = require("web3");
 
@@ -86,7 +86,7 @@ describe("App e2e", () => {
 
   it("test plantTree", async () => {
     let account = await web3.eth.accounts.create();
-    let accoun2 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
 
     const nonce = 1;
     const nonce2 = 2;
@@ -148,7 +148,7 @@ describe("App e2e", () => {
     let resultWithNotExistUser = await request(httpServer)
       .post(`/plant/regular/add`)
       .send({
-        signer: accoun2.address,
+        signer: account2.address,
         nonce: nonce,
         treeSpecs: treeSpecs,
         birthDate: birthDate,
@@ -263,66 +263,154 @@ describe("App e2e", () => {
       .findOne({ _id: createdUser.insertedId });
 
     expect(userAfterPlant.plantingNonce).toBe(2);
+  });
 
-    // expect(true).toBe(false);
+  it.only("test updateTree", async () => {
+    let account = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
 
-    // let account1 = await web3.eth.accounts.create();
-    // let account2 = await web3.eth.accounts.create();
-    // let getNonceResult1 = await request(httpServer).get(
-    //   `/auth/nonce/${account1.address}`,
-    // );
-    // //-----check status code
-    // expect(getNonceResult1.statusCode).toBe(200);
-    // //-----check body format
-    // expect(getNonceResult1.body).toMatchObject({
-    //   message: expect.any(String),
-    //   userId: expect.any(String),
-    // });
-    // //------------- check user insert
-    // let user = await mongoConnection.db
-    //   .collection("users")
-    //   .findOne({ _id: new Types.ObjectId(getNonceResult1.body.userId) });
-    // expect(user).toBeTruthy();
-    // expect(user.walletAddress).toBe(account1.address);
-    // expect(`${Messages.SIGN_MESSAGE}${user.nonce}`).toBe(
-    //   getNonceResult1.body.message,
-    // );
-    // //check user collection count (must be 1 [newUser Added!])
-    // let usersCountAfterFirstGetNonceForAccount1 = await mongoConnection.db
-    //   .collection("users")
-    //   .countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount1).toBe(1);
-    // ///// ---------------------- get nonce for account1 and nonce must be the same
-    // let getNonceResult2 = await request(httpServer).get(
-    //   `/auth/nonce/${account1.address}`,
-    // );
-    // expect(getNonceResult2.body.message).toBe(getNonceResult1.body.message);
-    // //check user collection count (must be 1 [no user Added!])
-    // let usersCountAfterFirstGetNonceForAccount2: number =
-    //   await mongoConnection.db.collection("users").countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount2).toBe(1);
-    // //--------------- get nonce for new user (create new user)
-    // let getNonceResult3 = await request(httpServer).get(
-    //   `/auth/nonce/${account2.address}`,
-    // );
-    // //-----check status code
-    // expect(getNonceResult3.statusCode).toBe(200);
-    // //-----check body format
-    // expect(getNonceResult3.body).toMatchObject({
-    //   message: expect.any(String),
-    //   userId: expect.any(String),
-    // });
-    // let user2 = await mongoConnection.db
-    //   .collection("users")
-    //   .findOne({ _id: new Types.ObjectId(getNonceResult3.body.userId) });
-    // expect(user2).toBeTruthy();
-    // expect(user2.walletAddress).toBe(account2.address);
-    // expect(`${Messages.SIGN_MESSAGE}${user2.nonce}`).toBe(
-    //   getNonceResult3.body.message,
-    // );
-    // //check user collection count (must be 2 [newUser Added!])
-    // let usersCountAfterFirstGetNonceForAccount3: number =
-    //   await mongoConnection.db.collection("users").countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount3).toBe(2);
+    const nonce1 = 1;
+    const nonce2 = 2;
+    const treeId1 = 1;
+    const treeId2 = 2;
+
+    const treeSpecs = "ipfs";
+    const invalidTreeSpecs = "invalid ipfs";
+
+    const birthDate = 1;
+    const countryCode = 1;
+
+    let createdUser = await mongoConnection.db.collection("users").insertOne({
+      walletAddress: account.address,
+      nonce: 103631,
+      plantingNonce: 1,
+    });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection("users")
+      .findOne({ _id: createdUser.insertedId });
+
+    expect(userBeforePlant.plantingNonce).toBe(1);
+
+    let sign = await getEIP712Sign(
+      "0x309af72b0952eb4e6f080d93f182baf6fcc725a3",
+      account,
+      {
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+      },
+      3
+    );
+
+    let resultWithNotExistUser = await request(httpServer)
+      .post(`/plant/update/add`)
+      .send({
+        signer: account2.address,
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+        signature: sign,
+      });
+
+    expect(resultWithNotExistUser.body).toMatchObject({
+      statusCode: 403,
+      message: AuthErrorMessages.USER_NOT_EXIST,
+    });
+
+    let resultWithInvalidSigner = await request(httpServer)
+      .post(`/plant/update/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce1,
+        treeId: treeId2,
+        treeSpecs: treeSpecs,
+        signature: sign,
+      });
+
+    expect(resultWithInvalidSigner.body).toMatchObject({
+      statusCode: 400,
+      message: AuthErrorMessages.INVALID_SIGNER,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 1,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    let resultWithInvalidTreeStatus = await request(httpServer)
+      .post(`/plant/update/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+        signature: sign,
+      });
+
+    expect(resultWithInvalidTreeStatus.body).toMatchObject({
+      statusCode: 403,
+      message: PlantErrorMessage.INVALID_TREE_STATUS,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account2.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 3,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    let resultWithInvalidTreePlanter = await request(httpServer)
+      .post(`/plant/update/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+        signature: sign,
+      });
+
+    expect(resultWithInvalidTreePlanter.body).toMatchObject({
+      statusCode: 403,
+      message: PlantErrorMessage.INVALID_PLANTER,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 3,
+      plantDate: Math.floor(new Date().getTime() / 1000), //- 615599
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    let resultWithEarlyUpdate = await request(httpServer)
+      .post(`/plant/update/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+        signature: sign,
+      });
+
+    expect(resultWithEarlyUpdate.body).toMatchObject({
+      statusCode: 403,
+      message: PlantErrorMessage.EARLY_UPDATE,
+    });
+
+    console.log("resultWithInvalidTreeStatus", resultWithEarlyUpdate.body);
   });
 });

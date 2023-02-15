@@ -165,7 +165,7 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
-    if (tree.treeStatus > 3)
+    if (tree.treeStatus < 3)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     if (
