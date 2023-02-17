@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Req,
+  SetMetadata,
   UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
@@ -12,7 +13,9 @@ import { CreateUserDto } from "./../user/dtos";
 import { LoginDto, LoginWithWalletDto } from "./dtos";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
-
+import { RolesGuard } from "./strategies";
+import { HasRoles } from "./decorators";
+import { Role } from "./../common/constants";
 @Controller()
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -62,11 +65,11 @@ export class AuthController {
     return this.authService.loginWithWallet(wallet, signature);
   }
 
-  @UseGuards(AuthGuard("jwt"))
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Get("auth/me")
   getMe(@Req() req: Request) {
-    const user = req.user;
-
-    return this.authService.getMe(user["userId"]);
+    // const user = req.user;
+    // return this.authService.getMe(user["userId"]);
   }
 }

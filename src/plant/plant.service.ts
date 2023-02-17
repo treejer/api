@@ -88,8 +88,6 @@ export class PlantService {
       ethUtil.toChecksumAddress(tree.planter) !==
       ethUtil.toChecksumAddress(signer)
     ) {
-      console.log("planterData", planterData);
-
       if (
         !(
           planterData.planterType == 3 &&
@@ -113,17 +111,18 @@ export class PlantService {
           { _id: plantData._id },
           { ...dto }
         );
-    } else {
-      await this.userService.updateUserById(user._id, {
-        plantingNonce: user.plantingNonce + 1,
-      });
-
-      const assignedPlant = await this.assignedTreePlantRepository.create({
-        ...dto,
-      });
-
-      return assignedPlant._id;
+      return updatedAssigndPlantData._id;
     }
+
+    await this.userService.updateUserById(user._id, {
+      plantingNonce: user.plantingNonce + 1,
+    });
+
+    const assignedPlant = await this.assignedTreePlantRepository.create({
+      ...dto,
+    });
+
+    return assignedPlant._id;
   }
 
   async plant(dto: CreateTreePlantDto) {

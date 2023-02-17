@@ -18,9 +18,7 @@ export class UserService {
   }
 
   async getSortedUserByNonce() {
-    return (await this.userRepository.find({})).sort(
-      (a: any, b: any) => b.nonce - a.nonce
-    );
+    return await this.userRepository.sort({}, { nonce: -1 }, {});
   }
 
   async findUserByWallet(

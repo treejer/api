@@ -4,23 +4,33 @@ export abstract class EntityRepository<T extends Document> {
 
   async find(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>,
+    projection?: Record<string, null>
   ): Promise<T[]> {
     return await this.entityModel.find(entityFilterQuery, { ...projection });
   }
 
   async count(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>,
+    projection?: Record<string, null>
   ): Promise<number> {
     return await this.entityModel
       .find(entityFilterQuery, { ...projection })
       .count();
   }
 
+  async sort(
+    entityFilterQuery: FilterQuery<T>,
+    sortFilter: any,
+    projection?: Record<string, null>
+  ): Promise<T[]> {
+    return await this.entityModel
+      .find(entityFilterQuery, { ...projection })
+      .sort(sortFilter);
+  }
+
   async findOne(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>,
+    projection?: Record<string, null>
   ): Promise<T | null> {
     return await this.entityModel.findOne(entityFilterQuery, { ...projection });
   }
@@ -32,14 +42,14 @@ export abstract class EntityRepository<T extends Document> {
   }
   async findOneAndUpdate(
     entityFilterQuery: FilterQuery<T>,
-    entityData: UpdateQuery<unknown>,
+    entityData: UpdateQuery<unknown>
   ): Promise<T> {
     return await this.entityModel.findOneAndUpdate(
       entityFilterQuery,
       entityData,
       {
         new: true,
-      },
+      }
     );
   }
 
