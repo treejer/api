@@ -18,4 +18,6 @@ export const PlantErrorMessage = {
   INVALID_TREE_STATUS: "invalid tree status",
   EARLY_UPDATE: "early update",
   PENDING_UPDATE: "you have pending update",
+  PENDING_ASSIGNED_PLANT: "you have already planted this tree",
+  VERIFIED_ASSIGNED_PLANT: "plant is verified",
 };

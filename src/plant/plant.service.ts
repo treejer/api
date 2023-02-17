@@ -22,9 +22,14 @@ import {
   getPlanterOrganization,
   getTreeData,
 } from "../common/helpers";
+
 import { UserService } from "../user/user.service";
 import { getSigner } from "../common/helpers/getSigner";
-import { AuthErrorMessages, PlantErrorMessage } from "../common/constants";
+import {
+  AuthErrorMessages,
+  PlantErrorMessage,
+  PlantStatus,
+} from "../common/constants";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -38,8 +43,6 @@ export class PlantService {
   ) {}
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
-    let tree = await getTreeData(dto.treeId);
-
     let user = await this.userService.findUserByWallet(dto.signer);
 
     if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
@@ -62,13 +65,19 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
+    let plantData = await this.assignedTreePlantRepository.findOne({
+      treeId: dto.treeId,
+    });
+
+    if (plantData && plantData.status == PlantStatus.PENDING)
+      throw new ForbiddenException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
+    if (plantData && plantData.status == PlantStatus.VERIFIED)
+      throw new ForbiddenException(PlantErrorMessage.VERIFIED_ASSIGNED_PLANT);
+
+    let tree = await getTreeData(dto.treeId);
+
     if (tree.treeStatus != 2)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
-
-    let pendingPlantsCount: number = await this.pendingListCount({
-      signer: dto.signer,
-      status: 0,
-    });
 
     const planterData = await getPlanterData(signer);
 
@@ -79,6 +88,8 @@ export class PlantService {
       ethUtil.toChecksumAddress(tree.planter) !==
       ethUtil.toChecksumAddress(signer)
     ) {
+      console.log("planterData", planterData);
+
       if (
         !(
           planterData.planterType == 3 &&
@@ -88,14 +99,31 @@ export class PlantService {
         throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
     }
 
+    let pendingPlantsCount: number = await this.pendingListCount({
+      signer: dto.signer,
+      status: PlantStatus.PENDING,
+    });
+
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
-    });
+    if (plantData) {
+      const updatedAssigndPlantData =
+        await this.assignedTreePlantRepository.findOneAndUpdate(
+          { _id: plantData._id },
+          { ...dto }
+        );
+    } else {
+      await this.userService.updateUserById(user._id, {
+        plantingNonce: user.plantingNonce + 1,
+      });
 
-    return await this.assignedTreePlantRepository.create({ ...dto });
+      const assignedPlant = await this.assignedTreePlantRepository.create({
+        ...dto,
+      });
+
+      return assignedPlant._id;
+    }
   }
 
   async plant(dto: CreateTreePlantDto) {
@@ -127,7 +155,7 @@ export class PlantService {
 
     let count: number = await this.pendingListCount({
       signer: dto.signer,
-      status: 0,
+      status: PlantStatus.PENDING,
     });
 
     if (planterData.plantedCount + count >= planterData.supplyCap)
@@ -152,7 +180,7 @@ export class PlantService {
     const signer: string = await getSigner(
       dto.signature,
       {
-        nonce: dto.nonce,
+        nonce: user.plantingNonce,
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
@@ -181,7 +209,7 @@ export class PlantService {
       throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
 
     let pendingUpdates = await this.updateTreeRepository.findOne({
-      status: 1,
+      status: PlantStatus.PENDING,
       treeId: dto.treeId,
     });
 
@@ -192,7 +220,9 @@ export class PlantService {
       plantingNonce: user.plantingNonce + 1,
     });
 
-    await this.updateTreeRepository.create({ ...dto });
+    const updateData = await this.updateTreeRepository.create({ ...dto });
+
+    return updateData._id;
   }
 
   async pendingListCount(filter): Promise<number> {

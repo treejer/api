@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-
+import { PlantStatus } from "../../common/constants";
 export type AssignedTreePlantDocument = AssignedTreePlant & Document;
 
 @Schema()
@@ -11,7 +11,7 @@ export class AssignedTreePlant extends Document {
   @Prop({ type: Number })
   nonce;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, unique: true })
   treeId;
 
   @Prop({ type: String })
@@ -26,7 +26,7 @@ export class AssignedTreePlant extends Document {
   @Prop({ type: String })
   signature;
 
-  @Prop({ type: Number, default: 0 })
+  @Prop({ type: Number, default: PlantStatus.PENDING })
   status;
 
   @Prop({ type: Date, default: Date.now })

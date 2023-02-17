@@ -7,21 +7,29 @@ export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async create(user: CreateUserDto) {
-    console.log("user", user);
-
     return await this.userRepository.create({ ...user });
   }
   async findUser(username: string): Promise<User> {
     return await this.userRepository.findOne({ username });
   }
 
+  async getUserList() {
+    return await this.userRepository.find({});
+  }
+
+  async getSortedUserByNonce() {
+    return (await this.userRepository.find({})).sort(
+      (a: any, b: any) => b.nonce - a.nonce
+    );
+  }
+
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, null>,
+    projection?: Record<string, null>
   ) {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 
