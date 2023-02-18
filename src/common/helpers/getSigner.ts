@@ -1,5 +1,14 @@
 var sigUtil = require("eth-sig-util");
 
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+
+enum getSignerEnum {
+  INVALID_SIGNATURE = "Invalid signature length",
+}
+
 export async function getSigner(signature: string, message, selector: Number) {
   let primaryTypeObj;
   let primaryType;
@@ -50,10 +59,22 @@ export async function getSigner(signature: string, message, selector: Number) {
     message,
   });
 
-  const recovered = sigUtil.recoverTypedSignature({
-    data: JSON.parse(msgParams),
-    sig: signature,
-  });
+  let recovered;
+
+  try {
+    recovered = sigUtil.recoverTypedSignature({
+      data: JSON.parse(msgParams),
+      sig: signature,
+    });
+  } catch (error) {
+    if (error.message === getSignerEnum.INVALID_SIGNATURE) {
+      throw new BadRequestException(getSignerEnum.INVALID_SIGNATURE);
+    }
+
+    console.log("getSigner func : ", error);
+
+    throw new InternalServerErrorException(error.message);
+  }
 
   return recovered;
 }
