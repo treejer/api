@@ -11,6 +11,7 @@ export enum CollectionNames {
 }
 
 export enum Role {
-  USER = "user",
-  ADMIN = "admin",
+  USER = 1,
+  PLANTER = 2,
+  ADMIN = 3,
 }

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-
+import { Role } from "./../../common/constants";
 export type UserDocument = User & Document;
 
 @Schema()
@@ -31,6 +31,9 @@ export class User extends Document {
 
   @Prop({ type: Date, default: Date.now })
   createdAt;
+
+  @Prop({ type: Number, default: Role.USER })
+  userRole;
 
   @Prop({ type: Date, default: Date.now })
   updatedAt;
