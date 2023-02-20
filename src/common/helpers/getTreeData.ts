@@ -1,11 +1,12 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { ITreeData } from "../interfaces/treeData.interface";
 
 const TreeFactory = require("./../../../abi/TreeFactory.json");
 const Web3 = require("web3");
 
 const web3 = new Web3();
 
-export async function getTreeData(treeId: number) {
+export async function getTreeData(treeId: number): Promise<ITreeData> {
   let tree;
   try {
     web3.setProvider("http://localhost:8545");

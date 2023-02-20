@@ -113,7 +113,6 @@ describe("App e2e", () => {
     expect(userBeforePlant.plantingNonce).toBe(1);
 
     let sign = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
       account,
       {
         nonce: nonce,
@@ -125,7 +124,6 @@ describe("App e2e", () => {
     );
 
     let sign2 = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
       account,
       {
         nonce: nonce2,
@@ -295,8 +293,7 @@ describe("App e2e", () => {
 
     expect(userBeforePlant.plantingNonce).toBe(1);
 
-    let sign: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let sign = await getEIP712Sign(
       account,
       {
         nonce: nonce1,
@@ -306,8 +303,7 @@ describe("App e2e", () => {
       3
     );
 
-    let sign2: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let sign2 = await getEIP712Sign(
       account,
       {
         nonce: nonce2,
@@ -512,8 +508,7 @@ describe("App e2e", () => {
 
     expect(userBeforePlant.plantingNonce).toBe(1);
 
-    let sign: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let sign = await getEIP712Sign(
       account,
       {
         nonce: nonce1,
@@ -729,8 +724,7 @@ describe("App e2e", () => {
 
     expect(userAfterPlant.plantingNonce).toBe(2);
 
-    let validSign2: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let validSign2 = await getEIP712Sign(
       account,
       {
         nonce: nonce2,
@@ -742,8 +736,7 @@ describe("App e2e", () => {
       1
     );
 
-    let invalidSignForPendingPlant: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let invalidSignForPendingPlant = await getEIP712Sign(
       account,
       {
         nonce: nonce2,
@@ -799,8 +792,7 @@ describe("App e2e", () => {
         plantingNonce: 1,
       });
 
-    let signForTreeId3ByAccount2: string = await getEIP712Sign(
-      process.env.VERIFYING_CONTRACT,
+    let signForTreeId3ByAccount2 = await getEIP712Sign(
       account2,
       {
         nonce: nonce1,

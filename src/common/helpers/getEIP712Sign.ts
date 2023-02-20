@@ -2,11 +2,10 @@ const { getMessage } = require("eip-712");
 const { ecsign } = require("ethereumjs-util");
 
 export async function getEIP712Sign(
-  verifyingContract: string,
   account,
   messageParams,
   selector: number
-) {
+): Promise<string> {
   let primaryTypeObj;
   let primaryType;
 
