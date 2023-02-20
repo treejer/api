@@ -46,10 +46,6 @@ export class PlantController {
     const user = request.user;
     return this.plantService.editPlant(id, body, user);
   }
-  @Patch("regular/edit2/:id")
-  editPlant2(@Param("id") id: string, @Body() body: EditTreePlantDto) {
-    return this.plantService.editPlanData(id, body);
-  }
 
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
@@ -93,8 +89,9 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("update/add")
-  updateTree(@Body() body) {
-    return this.plantService.updateTree(body);
+  updateTree(@Req() request: Request, @Body() body) {
+    const user = request.user;
+    return this.plantService.updateTree(body, user);
   }
 
   @HasRoles(Role.PLANTER)
