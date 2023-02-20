@@ -43,15 +43,16 @@ export class PlantService {
     private userService: UserService
   ) {}
 
-  async plant(dto: CreateTreePlantDto) {
-    let user = await this.userService.findUserByWallet(dto.signer);
+  async plant(dto: CreateTreePlantDto, user) {
+    if (!user || !user.userId)
+      throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
-    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+    let userData = await this.userService.findUserById(user.userId);
 
     const signer = await getSigner(
       dto.signature,
       {
-        nonce: user.plantingNonce,
+        nonce: userData.plantingNonce,
         treeSpecs: dto.treeSpecs,
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
@@ -61,7 +62,7 @@ export class PlantService {
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(dto.signer)
+      ethUtil.toChecksumAddress(userData.walletAddress)
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
@@ -89,29 +90,32 @@ export class PlantService {
 
   async deletePlant(recordId: string, user) {
     const plantData = await this.treePlantRepository.findOne({
-      _id: new Types.ObjectId(recordId),
+      _id: recordId,
     });
 
-    if (plantData.userId != user.userId)
+    if (plantData.userId !== user.userId)
       throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
 
-    if (plantData.status == PlantStatus.VERIFIED)
+    if (plantData.status !== PlantStatus.PENDING)
       throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
 
     const respone = await this.treePlantRepository.deleteOne({
-      _id: new Types.ObjectId(recordId),
+      _id: recordId,
     });
 
     return respone;
   }
 
-  async editPlant(recordId: string, user) {
+  async editPlant(recordId: string, data, user) {
     const plantData = await this.treePlantRepository.findOne({
       _id: new Types.ObjectId(recordId),
     });
 
     if (plantData.userId != user.userId)
       throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+
+    if (plantData.status !== PlantStatus.PENDING)
+      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
   }
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {

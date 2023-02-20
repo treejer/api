@@ -16,19 +16,51 @@ import { Request } from "express";
 import { PlantService } from "./plant.service";
 import { CreateTreePlantDto } from "./dtos/create-treePlant.dto";
 import { AuthGuard } from "@nestjs/passport";
+import { RolesGuard } from "../auth/strategies";
+import { HasRoles } from "../auth/decorators";
+import { Role } from "../common/constants";
 
-@UseGuards(AuthGuard("jwt"))
 @Controller("plant")
 export class PlantController {
   constructor(private plantService: PlantService) {}
 
-  @UseGuards(AuthGuard("jwt"))
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Post("regular/add")
+  plant(@Body() dto: CreateTreePlantDto, @Req() request: Request) {
+    const user = request.user;
+
+    return this.plantService.plant(dto, user);
+  }
+
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Patch("regular/edit/:id")
+  editPlant(@Param("id") id: string, @Req() request: Request, @Body() body) {
+    const user = request.user;
+    return this.plantService.editPlant(id, body, user);
+  }
+
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Delete("regular/delete/:id")
+  deletePlant(@Param("id") id: string, @Req() request: Request) {
+    const user = request.user;
+
+    return this.plantService.deletePlant(id, user);
+  }
+
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("assignedTree/add")
-  plantAssignedTree(@Body() body) {
+  plantAssignedTree(@Body() body, @Req() request: Request) {
+    const user = request.user;
+
     return this.plantService.plantAssignedTree(body);
   }
 
-  @UseGuards(AuthGuard("jwt"))
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Patch("assignedTree/edit/:id")
   editAssignedTree(
     @Param("id") id: string,
@@ -39,7 +71,8 @@ export class PlantController {
     return this.plantService.editUpdateTree(id, user);
   }
 
-  @UseGuards(AuthGuard("jwt"))
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Delete("assignedTree/delete/:id")
   deleteAssignedTree(@Param("id") id: string, @Req() request: Request) {
     const user = request.user;
@@ -47,33 +80,16 @@ export class PlantController {
     this.plantService.deleteAssignedTree(id, user);
   }
 
-  @Post("regular/add")
-  plant(@Body() dto: CreateTreePlantDto) {
-    return this.plantService.plant(dto);
-  }
-
-  @UseGuards(AuthGuard("jwt"))
-  @Patch("assignedTree/edit/:id")
-  editPlant(@Param("id") id: string, @Req() request: Request, @Body() body) {
-    const user = request.user;
-    return this.plantService.editPlant(id, user);
-  }
-
-  @UseGuards(AuthGuard("jwt"))
-  @Delete("assignedTree/delete/:id")
-  deletePlant(@Param("id") id: string, @Req() request: Request) {
-    const user = request.user;
-
-    return this.plantService.deletePlant(id, user);
-  }
-
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("update/add")
   updateTree(@Body() body) {
     return this.plantService.updateTree(body);
   }
 
-  @UseGuards(AuthGuard("jwt"))
-  @Patch("assignedTree/edit/:id")
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Patch("update/edit/:id")
   editUpdateTree(
     @Param("id") id: string,
     @Req() request: Request,
@@ -83,8 +99,9 @@ export class PlantController {
     return this.plantService.editUpdateTree(id, user);
   }
 
-  @UseGuards(AuthGuard("jwt"))
-  @Delete("assignedTree/delete/:id")
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Delete("update/delete/:id")
   deleteUpdateTree(@Param("id") id: string, @Req() request: Request) {
     const user = request.user;
 
