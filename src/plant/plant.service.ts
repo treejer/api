@@ -2,8 +2,8 @@ import {
   CreateAssignedTreePlantDto,
   CreateTreePlantDto,
   EditTreePlantDto,
-  UpdateTreeDto,
   EditTreeAssignPlantDto,
+  CreateUpdateTreeDto,
 } from "./dtos";
 import {
   BadRequestException,
@@ -48,8 +48,8 @@ export class PlantService {
   ) {}
 
   async plant(dto: CreateTreePlantDto, user): Promise<string> {
-    if (!user || !user.userId)
-      throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+    // if (!user || !user.userId)
+    //   throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
     let userData = await this.userService.findUserById(user.userId);
 
@@ -143,12 +143,12 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
-    return await this.editPlanData(recordId, {
+    return await this.editPlantData(recordId, {
       birthDate: data.birthDate,
       countryCode: data.countryCode,
-      nonce: userData.plantingNonce,
       signature: data.signature,
       treeSpecs: data.treeSpecs,
+      nonce: userData.plantingNonce,
     });
   }
 
@@ -157,7 +157,7 @@ export class PlantService {
     return createdData._id;
   }
 
-  async editPlanData(recordId: string, plantData: EditTreePlantDto) {
+  async editPlantData(recordId: string, plantData: EditTreePlantDto) {
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
       { plantData }
@@ -316,17 +316,17 @@ export class PlantService {
     );
   }
 
-  async updateTree(dto: UpdateTreeDto) {
+  async updateTree(dto: CreateUpdateTreeDto, user) {
     let tree = await getTreeData(dto.treeId);
 
-    let user = await this.userService.findUserByWallet(dto.signer);
+    let userData = await this.userService.findUserById(user.userId);
 
-    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+    // if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
     const signer: string = await getSigner(
       dto.signature,
       {
-        nonce: user.plantingNonce,
+        nonce: userData.plantingNonce,
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
@@ -335,7 +335,7 @@ export class PlantService {
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(dto.signer)
+      ethUtil.toChecksumAddress(userData.walletAddress)
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
@@ -344,7 +344,7 @@ export class PlantService {
 
     if (
       ethUtil.toChecksumAddress(tree.planter) !==
-      ethUtil.toChecksumAddress(dto.signer)
+      ethUtil.toChecksumAddress(signer)
     )
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
@@ -363,12 +363,13 @@ export class PlantService {
       throw new ForbiddenException(PlantErrorMessage.PENDING_UPDATE);
 
     await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
+      plantingNonce: userData.plantingNonce + 1,
     });
 
-    const updateData = await this.updateTreeRepository.create({ ...dto });
+    dto.signer = signer;
+    dto.nonce = userData.plantingNonce;
 
-    return updateData._id;
+    return await this.createUpdateData(dto);
   }
 
   async deleteUpdateTree(recordId: string, user) {
@@ -396,6 +397,13 @@ export class PlantService {
 
     if (updateData.userId != user.userId)
       throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+  }
+
+  async createUpdateData(updateData: CreateUpdateTreeDto): Promise<string> {
+    const createdData = await this.updateTreeRepository.create({
+      ...updateData,
+    });
+    return createdData._id;
   }
 
   async pendingListCount(filter): Promise<number> {

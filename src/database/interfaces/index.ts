@@ -1,1 +1,1 @@
-export * from "./IUpdateOne";
+export * from "./updateOne.interface";

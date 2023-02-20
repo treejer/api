@@ -19,12 +19,14 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "../auth/strategies";
 import { HasRoles } from "../auth/decorators";
 import { Role } from "../common/constants";
-<<<<<<< HEAD
-import { CreateAssignedTreePlantDto, EditTreeAssignPlantDto } from "./dtos";
-=======
-import { EditTreePlantDto } from "./dtos";
+
+import {
+  CreateAssignedTreePlantDto,
+  EditTreeAssignPlantDto,
+  EditTreePlantDto,
+} from "./dtos";
+
 import { JwtUserDto } from "src/auth/dtos";
->>>>>>> 22ccb2176353da17d0f8adde371774e1bdb7508e
 
 @Controller("plant")
 export class PlantController {
@@ -49,10 +51,6 @@ export class PlantController {
   ) {
     const user = request.user;
     return this.plantService.editPlant(id, body, user);
-  }
-  @Patch("regular/edit2/:id")
-  editPlant2(@Param("id") id: string, @Body() body: EditTreePlantDto) {
-    return this.plantService.editPlanData(id, body);
   }
 
   @HasRoles(Role.PLANTER)
@@ -80,9 +78,9 @@ export class PlantController {
   editAssignedTree(
     @Param("treeId") treeId: string,
     @Req() request: Request,
-    @Body() dto:EditTreeAssignPlantDto
+    @Body() dto: EditTreeAssignPlantDto
   ) {
-    return this.plantService.editAssignedTree(treeId,dto, request.user);
+    return this.plantService.editAssignedTree(treeId, dto, request.user);
   }
 
   @HasRoles(Role.PLANTER)
@@ -95,8 +93,9 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("update/add")
-  updateTree(@Body() body) {
-    return this.plantService.updateTree(body);
+  updateTree(@Req() request: Request, @Body() body) {
+    const user = request.user;
+    return this.plantService.updateTree(body, user);
   }
 
   @HasRoles(Role.PLANTER)

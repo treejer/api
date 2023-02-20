@@ -1,12 +1,6 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
-export class UpdateTreeDto {
-  @IsString()
-  signer: string;
-
-  @IsNumber()
-  nonce: number;
-
+export class CreateUpdateTreeDto {
   @IsNumber()
   treeId: number;
 
@@ -15,4 +9,12 @@ export class UpdateTreeDto {
 
   @IsString()
   signature: string;
+
+  @IsString()
+  @IsOptional()
+  signer?: string;
+
+  @IsNumber()
+  @IsOptional()
+  nonce?: number;
 }
