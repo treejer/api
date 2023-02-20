@@ -31,6 +31,7 @@ import {
   PlantErrorMessage,
   PlantStatus,
 } from "../common/constants";
+import { Types } from "mongoose";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -42,6 +43,81 @@ export class PlantService {
     private treePlantRepository: TreePlantRepository,
     private userService: UserService
   ) {}
+
+  async plant(dto: CreateTreePlantDto, user) {
+    if (!user || !user.userId)
+      throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+
+    let userData = await this.userService.findUserById(user.userId);
+
+    const signer = await getSigner(
+      dto.signature,
+      {
+        nonce: userData.plantingNonce,
+        treeSpecs: dto.treeSpecs,
+        birthDate: dto.birthDate,
+        countryCode: dto.countryCode,
+      },
+      2
+    );
+
+    if (
+      ethUtil.toChecksumAddress(signer) !==
+      ethUtil.toChecksumAddress(userData.walletAddress)
+    )
+      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+
+    const planterData = await getPlanterData(signer);
+
+    if (planterData.status != 1)
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
+
+    let count: number = await this.pendingListCount({
+      signer: dto.signer,
+      status: PlantStatus.PENDING,
+    });
+
+    if (planterData.plantedCount + count >= planterData.supplyCap)
+      throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
+
+    await this.userService.updateUserById(user._id, {
+      plantingNonce: user.plantingNonce + 1,
+    });
+
+    const plantData = await this.treePlantRepository.create({ ...dto });
+
+    return plantData._id;
+  }
+
+  async deletePlant(recordId: string, user) {
+    const plantData = await this.treePlantRepository.findOne({
+      _id: recordId,
+    });
+
+    if (plantData.userId !== user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+
+    if (plantData.status !== PlantStatus.PENDING)
+      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+
+    const respone = await this.treePlantRepository.deleteOne({
+      _id: recordId,
+    });
+
+    return respone;
+  }
+
+  async editPlant(recordId: string, data, user) {
+    const plantData = await this.treePlantRepository.findOne({
+      _id: new Types.ObjectId(recordId),
+    });
+
+    if (plantData.userId != user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+
+    if (plantData.status !== PlantStatus.PENDING)
+      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+  }
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
     let user = await this.userService.findUserByWallet(dto.signer);
@@ -115,53 +191,37 @@ export class PlantService {
 
     const assignedPlant = await this.assignedTreePlantRepository.create({
       ...dto,
+      userId: user._id,
     });
 
     return assignedPlant._id;
   }
 
-  async plant(dto: CreateTreePlantDto) {
-    let user = await this.userService.findUserByWallet(dto.signer);
-
-    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
-
-    const signer = await getSigner(
-      dto.signature,
-      {
-        nonce: user.plantingNonce,
-        treeSpecs: dto.treeSpecs,
-        birthDate: dto.birthDate,
-        countryCode: dto.countryCode,
-      },
-      2
-    );
-
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(dto.signer)
-    )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
-
-    const planterData = await getPlanterData(signer);
-
-    if (planterData.status != 1)
-      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
-
-    let count: number = await this.pendingListCount({
-      signer: dto.signer,
-      status: PlantStatus.PENDING,
+  async deleteAssignedTree(recordId: string, user) {
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
+      _id: new Types.ObjectId(recordId),
     });
 
-    if (planterData.plantedCount + count >= planterData.supplyCap)
-      throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
+    if (assignedPlantData.userId != user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
 
-    await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
+    if (assignedPlantData.status == PlantStatus.VERIFIED)
+      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+
+    const respone = await this.assignedTreePlantRepository.deleteOne({
+      _id: new Types.ObjectId(recordId),
     });
 
-    const plantData = await this.treePlantRepository.create({ ...dto });
+    return respone;
+  }
 
-    return plantData._id;
+  async editAssignedTree(recordId: string, user) {
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
+      _id: new Types.ObjectId(recordId),
+    });
+
+    if (assignedPlantData.userId != user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
   }
 
   async updateTree(dto: UpdateTreeDto) {
@@ -187,7 +247,7 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
-    if (tree.treeStatus < 3)
+    if (tree.treeStatus < 4)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     if (
@@ -217,6 +277,33 @@ export class PlantService {
     const updateData = await this.updateTreeRepository.create({ ...dto });
 
     return updateData._id;
+  }
+
+  async deleteUpdateTree(recordId: string, user) {
+    const updateData = await this.updateTreeRepository.findOne({
+      _id: new Types.ObjectId(recordId),
+    });
+
+    if (updateData.userId != user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+
+    if (updateData.status == PlantStatus.VERIFIED)
+      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+
+    const respone = await this.updateTreeRepository.deleteOne({
+      _id: new Types.ObjectId(recordId),
+    });
+
+    return respone;
+  }
+
+  async editUpdateTree(recordId: string, user) {
+    const updateData = await this.updateTreeRepository.findOne({
+      _id: new Types.ObjectId(recordId),
+    });
+
+    if (updateData.userId != user.userId)
+      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
   }
 
   async pendingListCount(filter): Promise<number> {

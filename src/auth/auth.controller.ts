@@ -70,6 +70,9 @@ export class AuthController {
   @Get("auth/me")
   getMe(@Req() req: Request) {
     // const user = req.user;
+
+    console.log("haha", req.headers);
+
     // return this.authService.getMe(user["userId"]);
   }
 }

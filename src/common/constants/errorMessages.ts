@@ -5,6 +5,7 @@ export const AuthErrorMessages = {
   INVALID_SIGNER: "invalid signer",
   INVALID_CREDENTIALS: "invalid credentials",
   CANNOT_GET: "Cannot GET ",
+  INVALID_ACCESS: "invalid access",
 };
 
 export const StatusErrorMessage = {
@@ -20,4 +21,5 @@ export const PlantErrorMessage = {
   PENDING_UPDATE: "you have pending update",
   PENDING_ASSIGNED_PLANT: "you have already planted this tree",
   VERIFIED_ASSIGNED_PLANT: "plant is verified",
+  INVLID_STATUS: "invalid status",
 };
