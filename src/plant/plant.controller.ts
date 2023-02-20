@@ -19,7 +19,12 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "../auth/strategies";
 import { HasRoles } from "../auth/decorators";
 import { Role } from "../common/constants";
+<<<<<<< HEAD
 import { CreateAssignedTreePlantDto } from "./dtos";
+=======
+import { EditTreePlantDto } from "./dtos";
+import { JwtUserDto } from "src/auth/dtos";
+>>>>>>> 22ccb2176353da17d0f8adde371774e1bdb7508e
 
 @Controller("plant")
 export class PlantController {
@@ -28,7 +33,7 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("regular/add")
-  plant(@Body() dto: CreateTreePlantDto, @Req() request: Request) {
+  plant(@Req() request: Request, @Body() dto: CreateTreePlantDto) {
     const user = request.user;
 
     return this.plantService.plant(dto, user);
@@ -37,9 +42,17 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Patch("regular/edit/:id")
-  editPlant(@Param("id") id: string, @Req() request: Request, @Body() body) {
+  editPlant(
+    @Param("id") id: string,
+    @Req() request: Request,
+    @Body() body: EditTreePlantDto
+  ) {
     const user = request.user;
     return this.plantService.editPlant(id, body, user);
+  }
+  @Patch("regular/edit2/:id")
+  editPlant2(@Param("id") id: string, @Body() body: EditTreePlantDto) {
+    return this.plantService.editPlanData(id, body);
   }
 
   @HasRoles(Role.PLANTER)

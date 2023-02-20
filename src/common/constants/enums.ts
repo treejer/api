@@ -2,6 +2,7 @@ export enum PlantStatus {
   PENDING = 1,
   VERIFIED = 2,
   REJECTED = 3,
+  DELETE = 4,
 }
 export enum CollectionNames {
   USER = "users",
