@@ -19,12 +19,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "../auth/strategies";
 import { HasRoles } from "../auth/decorators";
 import { Role } from "../common/constants";
-<<<<<<< HEAD
-import { CreateAssignedTreePlantDto } from "./dtos";
-=======
-import { EditTreePlantDto } from "./dtos";
-import { JwtUserDto } from "src/auth/dtos";
->>>>>>> 22ccb2176353da17d0f8adde371774e1bdb7508e
+import { CreateAssignedTreePlantDto, EditTreePlantDto } from "./dtos";
 
 @Controller("plant")
 export class PlantController {
