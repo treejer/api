@@ -8,6 +8,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 
 import { AssignedTreePlant, TreePlant } from "./schemas";
@@ -65,14 +66,17 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
-    let plantData = await this.assignedTreePlantRepository.findOne({
-      treeId: dto.treeId,
-    });
+    let plantData = await this.assignedTreePlantRepository.findOne(
+      {
+        treeId: dto.treeId,
+      },
+      {
+        projection: { _id: 1 },
+      }
+    );
 
     if (plantData && plantData.status == PlantStatus.PENDING)
-      throw new ForbiddenException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
-    if (plantData && plantData.status == PlantStatus.VERIFIED)
-      throw new ForbiddenException(PlantErrorMessage.VERIFIED_ASSIGNED_PLANT);
+      throw new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
 
     let tree = await getTreeData(dto.treeId);
 
@@ -104,15 +108,6 @@ export class PlantService {
 
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
-
-    if (plantData) {
-      const updatedAssigndPlantData =
-        await this.assignedTreePlantRepository.findOneAndUpdate(
-          { _id: plantData._id },
-          { ...dto }
-        );
-      return updatedAssigndPlantData._id;
-    }
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,
