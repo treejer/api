@@ -1,6 +1,7 @@
 import {
   CreateAssignedTreePlantDto,
   CreateTreePlantDto,
+  EditTreePlantDto,
   UpdateTreeDto,
 } from "./dtos";
 import {
@@ -31,6 +32,7 @@ import {
   PlantStatus,
 } from "../common/constants";
 import { Types } from "mongoose";
+import { JwtUserDto } from "../auth/dtos";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -43,7 +45,7 @@ export class PlantService {
     private userService: UserService
   ) {}
 
-  async plant(dto: CreateTreePlantDto, user) {
+  async plant(dto: CreateTreePlantDto, user): Promise<string> {
     if (!user || !user.userId)
       throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
@@ -79,16 +81,17 @@ export class PlantService {
     if (planterData.plantedCount + count >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
+    await this.userService.updateUserById(userData._id, {
+      plantingNonce: userData.plantingNonce + 1,
     });
 
-    const plantData = await this.treePlantRepository.create({ ...dto });
+    dto.signer = signer;
+    dto.nonce = userData.plantingNonce;
 
-    return plantData._id;
+    return await this.createPlantData(dto);
   }
 
-  async deletePlant(recordId: string, user) {
+  async deletePlant(recordId: string, user): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne({
       _id: recordId,
     });
@@ -106,7 +109,11 @@ export class PlantService {
     return respone;
   }
 
-  async editPlant(recordId: string, data, user) {
+  async editPlant(
+    recordId: string,
+    data: EditTreePlantDto,
+    user
+  ): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne({
       _id: new Types.ObjectId(recordId),
     });
@@ -116,6 +123,47 @@ export class PlantService {
 
     if (plantData.status !== PlantStatus.PENDING)
       throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+
+    let userData = await this.userService.findUserById(user.userId);
+
+    const signer = await getSigner(
+      data.signature,
+      {
+        nonce: userData.plantingNonce,
+        treeSpecs: data.treeSpecs,
+        birthDate: data.birthDate,
+        countryCode: data.countryCode,
+      },
+      2
+    );
+
+    if (
+      ethUtil.toChecksumAddress(signer) !==
+      ethUtil.toChecksumAddress(userData.walletAddress)
+    )
+      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+
+    return await this.editPlanData(recordId, {
+      birthDate: data.birthDate,
+      countryCode: data.countryCode,
+      nonce: userData.plantingNonce,
+      signature: data.signature,
+      treeSpecs: data.treeSpecs,
+    });
+  }
+
+  async createPlantData(plantData: CreateTreePlantDto): Promise<string> {
+    const createdData = await this.treePlantRepository.create({ ...plantData });
+    return createdData._id;
+  }
+
+  async editPlanData(recordId: string, plantData: EditTreePlantDto) {
+    const result = await this.treePlantRepository.updateOne(
+      { _id: recordId },
+      { ...plantData }
+    );
+
+    return result.acknowledged;
   }
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto) {

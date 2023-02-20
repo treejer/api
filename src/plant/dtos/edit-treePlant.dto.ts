@@ -1,6 +1,6 @@
 import { IsNumber, IsOptional, IsString } from "class-validator";
 
-export class CreateTreePlantDto {
+export class EditTreePlantDto {
   @IsString()
   treeSpecs: string;
 
@@ -13,11 +13,7 @@ export class CreateTreePlantDto {
   @IsString()
   signature: string;
 
-  @IsOptional()
   @IsNumber()
-  nonce?: number;
-
   @IsOptional()
-  @IsString()
-  signer?: string;
+  nonce?: number;
 }

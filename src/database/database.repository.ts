@@ -1,4 +1,5 @@
 import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
+import { IUpdateOne } from "./interface";
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
 
@@ -51,6 +52,16 @@ export abstract class EntityRepository<T extends Document> {
         new: true,
       }
     );
+  }
+
+  async updateOne(
+    entityFilterQuery: FilterQuery<T>,
+    entityData: UpdateQuery<unknown>
+  ): Promise<IUpdateOne> {
+    return await this.entityModel.updateOne(entityFilterQuery, {
+      ...entityData,
+      updatedAt: new Date(),
+    });
   }
 
   async deleteMany(entityFilterQuery: FilterQuery<T>): Promise<boolean> {

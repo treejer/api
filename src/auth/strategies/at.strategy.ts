@@ -1,7 +1,6 @@
 import { Injectable, Req } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { Request } from "express";
 import { ConfigService } from "@nestjs/config";
 
 var get_cookies = function (request) {
