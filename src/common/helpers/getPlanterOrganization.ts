@@ -5,7 +5,9 @@ const Web3 = require("web3");
 
 const web3 = new Web3();
 
-export async function getPlanterOrganization(planterAddress: string) {
+export async function getPlanterOrganization(
+  planterAddress: string
+): Promise<string> {
   let org;
 
   try {

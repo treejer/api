@@ -1,11 +1,14 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { IPlanterData } from "../interfaces/planterData.interface";
 
 const PlanterV2 = require("./../../../abi/Planter.json");
 const Web3 = require("web3");
 
 const web3 = new Web3();
 
-export async function getPlanterData(planterAddress: string) {
+export async function getPlanterData(
+  planterAddress: string
+): Promise<IPlanterData> {
   let planter;
 
   try {

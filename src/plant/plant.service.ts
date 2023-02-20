@@ -74,7 +74,7 @@ export class PlantService {
     if (planterData.status != 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
-    let count: number = await this.pendingListCount({
+    let count = await this.pendingListCount({
       signer: dto.signer,
       status: PlantStatus.PENDING,
     });
@@ -103,11 +103,9 @@ export class PlantService {
     if (plantData.status !== PlantStatus.PENDING)
       throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
 
-    const respone = await this.treePlantRepository.deleteOne({
+    return await this.treePlantRepository.deleteOne({
       _id: recordId,
     });
-
-    return respone;
   }
 
   async editPlant(
@@ -116,7 +114,7 @@ export class PlantService {
     user
   ): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne({
-      _id: new Types.ObjectId(recordId),
+      _id: recordId,
     });
 
     if (plantData.userId != user.userId)
@@ -161,7 +159,7 @@ export class PlantService {
   async editPlanData(recordId: string, plantData: EditTreePlantDto) {
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...plantData }
+      { plantData }
     );
 
     return result.acknowledged;

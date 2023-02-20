@@ -1,5 +1,5 @@
 import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
-import { IUpdateOne } from "./interface";
+import { IUpdateOne } from "./interfaces";
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
 
