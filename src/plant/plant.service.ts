@@ -3,6 +3,7 @@ import {
   CreateTreePlantDto,
   EditTreePlantDto,
   UpdateTreeDto,
+  EditTreeAssignPlantDto,
 } from "./dtos";
 import {
   BadRequestException,
@@ -166,9 +167,6 @@ export class PlantService {
   }
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto, user) {
-    // if (!user || !user.userId)
-    //   throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
-
     const signer = await getSigner(
       dto.signature,
       {
@@ -230,22 +228,76 @@ export class PlantService {
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
-    });
-
     const assignedPlant = await this.assignedTreePlantRepository.create({
       ...dto,
+      nonce: user.plantingNonce,
       userId: user._id,
+    });
+
+    await this.userService.updateUserById(user._id, {
+      plantingNonce: user.plantingNonce + 1,
     });
 
     return assignedPlant._id;
   }
 
-  async deleteAssignedTree(recordId: string, user) {
+  async editAssignedTree(treeId: string, data: EditTreeAssignPlantDto, user) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne({
-      _id: new Types.ObjectId(recordId),
+      treeId,
     });
+
+    if (!assignedPlantData)
+      throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
+
+    if (assignedPlantData.userId != user.userId)
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
+
+    if (assignedPlantData.status != PlantStatus.PENDING)
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
+
+    let userData = await this.userService.findUserById(user.userId);
+
+    const signer = await getSigner(
+      data.signature,
+      {
+        nonce: user.plantingNonce,
+        treeId: treeId,
+        treeSpecs: data.treeSpecs,
+        birthDate: data.birthDate,
+        countryCode: data.countryCode,
+      },
+      1
+    );
+
+    if (
+      ethUtil.toChecksumAddress(signer) !==
+      ethUtil.toChecksumAddress(userData.walletAddress)
+    )
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
+
+    await this.assignedTreePlantRepository.updateOne(
+      {
+        treeId,
+        status: PlantStatus.PENDING,
+      },
+      {
+        ...data,
+        nonce: userData.plantingNonce,
+      }
+    );
+
+    await this.userService.updateUserById(user._id, {
+      plantingNonce: user.plantingNonce + 1,
+    });
+  }
+
+  async deleteAssignedTree(treeId: string, user) {
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
+      treeId,
+    });
+
+    if (!assignedPlantData)
+      throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
 
     if (assignedPlantData.userId !== user.userId)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
@@ -255,21 +307,13 @@ export class PlantService {
 
     await this.assignedTreePlantRepository.softDeleteOne(
       {
-        _id: new Types.ObjectId(recordId),
+        treeId,
+        status: PlantStatus.PENDING,
       },
       {
         status: PlantStatus.DELETE,
       }
     );
-  }
-
-  async editAssignedTree(recordId: string, user) {
-    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
-      _id: new Types.ObjectId(recordId),
-    });
-
-    if (assignedPlantData.userId != user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
   }
 
   async updateTree(dto: UpdateTreeDto) {

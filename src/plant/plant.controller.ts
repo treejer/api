@@ -20,7 +20,7 @@ import { RolesGuard } from "../auth/strategies";
 import { HasRoles } from "../auth/decorators";
 import { Role } from "../common/constants";
 <<<<<<< HEAD
-import { CreateAssignedTreePlantDto } from "./dtos";
+import { CreateAssignedTreePlantDto, EditTreeAssignPlantDto } from "./dtos";
 =======
 import { EditTreePlantDto } from "./dtos";
 import { JwtUserDto } from "src/auth/dtos";
@@ -76,23 +76,20 @@ export class PlantController {
 
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Patch("assignedTree/edit/:id")
+  @Patch("assignedTree/edit/:treeId")
   editAssignedTree(
-    @Param("id") id: string,
+    @Param("treeId") treeId: string,
     @Req() request: Request,
-    @Body() body
+    @Body() dto:EditTreeAssignPlantDto
   ) {
-    const user = request.user;
-    return this.plantService.editUpdateTree(id, user);
+    return this.plantService.editAssignedTree(treeId,dto, request.user);
   }
 
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Delete("assignedTree/delete/:id")
-  deleteAssignedTree(@Param("id") id: string, @Req() request: Request) {
-    const user = request.user;
-
-    this.plantService.deleteAssignedTree(id, user);
+  @Delete("assignedTree/delete/:treeId")
+  deleteAssignedTree(@Param("treeId") treeId: string, @Req() request: Request) {
+    this.plantService.deleteAssignedTree(treeId, request.user);
   }
 
   @HasRoles(Role.PLANTER)

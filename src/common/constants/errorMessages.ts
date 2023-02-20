@@ -22,4 +22,5 @@ export const PlantErrorMessage = {
   PENDING_ASSIGNED_PLANT: "you have already planted this tree",
   VERIFIED_ASSIGNED_PLANT: "plant is verified",
   INVLID_STATUS: "invalid status",
+  INVALID_TREE_ID: "invalid treeId",
 };
