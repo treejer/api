@@ -119,10 +119,9 @@ export class PlantService {
       throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
   }
 
-  async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
-    let user = await this.userService.findUserByWallet(dto.signer);
-
-    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+  async plantAssignedTree(dto: CreateAssignedTreePlantDto, user) {
+    // if (!user || !user.userId)
+    //   throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
     const signer = await getSigner(
       dto.signature,
@@ -202,17 +201,18 @@ export class PlantService {
       _id: new Types.ObjectId(recordId),
     });
 
-    if (assignedPlantData.userId != user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+    if (assignedPlantData.userId !== user.userId)
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
-    if (assignedPlantData.status == PlantStatus.VERIFIED)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+    if (assignedPlantData.status !== PlantStatus.PENDING)
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const respone = await this.assignedTreePlantRepository.deleteOne({
-      _id: new Types.ObjectId(recordId),
-    });
-
-    return respone;
+    await this.assignedTreePlantRepository.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(recordId),
+      },
+      {}
+    );
   }
 
   async editAssignedTree(recordId: string, user) {

@@ -19,6 +19,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "../auth/strategies";
 import { HasRoles } from "../auth/decorators";
 import { Role } from "../common/constants";
+import { CreateAssignedTreePlantDto } from "./dtos";
 
 @Controller("plant")
 export class PlantController {
@@ -53,10 +54,11 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("assignedTree/add")
-  plantAssignedTree(@Body() body, @Req() request: Request) {
-    const user = request.user;
-
-    return this.plantService.plantAssignedTree(body);
+  plantAssignedTree(
+    @Body() dto: CreateAssignedTreePlantDto,
+    @Req() request: Request
+  ) {
+    return this.plantService.plantAssignedTree(dto, request.user);
   }
 
   @HasRoles(Role.PLANTER)
