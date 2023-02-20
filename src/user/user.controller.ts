@@ -5,8 +5,6 @@ import { UserService } from "./user.service";
 @Controller("users")
 export class UserController {
   constructor(private userService: UserService) {}
-  @Get("me")
-  GetMe(@Req() req: Request) {}
 
   @Get()
   getUserList() {
@@ -18,12 +16,12 @@ export class UserController {
     return this.userService.getSortedUserByNonce();
   }
 
-  @Get()
+  @Get("/profile")
   getUserByWalletAddressWithQueryParam(@Query("wallet") wallet: string) {
     return this.userService.findUserByWallet(wallet);
   }
 
-  @Get(":wallet")
+  @Get("/profile/:wallet")
   getUserByWalletAddressWithRoute(@Param("wallet") wallet: string) {
     return this.userService.findUserByWallet(wallet);
   }
