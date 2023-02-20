@@ -9,12 +9,4 @@ export class CreateUpdateTreeDto {
 
   @IsString()
   signature: string;
-
-  @IsString()
-  @IsOptional()
-  signer?: string;
-
-  @IsNumber()
-  @IsOptional()
-  nonce?: number;
 }

@@ -23,4 +23,6 @@ export const PlantErrorMessage = {
   VERIFIED_ASSIGNED_PLANT: "plant is verified",
   INVLID_STATUS: "invalid status",
   INVALID_TREE_ID: "invalid treeId",
+  PLANT_DATA_NOT_EXIST: "plant data not exist",
+  UPDATE_DATA_NOT_EXIST: "update data not exist",
 };

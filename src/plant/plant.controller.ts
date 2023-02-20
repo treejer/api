@@ -107,7 +107,7 @@ export class PlantController {
     @Body() body
   ) {
     const user = request.user;
-    return this.plantService.editUpdateTree(id, user);
+    return this.plantService.editUpdateTree(id, body, user);
   }
 
   @HasRoles(Role.PLANTER)

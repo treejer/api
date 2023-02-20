@@ -12,8 +12,4 @@ export class EditTreePlantDto {
 
   @IsString()
   signature: string;
-
-  @IsNumber()
-  @IsOptional()
-  nonce?: number;
 }

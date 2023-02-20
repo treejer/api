@@ -12,12 +12,4 @@ export class CreateTreePlantDto {
 
   @IsString()
   signature: string;
-
-  @IsOptional()
-  @IsNumber()
-  nonce?: number;
-
-  @IsOptional()
-  @IsString()
-  signer?: string;
 }
