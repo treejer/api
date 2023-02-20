@@ -31,7 +31,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async findOne(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>
+    projection?: Record<string, object>
   ): Promise<T | null> {
     return await this.entityModel.findOne(entityFilterQuery, { ...projection });
   }
@@ -61,6 +61,17 @@ export abstract class EntityRepository<T extends Document> {
     return await this.entityModel.updateOne(entityFilterQuery, {
       ...entityData,
       updatedAt: new Date(),
+    });
+  }
+
+  async softDeleteOne(
+    entityFilterQuery: FilterQuery<T>,
+    entityData: UpdateQuery<unknown>
+  ): Promise<IUpdateOne> {
+    return await this.entityModel.updateOne(entityFilterQuery, {
+      ...entityData,
+      updatedAt: new Date(),
+      deletedAt: new Date(),
     });
   }
 

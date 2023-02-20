@@ -9,6 +9,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 
 import { AssignedTreePlant, TreePlant } from "./schemas";
@@ -164,10 +165,9 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async plantAssignedTree(dto: CreateAssignedTreePlantDto) {
-    let user = await this.userService.findUserByWallet(dto.signer);
-
-    if (!user) throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
+  async plantAssignedTree(dto: CreateAssignedTreePlantDto, user) {
+    // if (!user || !user.userId)
+    //   throw new ForbiddenException(AuthErrorMessages.USER_NOT_EXIST);
 
     const signer = await getSigner(
       dto.signature,
@@ -187,14 +187,17 @@ export class PlantService {
     )
       throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
 
-    let plantData = await this.assignedTreePlantRepository.findOne({
-      treeId: dto.treeId,
-    });
+    let plantData = await this.assignedTreePlantRepository.findOne(
+      {
+        treeId: dto.treeId,
+      },
+      {
+        projection: { _id: 1 },
+      }
+    );
 
     if (plantData && plantData.status == PlantStatus.PENDING)
-      throw new ForbiddenException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
-    if (plantData && plantData.status == PlantStatus.VERIFIED)
-      throw new ForbiddenException(PlantErrorMessage.VERIFIED_ASSIGNED_PLANT);
+      throw new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
 
     let tree = await getTreeData(dto.treeId);
 
@@ -227,15 +230,6 @@ export class PlantService {
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    if (plantData) {
-      const updatedAssigndPlantData =
-        await this.assignedTreePlantRepository.findOneAndUpdate(
-          { _id: plantData._id },
-          { ...dto }
-        );
-      return updatedAssigndPlantData._id;
-    }
-
     await this.userService.updateUserById(user._id, {
       plantingNonce: user.plantingNonce + 1,
     });
@@ -253,17 +247,20 @@ export class PlantService {
       _id: new Types.ObjectId(recordId),
     });
 
-    if (assignedPlantData.userId != user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+    if (assignedPlantData.userId !== user.userId)
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
-    if (assignedPlantData.status == PlantStatus.VERIFIED)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+    if (assignedPlantData.status !== PlantStatus.PENDING)
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const respone = await this.assignedTreePlantRepository.deleteOne({
-      _id: new Types.ObjectId(recordId),
-    });
-
-    return respone;
+    await this.assignedTreePlantRepository.softDeleteOne(
+      {
+        _id: new Types.ObjectId(recordId),
+      },
+      {
+        status: PlantStatus.DELETE,
+      }
+    );
   }
 
   async editAssignedTree(recordId: string, user) {
