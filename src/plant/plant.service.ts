@@ -142,7 +142,7 @@ export class PlantService {
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
-      projection: { plantingNonce: 1 },
+      plantingNonce: 1,
     });
 
     const signer = await getSigner(
@@ -175,7 +175,9 @@ export class PlantService {
   }
 
   async plantAssignedTree(dto: CreateAssignedTreePlantDto, user: JwtUserDto) {
-    let userData = await this.userService.findUserByWallet(user.walletAddress,  { plantingNonce: 1 });
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      plantingNonce: 1,
+    });
 
     const signer = await getSigner(
       dto.signature,
@@ -201,7 +203,7 @@ export class PlantService {
         status: PlantStatus.PENDING,
       },
       {
-         _id: 1 
+        _id: 1,
       }
     );
 
@@ -257,16 +259,15 @@ export class PlantService {
     data: EditTreeAssignPlantDto,
     user: JwtUserDto
   ) {
-
-
-    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
-      recordId,
-    },{status:1,signer:1,_id:0});
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne(
+      {
+        recordId,
+      },
+      { status: 1, signer: 1, _id: 0 }
+    );
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
-    
-
 
     if (assignedPlantData.signer != user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
@@ -275,7 +276,7 @@ export class PlantService {
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
- plantingNonce: 1 
+      plantingNonce: 1,
     });
 
     const signer = await getSigner(
@@ -298,7 +299,7 @@ export class PlantService {
 
     await this.assignedTreePlantRepository.updateOne(
       {
-       recordId
+        recordId,
       },
       {
         ...data,
@@ -312,10 +313,12 @@ export class PlantService {
   }
 
   async deleteAssignedTree(recordId: string, user: JwtUserDto) {
-
-    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
-      recordId,
-    },{status:1,signer:1,_id:0});
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne(
+      {
+        recordId,
+      },
+      { status: 1, signer: 1, _id: 0 }
+    );
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
@@ -328,7 +331,7 @@ export class PlantService {
 
     await this.assignedTreePlantRepository.softDeleteOne(
       {
-        recordId
+        recordId,
       },
       {
         status: PlantStatus.DELETE,
