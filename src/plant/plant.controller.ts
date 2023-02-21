@@ -25,7 +25,7 @@ import {
   TreePlantDto,
 } from "./dtos";
 import { JwtUserDto } from "src/auth/dtos";
-import { User } from "src/user/decerators";
+import { User } from "src/user/decorators";
 
 @Controller("plant")
 export class PlantController {
