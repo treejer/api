@@ -41,11 +41,13 @@ export class PlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   async plant(dto: TreePlantDto, user): Promise<string> {
-    let userData = await this.userService.findUserById(user.userId);
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      projection: { plantingNonce: 1 },
+    });
 
     const signer = await getSigner(
       dto.signature,
@@ -55,12 +57,12 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2,
+      2
     );
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(userData.walletAddress)
+      ethUtil.toChecksumAddress(user.walletAddress)
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
@@ -85,20 +87,22 @@ export class PlantService {
       ...dto,
       signer,
       nonce: userData.plantingNonce,
-      userId: userData._id,
     });
     return createdData._id;
   }
 
   async deletePlant(recordId: string, user): Promise<boolean> {
-    const plantData = await this.treePlantRepository.findOne({
-      _id: recordId,
-    });
+    const plantData = await this.treePlantRepository.findOne(
+      {
+        _id: recordId,
+      },
+      { projection: { signer: 1, status: 1 } }
+    );
 
     if (!plantData)
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
 
-    if (plantData.userId !== user.userId)
+    if (plantData.signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (plantData.status !== PlantStatus.PENDING)
@@ -110,27 +114,32 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      },
+      }
     );
 
     return result.acknowledged;
   }
 
   async editPlant(recordId: string, dto: TreePlantDto, user): Promise<boolean> {
-    const plantData = await this.treePlantRepository.findOne({
-      _id: recordId,
-    });
+    const plantData = await this.treePlantRepository.findOne(
+      {
+        _id: recordId,
+      },
+      { projection: { signer: 1, status: 1 } }
+    );
 
     if (!plantData)
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
 
-    if (plantData.userId != user.userId)
+    if (plantData.signer != user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (plantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    let userData = await this.userService.findUserById(user.userId);
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      projection: { plantingNonce: 1 },
+    });
 
     const signer = await getSigner(
       dto.signature,
@@ -140,18 +149,22 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2,
+      2
     );
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(userData.walletAddress)
+      ethUtil.toChecksumAddress(user.walletAddress)
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
+    await this.userService.updateUserById(userData._id, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
+
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce },
+      { ...dto, nonce: userData.plantingNonce }
     );
 
     return result.acknowledged;
@@ -167,7 +180,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1,
+      1
     );
 
     if (
@@ -182,7 +195,7 @@ export class PlantService {
       },
       {
         projection: { _id: 1 },
-      },
+      }
     );
 
     if (plantData && plantData.status == PlantStatus.PENDING)
@@ -257,7 +270,7 @@ export class PlantService {
         birthDate: data.birthDate,
         countryCode: data.countryCode,
       },
-      1,
+      1
     );
 
     if (
@@ -274,7 +287,7 @@ export class PlantService {
       {
         ...data,
         nonce: userData.plantingNonce,
-      },
+      }
     );
 
     await this.userService.updateUserById(user._id, {
@@ -303,12 +316,14 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      },
+      }
     );
   }
 
   async updateTree(dto: CreateUpdateTreeDto, user): Promise<string> {
-    let userData = await this.userService.findUserById(user.userId);
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      projection: { plantingNonce: 1 },
+    });
 
     const signer = await getSigner(
       dto.signature,
@@ -317,12 +332,12 @@ export class PlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3,
+      3
     );
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(userData.walletAddress)
+      ethUtil.toChecksumAddress(user.walletAddress)
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
@@ -351,7 +366,7 @@ export class PlantService {
     if (pendingUpdates)
       throw new ConflictException(PlantErrorMessage.PENDING_UPDATE);
 
-    await this.userService.updateUserById(user._id, {
+    await this.userService.updateUserById(userData._id, {
       plantingNonce: userData.plantingNonce + 1,
     });
 
@@ -359,7 +374,6 @@ export class PlantService {
       ...dto,
       signer,
       nonce: userData.plantingNonce,
-      userId: userData._id,
     });
 
     return createdData._id;
@@ -373,7 +387,7 @@ export class PlantService {
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
 
-    if (updateData.userId !== user.userId)
+    if (updateData.signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (updateData.status != PlantStatus.PENDING)
@@ -385,7 +399,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      },
+      }
     );
 
     return result.acknowledged;
@@ -394,7 +408,7 @@ export class PlantService {
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
-    user,
+    user
   ): Promise<boolean> {
     const updateData = await this.updateTreeRepository.findOne({
       _id: recordId,
@@ -403,7 +417,7 @@ export class PlantService {
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
 
-    if (updateData.userId != user.userId)
+    if (updateData.signer != user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (updateData.status != PlantStatus.PENDING)
@@ -418,7 +432,7 @@ export class PlantService {
         treeId: updateData.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3,
+      3
     );
 
     if (
@@ -429,7 +443,7 @@ export class PlantService {
 
     const result = await this.updateTreeRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce },
+      { ...dto, nonce: userData.plantingNonce }
     );
 
     return result.acknowledged;

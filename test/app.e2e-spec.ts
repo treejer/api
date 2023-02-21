@@ -43,7 +43,7 @@ describe("App e2e", () => {
       ganache.provider({
         database: { dbPath: "./test/ganache-db" },
         wallet: { deterministic: true },
-      }),
+      })
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -56,7 +56,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      }),
+      })
     );
 
     await app.init();
@@ -148,7 +148,7 @@ describe("App e2e", () => {
     expect(getNonceResult1.body.message).toBe("invalid wallet");
 
     let getNonceResult2 = await request(httpServer).get(
-      `/auth/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`,
+      `/auth/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`
     );
 
     expect(getNonceResult2.statusCode).toBe(400);
@@ -158,7 +158,7 @@ describe("App e2e", () => {
     expect(getNonceResult2.body.message).toBe("invalid wallet");
 
     let getNonceResult3 = await request(httpServer).get(
-      `/auth/nonce/${"not wallet address"}`,
+      `/auth/nonce/${"not wallet address"}`
     );
 
     expect(getNonceResult3.statusCode).toBe(400);
@@ -212,7 +212,7 @@ describe("App e2e", () => {
     const invalidMessageToSign: string = "invalid message to sign";
 
     let getNonceResultForAccount1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`,
+      `/auth/nonce/${account1.address}`
     );
 
     //fail because signature is not string
@@ -271,11 +271,11 @@ describe("App e2e", () => {
 
     // other user sign with another user's nonce
     let getNonceResultForAccount2 = await request(httpServer).get(
-      `/auth/nonce/${account2.address}`,
+      `/auth/nonce/${account2.address}`
     );
 
     let invalidSignatureResult2 = await account2.sign(
-      getNonceResultForAccount1.body.message,
+      getNonceResultForAccount1.body.message
     );
 
     let loginResult6 = await request(httpServer)
@@ -289,11 +289,11 @@ describe("App e2e", () => {
     expect(loginResult6.body.message).toBe("invalid credentials");
     //---------------- sign with correct user and every thing work correct
     const signatureResult1 = await account1.sign(
-      getNonceResultForAccount1.body.message,
+      getNonceResultForAccount1.body.message
     );
 
     const signatureResult2 = await account2.sign(
-      getNonceResultForAccount2.body.message,
+      getNonceResultForAccount2.body.message
     );
 
     let loginResult7 = await request(httpServer)
@@ -312,7 +312,7 @@ describe("App e2e", () => {
     const account1 = await web3.eth.accounts.create();
 
     const getNonceResult1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`,
+      `/auth/nonce/${account1.address}`
     );
 
     let signResult1 = account1.sign(getNonceResult1.body.message);

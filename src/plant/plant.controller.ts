@@ -52,13 +52,13 @@ export class PlantController {
     return this.plantService.editPlant(id, body, user);
   }
 
-  @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @HasRoles(Role.PLANTER)
+  // @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Delete("regular/delete/:id")
   deletePlant(@Param("id") id: string, @Req() request: Request) {
     const user = request.user;
 
-    return this.plantService.deletePlant(id, user);
+    return this.plantService.deletePlant(id, { user: 11111 });
   }
 
   @HasRoles(Role.PLANTER)

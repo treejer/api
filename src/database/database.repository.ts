@@ -31,7 +31,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async findOne(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, object>
+    projection?: Record<string, number>
   ): Promise<T | null> {
     return await this.entityModel.findOne(entityFilterQuery, { ...projection });
   }
