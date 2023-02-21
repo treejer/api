@@ -46,7 +46,7 @@ export class PlantService {
 
   async plant(dto: TreePlantDto, user): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
-      projection: { plantingNonce: 1 },
+      plantingNonce: 1,
     });
 
     const signer = await getSigner(
@@ -96,7 +96,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { projection: { signer: 1, status: 1 } }
+      { signer: 1, status: 1 }
     );
 
     if (!plantData)
@@ -125,7 +125,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { projection: { signer: 1, status: 1 } }
+      { signer: 1, status: 1 }
     );
 
     if (!plantData)
@@ -322,7 +322,7 @@ export class PlantService {
 
   async updateTree(dto: CreateUpdateTreeDto, user): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
-      projection: { plantingNonce: 1 },
+      plantingNonce: 1,
     });
 
     const signer = await getSigner(
