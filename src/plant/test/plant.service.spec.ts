@@ -73,8 +73,8 @@ describe("App e2e", () => {
   });
 
   afterAll(async () => {
-    // await mongoConnection.dropDatabase();
-    // await mongoConnection.close();
+    await mongoConnection.dropDatabase();
+    await mongoConnection.close();
     await app.close();
   });
 
@@ -89,6 +89,17 @@ describe("App e2e", () => {
   it.only("test plantTree", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+    console.log("res", res);
+
+    let signResult = account.sign(res.body.message);
+    return;
+    // let loginResult = await request(httpServer)
+    //   .post(`/auth/signinWithWallet/${account.address}`)
+    //   .send({ signature: signResult.signature });
 
     const nonce = 1;
     const nonce2 = 2;
@@ -146,65 +157,65 @@ describe("App e2e", () => {
       latitude: 1,
     });
 
-    // //////////test
-    // let resultWithNotExistUser = await request(httpServer)
-    //   .post(`/plant/regular/add`)
-    //   .send({
-    //     signer: account2.address,
-    //     nonce: nonce,
-    //     treeSpecs: treeSpecs,
-    //     birthDate: birthDate,
-    //     countryCode: countryCode,
-    //     signature: sign,
-    //   });
+    //////////test
+    let resultWithNotExistUser = await request(httpServer)
+      .post(`/plant/regular/add`)
+      .send({
+        signer: account2.address,
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+        signature: sign,
+      });
 
-    // expect(resultWithNotExistUser.body).toMatchObject({
-    //   statusCode: 403,
-    //   message: AuthErrorMessages.USER_NOT_EXIST,
-    // });
+    expect(resultWithNotExistUser.body).toMatchObject({
+      statusCode: 403,
+      message: AuthErrorMessages.USER_NOT_EXIST,
+    });
 
-    // let resultWithInvalidSigner = await request(httpServer)
-    //   .post(`/plant/regular/add`)
-    //   .send({
-    //     signer: account.address,
-    //     nonce: nonce,
-    //     treeSpecs: invalidTreeSpecs,
-    //     birthDate: birthDate,
-    //     countryCode: countryCode,
-    //     signature: sign,
-    //   });
+    let resultWithInvalidSigner = await request(httpServer)
+      .post(`/plant/regular/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce,
+        treeSpecs: invalidTreeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+        signature: sign,
+      });
 
-    // expect(resultWithInvalidSigner.body).toMatchObject({
-    //   statusCode: 400,
-    //   message: AuthErrorMessages.INVALID_SIGNER,
-    // });
+    expect(resultWithInvalidSigner.body).toMatchObject({
+      statusCode: 400,
+      message: AuthErrorMessages.INVALID_SIGNER,
+    });
 
-    // (getPlanterData as jest.Mock).mockReturnValue({
-    //   planterType: 1,
-    //   status: 0,
-    //   countryCode: 1,
-    //   score: 0,
-    //   supplyCap: 10,
-    //   plantedCount: 1,
-    //   longitude: 1,
-    //   latitude: 1,
-    // });
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 0,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
 
-    // let resultWithInvalidPlanterStatus = await request(httpServer)
-    //   .post(`/plant/regular/add`)
-    //   .send({
-    //     signer: account.address,
-    //     nonce: nonce,
-    //     treeSpecs: treeSpecs,
-    //     birthDate: birthDate,
-    //     countryCode: countryCode,
-    //     signature: sign,
-    //   });
+    let resultWithInvalidPlanterStatus = await request(httpServer)
+      .post(`/plant/regular/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+        signature: sign,
+      });
 
-    // expect(resultWithInvalidPlanterStatus.body).toMatchObject({
-    //   statusCode: 403,
-    //   message: PlantErrorMessage.INVALID_PLANTER,
-    // });
+    expect(resultWithInvalidPlanterStatus.body).toMatchObject({
+      statusCode: 403,
+      message: PlantErrorMessage.INVALID_PLANTER,
+    });
 
     (getPlanterData as jest.Mock).mockReturnValue({
       planterType: 1,
@@ -230,42 +241,42 @@ describe("App e2e", () => {
 
     console.log("plantResult", plantResult);
 
-    // expect(plantResult.statusCode).toBe(201);
+    expect(plantResult.statusCode).toBe(201);
 
-    // let insertedPlantData = await mongoConnection.db
-    //   .collection(CollectionNames.TREE_PLANT)
-    //   .findOne({ _id: new Types.ObjectId(plantResult.body) });
+    let insertedPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({ _id: new Types.ObjectId(plantResult.body) });
 
-    // expect(insertedPlantData).toMatchObject({
-    //   signer: account.address,
-    //   nonce,
-    //   treeSpecs,
-    //   birthDate,
-    //   countryCode,
-    //   signature: sign,
-    // });
+    expect(insertedPlantData).toMatchObject({
+      signer: account.address,
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+    });
 
-    // let resultWithInvalidSupply = await request(httpServer)
-    //   .post(`/plant/regular/add`)
-    //   .send({
-    //     signer: account.address,
-    //     nonce: nonce2,
-    //     treeSpecs: treeSpecs,
-    //     birthDate: birthDate,
-    //     countryCode: countryCode,
-    //     signature: sign2,
-    //   });
+    let resultWithInvalidSupply = await request(httpServer)
+      .post(`/plant/regular/add`)
+      .send({
+        signer: account.address,
+        nonce: nonce2,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+        signature: sign2,
+      });
 
-    // expect(resultWithInvalidSupply.body).toMatchObject({
-    //   statusCode: 403,
-    //   message: PlantErrorMessage.SUPPLY_ERROR,
-    // });
+    expect(resultWithInvalidSupply.body).toMatchObject({
+      statusCode: 403,
+      message: PlantErrorMessage.SUPPLY_ERROR,
+    });
 
-    // let userAfterPlant = await mongoConnection.db
-    //   .collection(CollectionNames.USER)
-    //   .findOne({ _id: createdUser.insertedId });
+    let userAfterPlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({ _id: createdUser.insertedId });
 
-    // expect(userAfterPlant.plantingNonce).toBe(2);
+    expect(userAfterPlant.plantingNonce).toBe(2);
   });
 
   it("test updateTree", async () => {

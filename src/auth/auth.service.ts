@@ -20,7 +20,7 @@ export class AuthService {
     private configService: ConfigService,
     private userService: UserService,
     private jwtService: JwtService,
-    private authRepo: VerificationRepository,
+    private authRepo: VerificationRepository
   ) {}
 
   getMe(userId: string) {
@@ -59,7 +59,7 @@ export class AuthService {
       throw new BadRequestException("invalid wallet");
 
     const user = await this.userService.findUserByWallet(walletAddress, {
-      projection: { _id: 1 },
+      _id: 1,
     });
 
     if (!user) throw new NotFoundException("user not exist");

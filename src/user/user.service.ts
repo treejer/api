@@ -23,11 +23,11 @@ export class UserService {
 
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, object>,
+    projection?: Record<string, number>
   ) {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 
