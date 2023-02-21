@@ -179,7 +179,12 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async plantAssignedTree(dto: CreateAssignedTreePlantDto, user: JwtUserDto) {
+  //---------------------------  Assigned Tree ----------------------------------------------------
+
+  async plantAssignedTree(
+    dto: CreateAssignedTreePlantDto,
+    user: JwtUserDto
+  ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
     });
@@ -263,10 +268,10 @@ export class PlantService {
     recordId: string,
     data: EditTreeAssignPlantDto,
     user: JwtUserDto
-  ) {
+  ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
-        recordId,
+        _id: recordId,
       },
       { status: 1, signer: 1, _id: 0 }
     );
@@ -302,9 +307,13 @@ export class PlantService {
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    await this.assignedTreePlantRepository.updateOne(
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
+
+    const result = await this.assignedTreePlantRepository.updateOne(
       {
-        recordId,
+        _id: recordId,
       },
       {
         ...data,
@@ -312,15 +321,16 @@ export class PlantService {
       }
     );
 
-    await this.userService.updateUserById(user.userId, {
-      plantingNonce: userData.plantingNonce + 1,
-    });
+    return result.acknowledged;
   }
 
-  async deleteAssignedTree(recordId: string, user: JwtUserDto) {
+  async deleteAssignedTree(
+    recordId: string,
+    user: JwtUserDto
+  ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
-        recordId,
+        _id: recordId,
       },
       { status: 1, signer: 1, _id: 0 }
     );
@@ -334,14 +344,16 @@ export class PlantService {
     if (assignedPlantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    await this.assignedTreePlantRepository.softDeleteOne(
+    const result = await this.assignedTreePlantRepository.softDeleteOne(
       {
-        recordId,
+        _id: recordId,
       },
       {
         status: PlantStatus.DELETE,
       }
     );
+
+    return result.acknowledged;
   }
 
   async updateTree(
