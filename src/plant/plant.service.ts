@@ -33,6 +33,8 @@ import {
   PlantStatus,
 } from "../common/constants";
 
+import { JwtUserDto } from "src/auth/dtos";
+
 var ethUtil = require("ethereumjs-util");
 
 @Injectable()
@@ -44,10 +46,15 @@ export class PlantService {
     private userService: UserService
   ) {}
 
+<<<<<<< HEAD
+  async plant(dto: TreePlantDto, user: JwtUserDto): Promise<string> {
+    let userData = await this.userService.findUserById(user.userId);
+=======
   async plant(dto: TreePlantDto, user): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
     });
+>>>>>>> ef9c78e886d056048d37639897e95a5291e451ea
 
     const signer = await getSigner(
       dto.signature,
@@ -170,11 +177,15 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async plantAssignedTree(dto: CreateAssignedTreePlantDto, user) {
+  async plantAssignedTree(dto: CreateAssignedTreePlantDto, user: JwtUserDto) {
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      projection: { plantingNonce: 1 },
+    });
+
     const signer = await getSigner(
       dto.signature,
       {
-        nonce: user.plantingNonce,
+        nonce: userData.plantingNonce,
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
         birthDate: dto.birthDate,
@@ -185,20 +196,21 @@ export class PlantService {
 
     if (
       ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(dto.signer)
+      ethUtil.toChecksumAddress(user.walletAddress)
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     let plantData = await this.assignedTreePlantRepository.findOne(
       {
         treeId: dto.treeId,
+        status: PlantStatus.PENDING,
       },
       {
         projection: { _id: 1 },
       }
     );
 
-    if (plantData && plantData.status == PlantStatus.PENDING)
+    if (plantData)
       throw new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
 
     let tree = await getTreeData(dto.treeId);
@@ -225,7 +237,7 @@ export class PlantService {
     }
 
     let pendingPlantsCount: number = await this.pendingListCount({
-      signer: dto.signer,
+      signer: signer,
       status: PlantStatus.PENDING,
     });
 
@@ -234,18 +246,22 @@ export class PlantService {
 
     const assignedPlant = await this.assignedTreePlantRepository.create({
       ...dto,
-      nonce: user.plantingNonce,
-      userId: user._id,
+      nonce: userData.plantingNonce,
+      signer: user.walletAddress,
     });
 
-    await this.userService.updateUserById(user._id, {
-      plantingNonce: user.plantingNonce + 1,
+    await this.userService.updateUserById(userData._id, {
+      plantingNonce: userData.plantingNonce + 1,
     });
 
     return assignedPlant._id;
   }
 
-  async editAssignedTree(recordId: string, data: EditTreeAssignPlantDto, user) {
+  async editAssignedTree(
+    recordId: string,
+    data: EditTreeAssignPlantDto,
+    user: JwtUserDto,
+  ) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne({
       recordId,
     });
@@ -295,7 +311,7 @@ export class PlantService {
     });
   }
 
-  async deleteAssignedTree(treeId: string, user) {
+  async deleteAssignedTree(recordId: string, user: JwtUserDto) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne({
       treeId,
     });
