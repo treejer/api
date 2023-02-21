@@ -6,7 +6,6 @@ import {
   EditUpdateTreeDto,
 } from "./dtos";
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -52,7 +51,7 @@ export class PlantService {
       _id: 0,
     });
 
-    const signer = await getSigner(
+    const signer = getSigner(
       dto.signature,
       {
         nonce: userData.plantingNonce,
@@ -145,7 +144,7 @@ export class PlantService {
       plantingNonce: 1,
     });
 
-    const signer = await getSigner(
+    const signer = getSigner(
       dto.signature,
       {
         nonce: userData.plantingNonce,
@@ -184,7 +183,7 @@ export class PlantService {
       plantingNonce: 1,
     });
 
-    const signer = await getSigner(
+    const signer = getSigner(
       dto.signature,
       {
         nonce: userData.plantingNonce,
@@ -284,7 +283,7 @@ export class PlantService {
       plantingNonce: 1,
     });
 
-    const signer = await getSigner(
+    const signer = getSigner(
       data.signature,
       {
         nonce: userData.plantingNonce,
@@ -358,7 +357,7 @@ export class PlantService {
       plantingNonce: 1,
     });
 
-    const signer = await getSigner(
+    const signer = getSigner(
       dto.signature,
       {
         nonce: userData.plantingNonce,
@@ -458,7 +457,7 @@ export class PlantService {
 
     let userData = await this.userService.findUserById(user.userId);
 
-    const signer = await getSigner(
+    const signer = getSigner(
       dto.signature,
       {
         nonce: userData.plantingNonce,

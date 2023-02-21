@@ -9,11 +9,11 @@ enum getSignerEnum {
   INVALID_SIGNATURE = "Invalid signature length",
 }
 
-export async function getSigner(
+export function getSigner(
   signature: string,
   message,
   selector: Number,
-): Promise<string> {
+): string {
   let primaryTypeObj;
   let primaryType;
 
