@@ -1,6 +1,6 @@
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
-export class CreateTreePlantDto {
+export class TreePlantDto {
   @IsString()
   treeSpecs: string;
 

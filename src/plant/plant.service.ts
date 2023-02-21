@@ -1,7 +1,6 @@
 import {
   CreateAssignedTreePlantDto,
-  CreateTreePlantDto,
-  EditTreePlantDto,
+  TreePlantDto,
   EditTreeAssignPlantDto,
   CreateUpdateTreeDto,
   EditUpdateTreeDto,
@@ -14,7 +13,6 @@ import {
   ConflictException,
 } from "@nestjs/common";
 
-import { AssignedTreePlant, TreePlant } from "./schemas";
 import {
   AssignedTreePlantRepository,
   UpdateTreeRepository,
@@ -34,8 +32,6 @@ import {
   PlantErrorMessage,
   PlantStatus,
 } from "../common/constants";
-import { Types } from "mongoose";
-import { JwtUserDto } from "../auth/dtos";
 
 var ethUtil = require("ethereumjs-util");
 
@@ -48,7 +44,7 @@ export class PlantService {
     private userService: UserService
   ) {}
 
-  async plant(dto: CreateTreePlantDto, user): Promise<string> {
+  async plant(dto: TreePlantDto, user): Promise<string> {
     let userData = await this.userService.findUserById(user.userId);
 
     const signer = await getSigner(
@@ -66,7 +62,7 @@ export class PlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(userData.walletAddress)
     )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const planterData = await getPlanterData(signer);
 
@@ -89,6 +85,7 @@ export class PlantService {
       ...dto,
       signer,
       nonce: userData.plantingNonce,
+      userId: userData._id,
     });
     return createdData._id;
   }
@@ -102,10 +99,10 @@ export class PlantService {
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
 
     if (plantData.userId !== user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (plantData.status !== PlantStatus.PENDING)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     const result = await this.treePlantRepository.softDeleteOne(
       {
@@ -119,11 +116,7 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async editPlant(
-    recordId: string,
-    dto: EditTreePlantDto,
-    user
-  ): Promise<boolean> {
+  async editPlant(recordId: string, dto: TreePlantDto, user): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne({
       _id: recordId,
     });
@@ -132,10 +125,10 @@ export class PlantService {
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
 
     if (plantData.userId != user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (plantData.status !== PlantStatus.PENDING)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     let userData = await this.userService.findUserById(user.userId);
 
@@ -154,7 +147,7 @@ export class PlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(userData.walletAddress)
     )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
@@ -181,7 +174,7 @@ export class PlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(dto.signer)
     )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     let plantData = await this.assignedTreePlantRepository.findOne(
       {
@@ -331,7 +324,7 @@ export class PlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(userData.walletAddress)
     )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     let tree = await getTreeData(dto.treeId);
 
@@ -356,7 +349,7 @@ export class PlantService {
     });
 
     if (pendingUpdates)
-      throw new ForbiddenException(PlantErrorMessage.PENDING_UPDATE);
+      throw new ConflictException(PlantErrorMessage.PENDING_UPDATE);
 
     await this.userService.updateUserById(user._id, {
       plantingNonce: userData.plantingNonce + 1,
@@ -366,6 +359,7 @@ export class PlantService {
       ...dto,
       signer,
       nonce: userData.plantingNonce,
+      userId: userData._id,
     });
 
     return createdData._id;
@@ -380,10 +374,10 @@ export class PlantService {
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
 
     if (updateData.userId !== user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (updateData.status != PlantStatus.PENDING)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     const result = await this.updateTreeRepository.softDeleteOne(
       {
@@ -410,10 +404,10 @@ export class PlantService {
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
 
     if (updateData.userId != user.userId)
-      throw new BadRequestException(AuthErrorMessages.INVALID_ACCESS);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (updateData.status != PlantStatus.PENDING)
-      throw new BadRequestException(PlantErrorMessage.INVLID_STATUS);
+      throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
     let userData = await this.userService.findUserById(user.userId);
 
@@ -431,7 +425,7 @@ export class PlantService {
       ethUtil.toChecksumAddress(signer) !==
       ethUtil.toChecksumAddress(userData.walletAddress)
     )
-      throw new BadRequestException(AuthErrorMessages.INVALID_SIGNER);
+      throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.updateTreeRepository.updateOne(
       { _id: recordId },
