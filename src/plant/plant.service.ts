@@ -41,7 +41,7 @@ export class PlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async plant(dto: TreePlantDto, user): Promise<string> {
@@ -55,7 +55,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (
@@ -110,7 +110,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -140,7 +140,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (
@@ -151,7 +151,7 @@ export class PlantService {
 
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     return result.acknowledged;
@@ -167,7 +167,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (
@@ -182,7 +182,7 @@ export class PlantService {
       },
       {
         projection: { _id: 1 },
-      }
+      },
     );
 
     if (plantData && plantData.status == PlantStatus.PENDING)
@@ -232,16 +232,16 @@ export class PlantService {
     return assignedPlant._id;
   }
 
-  async editAssignedTree(treeId: string, data: EditTreeAssignPlantDto, user) {
+  async editAssignedTree(recordId: string, data: EditTreeAssignPlantDto, user) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne({
-      treeId,
+      recordId,
     });
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
 
-    if (assignedPlantData.userId != user.userId)
-      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
+    // if (assignedPlantData.userId != user.userId)
+    //   throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (assignedPlantData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
@@ -252,12 +252,12 @@ export class PlantService {
       data.signature,
       {
         nonce: user.plantingNonce,
-        treeId: treeId,
+        treeId: assignedPlantData.treeId,
         treeSpecs: data.treeSpecs,
         birthDate: data.birthDate,
         countryCode: data.countryCode,
       },
-      1
+      1,
     );
 
     if (
@@ -274,7 +274,7 @@ export class PlantService {
       {
         ...data,
         nonce: userData.plantingNonce,
-      }
+      },
     );
 
     await this.userService.updateUserById(user._id, {
@@ -303,7 +303,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
   }
 
@@ -317,7 +317,7 @@ export class PlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (
@@ -385,7 +385,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -394,7 +394,7 @@ export class PlantService {
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
-    user
+    user,
   ): Promise<boolean> {
     const updateData = await this.updateTreeRepository.findOne({
       _id: recordId,
@@ -418,7 +418,7 @@ export class PlantService {
         treeId: updateData.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (
@@ -429,7 +429,7 @@ export class PlantService {
 
     const result = await this.updateTreeRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     return result.acknowledged;

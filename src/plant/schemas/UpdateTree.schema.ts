@@ -7,9 +7,6 @@ export type UpdateTreeDocument = UpdateTree & Document;
 @Schema()
 export class UpdateTree extends Document {
   @Prop({ type: String })
-  userId;
-
-  @Prop({ type: String })
   signer;
 
   @Prop({ type: Number })

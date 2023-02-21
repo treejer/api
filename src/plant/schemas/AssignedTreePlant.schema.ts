@@ -6,9 +6,6 @@ export type AssignedTreePlantDocument = AssignedTreePlant & Document;
 @Schema()
 export class AssignedTreePlant extends Document {
   @Prop({ type: String })
-  userId;
-
-  @Prop({ type: String })
   signer;
 
   @Prop({ type: Number })

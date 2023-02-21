@@ -20,7 +20,7 @@ export class AuthService {
     private configService: ConfigService,
     private userService: UserService,
     private jwtService: JwtService,
-    private authRepo: VerificationRepository
+    private authRepo: VerificationRepository,
   ) {}
 
   getMe(userId: string) {
@@ -58,7 +58,10 @@ export class AuthService {
     if (!checkPublicKey(walletAddress))
       throw new BadRequestException("invalid wallet");
 
-    const user = await this.userService.findUserByWallet(walletAddress);
+    const user = await this.userService.findUserByWallet(walletAddress, {
+      projection: { _id: 1 },
+    });
+
     if (!user) throw new NotFoundException("user not exist");
 
     const message = Messages.SIGN_MESSAGE + user.nonce.toString();
@@ -76,7 +79,7 @@ export class AuthService {
     await this.userService.updateUserById(user._id, { nonce });
 
     return {
-      access_token: await this.getAccessToken(user._id, user.walletAddress),
+      access_token: await this.getAccessToken(user._id, walletAddress),
     };
   }
 

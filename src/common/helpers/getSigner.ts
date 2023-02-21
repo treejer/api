@@ -12,7 +12,7 @@ enum getSignerEnum {
 export async function getSigner(
   signature: string,
   message,
-  selector: Number
+  selector: Number,
 ): Promise<string> {
   let primaryTypeObj;
   let primaryType;
