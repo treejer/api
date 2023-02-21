@@ -124,12 +124,16 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async editPlant(recordId: string, dto: TreePlantDto, user): Promise<boolean> {
+  async editPlant(
+    recordId: string,
+    dto: TreePlantDto,
+    user: JwtUserDto
+  ): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { signer: 1, status: 1 }
+      { signer: 1, status: 1, _id: 0 }
     );
 
     if (!plantData)
@@ -143,6 +147,7 @@ export class PlantService {
 
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
+      _id: 0,
     });
 
     const signer = await getSigner(
@@ -162,14 +167,14 @@ export class PlantService {
     )
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    await this.userService.updateUserById(userData._id, {
-      plantingNonce: userData.plantingNonce + 1,
-    });
-
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
       { ...dto, nonce: userData.plantingNonce }
     );
+
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
 
     return result.acknowledged;
   }
@@ -339,9 +344,13 @@ export class PlantService {
     );
   }
 
-  async updateTree(dto: CreateUpdateTreeDto, user): Promise<string> {
+  async updateTree(
+    dto: CreateUpdateTreeDto,
+    user: JwtUserDto
+  ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
+      _id: 0,
     });
 
     const signer = await getSigner(
@@ -377,17 +386,13 @@ export class PlantService {
     )
       throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
 
-    let pendingUpdates = await this.updateTreeRepository.findOne({
-      status: PlantStatus.PENDING,
-      treeId: dto.treeId,
-    });
-
-    if (pendingUpdates)
+    if (
+      (await this.updateTreeRepository.count({
+        status: PlantStatus.PENDING,
+        treeId: dto.treeId,
+      })) > 0
+    )
       throw new ConflictException(PlantErrorMessage.PENDING_UPDATE);
-
-    await this.userService.updateUserById(userData._id, {
-      plantingNonce: userData.plantingNonce + 1,
-    });
 
     const createdData = await this.updateTreeRepository.create({
       ...dto,
@@ -395,13 +400,20 @@ export class PlantService {
       nonce: userData.plantingNonce,
     });
 
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
+
     return createdData._id;
   }
 
-  async deleteUpdateTree(recordId: string, user): Promise<boolean> {
-    const updateData = await this.updateTreeRepository.findOne({
-      _id: recordId,
-    });
+  async deleteUpdateTree(recordId: string, user: JwtUserDto): Promise<boolean> {
+    const updateData = await this.updateTreeRepository.findOne(
+      {
+        _id: recordId,
+      },
+      { status: 1, signer: 1, _id: 0 }
+    );
 
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -427,11 +439,14 @@ export class PlantService {
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
-    user
+    user: JwtUserDto
   ): Promise<boolean> {
-    const updateData = await this.updateTreeRepository.findOne({
-      _id: recordId,
-    });
+    const updateData = await this.updateTreeRepository.findOne(
+      {
+        _id: recordId,
+      },
+      { status: 1, signer: 1, treeId: 1, _id: 0 }
+    );
 
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -442,7 +457,10 @@ export class PlantService {
     if (updateData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    let userData = await this.userService.findUserById(user.userId);
+    let userData = await this.userService.findUserByWallet(user.walletAddress, {
+      plantingNonce: 1,
+      _id: 0,
+    });
 
     const signer = await getSigner(
       dto.signature,
@@ -464,6 +482,10 @@ export class PlantService {
       { _id: recordId },
       { ...dto, nonce: userData.plantingNonce }
     );
+
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
 
     return result.acknowledged;
   }
