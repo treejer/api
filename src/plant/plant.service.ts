@@ -46,15 +46,11 @@ export class PlantService {
     private userService: UserService
   ) {}
 
-<<<<<<< HEAD
   async plant(dto: TreePlantDto, user: JwtUserDto): Promise<string> {
-    let userData = await this.userService.findUserById(user.userId);
-=======
-  async plant(dto: TreePlantDto, user): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
+      _id: 0,
     });
->>>>>>> ef9c78e886d056048d37639897e95a5291e451ea
 
     const signer = await getSigner(
       dto.signature,
@@ -86,24 +82,25 @@ export class PlantService {
     if (planterData.plantedCount + count >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    await this.userService.updateUserById(userData._id, {
-      plantingNonce: userData.plantingNonce + 1,
-    });
-
     const createdData = await this.treePlantRepository.create({
       ...dto,
       signer,
       nonce: userData.plantingNonce,
     });
+
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
+
     return createdData._id;
   }
 
-  async deletePlant(recordId: string, user): Promise<boolean> {
+  async deletePlant(recordId: string, user: JwtUserDto): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { signer: 1, status: 1 }
+      { signer: 1, status: 1, _id: 0 }
     );
 
     if (!plantData)
@@ -260,7 +257,7 @@ export class PlantService {
   async editAssignedTree(
     recordId: string,
     data: EditTreeAssignPlantDto,
-    user: JwtUserDto,
+    user: JwtUserDto
   ) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne({
       recordId,
