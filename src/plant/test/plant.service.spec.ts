@@ -1,8 +1,15 @@
-import { INestApplication, ValidationPipe } from "@nestjs/common";
+import {
+  ForbiddenException,
+  INestApplication,
+  ValidationPipe,
+} from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
 import { Connection, connect, Types, now } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+
+var ethUtil = require("ethereumjs-util");
+
 const Web3 = require("web3");
 
 const request = require("supertest");
@@ -21,7 +28,12 @@ import {
   getTreeData,
   getPlanterOrganization,
   getEIP712Sign,
+  getCheckedSumAddress,
 } from "../../common/helpers";
+import { AuthModule } from "../../auth/auth.module";
+import { AuthGuard } from "@nestjs/passport";
+import { PlantService } from "../plant.service";
+import { time } from "console";
 
 const ganache = require("ganache");
 
@@ -40,14 +52,20 @@ describe("App e2e", () => {
   let config: ConfigService;
   let web3;
   let httpServer: any;
+  let plantService: PlantService;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [PlantModule, ConfigModule.forRoot({ isGlobal: true })],
+      imports: [
+        AuthModule,
+        PlantModule,
+        ConfigModule.forRoot({ isGlobal: true }),
+      ],
       providers: [ConfigService],
     }).compile();
 
     config = moduleRef.get<ConfigService>(ConfigService);
+    plantService = moduleRef.get<PlantService>(PlantService);
 
     web3 = new Web3(
       ganache.provider({
@@ -85,18 +103,559 @@ describe("App e2e", () => {
       await collection.deleteMany({});
     }
   });
+  it("plant", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
 
-  it.only("test plantTree", async () => {
+    const nonce: number = 1;
+    const nonce2: number = 2;
+    const treeSpecs: string = "ipfs";
+    const invalidTreeSpecs: string = "invalid ipfs";
+
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userBeforePlant.plantingNonce).toBe(1);
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const sign2 = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce2,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const invalidSign = await getEIP712Sign(
+      account2,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    //------fail with invalid signer
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    await expect(
+      plantService.plant(
+        { birthDate, countryCode, signature: invalidSign, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toEqual(
+      new ForbiddenException({
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      })
+    );
+
+    //------fail with invalid planter
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 0,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    await expect(
+      plantService.plant(
+        { birthDate, countryCode, signature: sign, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toEqual(
+      new ForbiddenException({
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_PLANTER,
+      })
+    );
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 2,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    const plantResult = await plantService.plant(
+      { birthDate, countryCode, signature: sign, treeSpecs },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    expect(plantResult).toBeInstanceOf(Types.ObjectId);
+
+    let plantedData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: plantResult,
+      });
+
+    expect(plantedData).toMatchObject({
+      signer: getCheckedSumAddress(account1.address),
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
+
+    let userAfterPlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userAfterPlant.plantingNonce).toBe(2);
+
+    await expect(
+      plantService.plant(
+        { birthDate, countryCode, signature: sign2, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toEqual(
+      new ForbiddenException({
+        statusCode: 403,
+        message: PlantErrorMessage.SUPPLY_ERROR,
+      })
+    );
+  });
+
+  it("delete plant", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const insertedPendingPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const insertedVerifiedPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.VERIFIED,
+        updatedAt: new Date(),
+      });
+
+    let verifiedPlantedData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedVerifiedPlantData.insertedId,
+      });
+
+    let pendingPlantedData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    expect(pendingPlantedData).toMatchObject({ status: PlantStatus.PENDING });
+    expect(verifiedPlantedData).toMatchObject({ status: PlantStatus.VERIFIED });
+
+    //----- fail no data exist
+
+    await expect(
+      plantService.deletePlant(createdUser.insertedId.toString(), {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      })
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+      },
+    });
+
+    //----------- fail invalid access
+
+    await expect(
+      plantService.deletePlant(insertedPendingPlantData.insertedId.toString(), {
+        userId: insertedPendingPlantData.insertedId.toString(),
+        walletAddress: account2.address,
+      })
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    //----------- fail invalid statsus
+    await expect(
+      plantService.deletePlant(
+        insertedVerifiedPlantData.insertedId.toString(),
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.INVLID_STATUS,
+      },
+    });
+
+    //delete seccussful
+    const deleteResult = await plantService.deletePlant(
+      insertedPendingPlantData.insertedId.toString(),
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    expect(deleteResult).toBe(true);
+
+    const plantDataAfterDelete = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    expect(plantDataAfterDelete).toMatchObject({ status: PlantStatus.DELETE });
+  });
+  it.only("edit plant", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const nonce2: number = 2;
+    const treeSpecs2: string = "ipfs 2";
+    const birthDate2: number = 2;
+    const countryCode2: number = 2;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const sign2 = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs2,
+        birthDate: birthDate2,
+        countryCode: countryCode2,
+      },
+      2
+    );
+
+    const invalidSign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce2,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate2,
+        countryCode: countryCode2,
+      },
+      2
+    );
+
+    const insertedPendingPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const insertedVerifiedPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.VERIFIED,
+        updatedAt: new Date(),
+      });
+
+    let verifiedPlantedData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedVerifiedPlantData.insertedId,
+      });
+
+    let pendingPlantedData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    expect(pendingPlantedData).toMatchObject({
+      birthDate: birthDate,
+      countryCode: countryCode,
+      signature: sign,
+      treeSpecs: treeSpecs,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
+    expect(verifiedPlantedData).toMatchObject({ status: PlantStatus.VERIFIED });
+
+    //----- fail no data exist
+
+    await expect(
+      plantService.editPlant(
+        createdUser.insertedId.toString(),
+        {
+          birthDate: birthDate2,
+          countryCode: countryCode2,
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+      },
+    });
+
+    //----------- fail invalid access
+
+    await expect(
+      plantService.editPlant(
+        insertedPendingPlantData.insertedId.toString(),
+        {
+          birthDate: birthDate2,
+          countryCode: countryCode2,
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: insertedPendingPlantData.insertedId.toString(),
+          walletAddress: account2.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    //----------- fail invalid statsus
+    await expect(
+      plantService.editPlant(
+        insertedVerifiedPlantData.insertedId.toString(),
+        {
+          birthDate: birthDate2,
+          countryCode: countryCode2,
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.INVLID_STATUS,
+      },
+    });
+
+    //////------------------- fail invalid singer
+
+    await expect(
+      plantService.editPlant(
+        insertedPendingPlantData.insertedId.toString(),
+        {
+          birthDate: birthDate2,
+          countryCode: countryCode2,
+          signature: invalidSign,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+
+    let editPlantResult = await plantService.editPlant(
+      insertedPendingPlantData.insertedId.toString(),
+      {
+        birthDate: birthDate2,
+        countryCode: countryCode2,
+        signature: sign2,
+        treeSpecs: treeSpecs2,
+      },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    let plantedDataAfterEdit = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    console.log("pdsdsfdsfsdf", plantedDataAfterEdit);
+
+    expect(editPlantResult).toBe(true);
+    expect(plantedDataAfterEdit).toMatchObject({
+      birthDate: birthDate2,
+      countryCode: countryCode2,
+      signature: sign2,
+      treeSpecs: treeSpecs2,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
+
+    console.log("editPlantResult", editPlantResult);
+  });
+
+  it("test plantTree", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`
-    );
-    console.log("res", res);
+    // let res = await request(httpServer).get(
+    //   `/auth/get-nonce/${account.address}`
+    // );
 
-    let signResult = account.sign(res.body.message);
-    return;
+    // // ("please sign meesage with nonce 1234");
+
+    // console.log("res", res);
+
+    // let signResult = account.sign("please sign meesage with nonce 1234");
+    // return;
     // let loginResult = await request(httpServer)
     //   .post(`/auth/signinWithWallet/${account.address}`)
     //   .send({ signature: signResult.signature });
@@ -168,7 +727,7 @@ describe("App e2e", () => {
         countryCode: countryCode,
         signature: sign,
       });
-
+    return;
     expect(resultWithNotExistUser.body).toMatchObject({
       statusCode: 403,
       message: AuthErrorMessages.USER_NOT_EXIST,

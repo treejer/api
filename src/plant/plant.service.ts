@@ -19,6 +19,7 @@ import {
 } from "./plant.repository";
 
 import {
+  getCheckedSumAddress,
   getPlanterData,
   getPlanterOrganization,
   getTreeData,
@@ -32,9 +33,7 @@ import {
   PlantStatus,
 } from "../common/constants";
 
-import { JwtUserDto } from "src/auth/dtos";
-
-var ethUtil = require("ethereumjs-util");
+import { JwtUserDto } from "../auth/dtos";
 
 @Injectable()
 export class PlantService {
@@ -62,10 +61,7 @@ export class PlantService {
       2
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(user.walletAddress)
-    )
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const planterData = await getPlanterData(signer);
@@ -160,10 +156,7 @@ export class PlantService {
       2
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(user.walletAddress)
-    )
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.treePlantRepository.updateOne(
@@ -200,10 +193,7 @@ export class PlantService {
       1
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(user.walletAddress)
-    )
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     let plantData = await this.assignedTreePlantRepository.findOne(
@@ -229,10 +219,7 @@ export class PlantService {
     if (planterData.status != 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
-    if (
-      ethUtil.toChecksumAddress(tree.planter) !==
-      ethUtil.toChecksumAddress(signer)
-    ) {
+    if (signer !== getCheckedSumAddress(tree.planter)) {
       if (
         !(
           planterData.planterType == 3 &&
@@ -300,10 +287,7 @@ export class PlantService {
       1
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(user.walletAddress)
-    )
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     await this.userService.updateUserById(user.userId, {
@@ -374,10 +358,7 @@ export class PlantService {
       3
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(user.walletAddress)
-    )
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     let tree = await getTreeData(dto.treeId);
@@ -385,10 +366,7 @@ export class PlantService {
     if (tree.treeStatus < 4)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
-    if (
-      ethUtil.toChecksumAddress(tree.planter) !==
-      ethUtil.toChecksumAddress(signer)
-    )
+    if (signer !== getCheckedSumAddress(tree.planter))
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
     if (
@@ -483,10 +461,7 @@ export class PlantService {
       3
     );
 
-    if (
-      ethUtil.toChecksumAddress(signer) !==
-      ethUtil.toChecksumAddress(userData.walletAddress)
-    )
+    if (signer !== userData.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.updateTreeRepository.updateOne(

@@ -4,6 +4,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from "@nestjs/common";
+import { getCheckedSumAddress } from "./getCheckedSumAddress";
 
 enum getSignerEnum {
   INVALID_SIGNATURE = "Invalid signature length",
@@ -12,7 +13,7 @@ enum getSignerEnum {
 export function getSigner(
   signature: string,
   message,
-  selector: Number,
+  selector: Number
 ): string {
   let primaryTypeObj;
   let primaryType;
@@ -80,5 +81,5 @@ export function getSigner(
     throw new InternalServerErrorException(error.message);
   }
 
-  return recovered;
+  return getCheckedSumAddress(recovered);
 }

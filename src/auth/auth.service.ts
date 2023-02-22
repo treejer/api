@@ -12,7 +12,11 @@ import { JwtService } from "@nestjs/jwt";
 
 import { VerificationRepository } from "./auth.repository";
 import { Messages } from "./../common/constants";
-import { getRandomNonce, checkPublicKey } from "./../common/helpers";
+import {
+  getRandomNonce,
+  checkPublicKey,
+  getCheckedSumAddress,
+} from "./../common/helpers";
 
 @Injectable()
 export class AuthService {
@@ -28,10 +32,12 @@ export class AuthService {
   }
 
   async getNonce(wallet: string) {
-    if (!checkPublicKey(wallet))
+    const checkedSumWallet = getCheckedSumAddress(wallet);
+
+    if (!checkPublicKey(checkedSumWallet))
       throw new BadRequestException("invalid wallet");
 
-    let user = await this.userService.findUserByWallet(wallet);
+    let user = await this.userService.findUserByWallet(checkedSumWallet);
 
     const nonce = getRandomNonce();
 
@@ -44,7 +50,7 @@ export class AuthService {
 
     const newUser = await this.userService.create({
       nonce,
-      walletAddress: wallet,
+      walletAddress: checkedSumWallet,
       plantingNonce: 1,
     });
 
@@ -55,10 +61,12 @@ export class AuthService {
   }
 
   async loginWithWallet(walletAddress: string, signature: string) {
-    if (!checkPublicKey(walletAddress))
+    const checkedSumWallet = getCheckedSumAddress(walletAddress);
+
+    if (!checkPublicKey(checkedSumWallet))
       throw new BadRequestException("invalid wallet");
 
-    const user = await this.userService.findUserByWallet(walletAddress, {
+    const user = await this.userService.findUserByWallet(checkedSumWallet, {
       _id: 1,
     });
 
@@ -66,12 +74,12 @@ export class AuthService {
 
     const message = Messages.SIGN_MESSAGE + user.nonce.toString();
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
-    const recoveredAddress = ESU.recoverPersonalSignature({
+    const recoveredAddress: string = ESU.recoverPersonalSignature({
       data: msg,
       sig: signature,
     });
 
-    if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase())
+    if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
       throw new ForbiddenException("invalid credentials");
 
     const nonce: number = getRandomNonce();
@@ -79,7 +87,7 @@ export class AuthService {
     await this.userService.updateUserById(user._id, { nonce });
 
     return {
-      access_token: await this.getAccessToken(user._id, walletAddress),
+      access_token: await this.getAccessToken(user._id, checkedSumWallet),
     };
   }
 

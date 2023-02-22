@@ -24,18 +24,20 @@ import {
   EditTreeAssignPlantDto,
   TreePlantDto,
 } from "./dtos";
-import { JwtUserDto } from "src/auth/dtos";
-import { User } from "src/user/decorators";
+import { JwtUserDto } from "../auth/dtos";
+import { User } from "../user/decorators";
 
 @Controller("plant")
 export class PlantController {
   constructor(private plantService: PlantService) {}
 
-  @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"))
   @Post("regular/add")
   plant(@Body() dto: TreePlantDto, @User() user: JwtUserDto) {
-    return this.plantService.plant(dto, user);
+    console.log("user", user);
+    return "ali";
+    // return this.plantService.plant(dto, user);
   }
 
   @HasRoles(Role.PLANTER)
@@ -44,7 +46,7 @@ export class PlantController {
   editPlant(
     @Param("id") id: string,
     @Body() body: TreePlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editPlant(id, body, user);
   }
@@ -61,7 +63,7 @@ export class PlantController {
   @Post("assignedTree/add")
   plantAssignedTree(
     @Body() dto: CreateAssignedTreePlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.plantAssignedTree(dto, user);
   }
@@ -72,7 +74,7 @@ export class PlantController {
   editAssignedTree(
     @Param("id") id: string,
     @Body() dto: EditTreeAssignPlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
   }
@@ -97,7 +99,7 @@ export class PlantController {
   editUpdateTree(
     @Param("id") id: string,
     @Body() body,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editUpdateTree(id, body, user);
   }

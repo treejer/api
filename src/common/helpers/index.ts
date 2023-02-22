@@ -5,3 +5,4 @@ export * from "./getTreeData";
 export * from "./getSigner";
 export * from "./getPlanterOrganization";
 export * from "./getEIP712Sign";
+export * from "./getCheckedSumAddress";
