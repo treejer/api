@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   INestApplication,
   ValidationPipe,
+  ConflictException,
 } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
@@ -411,7 +412,7 @@ describe("App e2e", () => {
 
     expect(plantDataAfterDelete).toMatchObject({ status: PlantStatus.DELETE });
   });
-  it.only("edit plant", async () => {
+  it("edit plant", async () => {
     let account1 = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
@@ -1509,5 +1510,149 @@ describe("App e2e", () => {
       .findOne({ _id: createdUser2.insertedId });
 
     expect(user2AfterPlant.plantingNonce).toBe(2);
+  });
+
+  //--------------------------------> plant Assign
+
+  it.only("plant assigned (planterType==1)", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const treeId = 110;
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userBeforePlant.plantingNonce).toBe(1);
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1
+    );
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    let recordId = await plantService.plantAssignedTree(
+      { treeId, treeSpecs, birthDate, countryCode, signature: sign },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account.address,
+      }
+    );
+
+    let userAfterPlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userAfterPlant.plantingNonce).toBe(2);
+
+    let plantedData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({
+        _id: recordId,
+      });
+
+    expect(userAfterPlant.plantingNonce).toBe(2);
+
+    expect(plantedData).toMatchObject({
+      signer: getCheckedSumAddress(account.address),
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
+
+    //----------------> reject (there is a pending record for this treeId)
+
+    const sign2 = await getEIP712Sign(
+      account,
+      {
+        nonce: 2,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1
+    );
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 2,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        { treeId, treeSpecs, birthDate, countryCode, signature: sign2 },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        }
+      )
+    ).rejects.toEqual(
+      new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT)
+    );
   });
 });

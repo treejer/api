@@ -177,6 +177,8 @@ export class PlantService {
     dto: CreateAssignedTreePlantDto,
     user: JwtUserDto
   ): Promise<string> {
+    console.log("user.walletAddress", user.walletAddress);
+
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
     });
@@ -233,6 +235,8 @@ export class PlantService {
       signer: signer,
       status: PlantStatus.PENDING,
     });
+
+    console.log("pendingPlantsCount", pendingPlantsCount);
 
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
