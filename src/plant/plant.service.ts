@@ -430,12 +430,9 @@ export class PlantService {
     dto: EditUpdateTreeDto,
     user: JwtUserDto
   ): Promise<boolean> {
-    const updateData = await this.updateTreeRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
-    );
+    const updateData = await this.updateTreeRepository.findOne({
+      _id: recordId,
+    });
 
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -461,7 +458,7 @@ export class PlantService {
       3
     );
 
-    if (signer !== userData.walletAddress)
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.updateTreeRepository.updateOne(
