@@ -11,7 +11,7 @@ export class AssignedTreePlant extends Document {
   @Prop({ type: Number })
   nonce;
 
-  @Prop({ type: Number, unique: true })
+  @Prop({ type: Number })
   treeId;
 
   @Prop({ type: String })

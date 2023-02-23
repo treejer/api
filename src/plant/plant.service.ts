@@ -41,7 +41,7 @@ export class PlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
   ) {}
 
   async plant(dto: TreePlantDto, user: JwtUserDto): Promise<string> {
@@ -58,7 +58,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (signer !== user.walletAddress)
@@ -95,7 +95,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { signer: 1, status: 1, _id: 0 }
+      { signer: 1, status: 1, _id: 0 },
     );
 
     if (!plantData)
@@ -113,7 +113,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -122,13 +122,13 @@ export class PlantService {
   async editPlant(
     recordId: string,
     dto: TreePlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { signer: 1, status: 1, _id: 0 }
+      { signer: 1, status: 1, _id: 0 },
     );
 
     if (!plantData)
@@ -153,7 +153,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (signer !== user.walletAddress)
@@ -161,7 +161,7 @@ export class PlantService {
 
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     await this.userService.updateUserById(user.userId, {
@@ -175,10 +175,11 @@ export class PlantService {
 
   async plantAssignedTree(
     dto: CreateAssignedTreePlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
+      _id: 0,
     });
 
     const signer = getSigner(
@@ -190,7 +191,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (signer !== user.walletAddress)
@@ -203,7 +204,7 @@ export class PlantService {
       },
       {
         _id: 1,
-      }
+      },
     );
 
     if (plantData)
@@ -217,7 +218,7 @@ export class PlantService {
     const planterData = await getPlanterData(signer);
 
     if (planterData.status != 1)
-      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER_STATUS);
 
     if (signer !== getCheckedSumAddress(tree.planter)) {
       if (
@@ -243,7 +244,7 @@ export class PlantService {
       signer: user.walletAddress,
     });
 
-    await this.userService.updateUserById(userData._id, {
+    await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
 
@@ -253,13 +254,13 @@ export class PlantService {
   async editAssignedTree(
     recordId: string,
     data: EditTreeAssignPlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, _id: 0 },
     );
 
     if (!assignedPlantData)
@@ -284,7 +285,7 @@ export class PlantService {
         birthDate: data.birthDate,
         countryCode: data.countryCode,
       },
-      1
+      1,
     );
 
     if (signer !== user.walletAddress)
@@ -301,7 +302,7 @@ export class PlantService {
       {
         ...data,
         nonce: userData.plantingNonce,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -309,19 +310,19 @@ export class PlantService {
 
   async deleteAssignedTree(
     recordId: string,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, _id: 0 },
     );
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
 
-    if (assignedPlantData.signer !== user.userId)
+    if (assignedPlantData.signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (assignedPlantData.status !== PlantStatus.PENDING)
@@ -333,7 +334,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -341,7 +342,7 @@ export class PlantService {
 
   async updateTree(
     dto: CreateUpdateTreeDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
@@ -355,7 +356,7 @@ export class PlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (signer !== user.walletAddress)
@@ -401,7 +402,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, _id: 0 },
     );
 
     if (!updateData)
@@ -419,7 +420,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -428,13 +429,13 @@ export class PlantService {
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
+      { status: 1, signer: 1, treeId: 1, _id: 0 },
     );
 
     if (!updateData)
@@ -458,7 +459,7 @@ export class PlantService {
         treeId: updateData.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (signer !== userData.walletAddress)
@@ -466,7 +467,7 @@ export class PlantService {
 
     const result = await this.updateTreeRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     await this.userService.updateUserById(user.userId, {

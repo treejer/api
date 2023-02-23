@@ -39,7 +39,7 @@ const ganache = require("ganache");
 
 jest.mock("../../common/helpers", () => ({
   ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
+    "../../common/helpers",
   ),
   getPlanterData: jest.fn(),
   getTreeData: jest.fn(),
@@ -70,7 +70,7 @@ describe("App e2e", () => {
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      })
+      }),
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -83,7 +83,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -139,7 +139,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const sign2 = await getEIP712Sign(
@@ -150,7 +150,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const invalidSign = await getEIP712Sign(
@@ -161,7 +161,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     //------fail with invalid signer
@@ -182,13 +182,13 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toEqual(
       new ForbiddenException({
         statusCode: 403,
         message: AuthErrorMessages.INVALID_SIGNER,
-      })
+      }),
     );
 
     //------fail with invalid planter
@@ -209,13 +209,13 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toEqual(
       new ForbiddenException({
         statusCode: 403,
         message: PlantErrorMessage.INVALID_PLANTER,
-      })
+      }),
     );
 
     (getPlanterData as jest.Mock).mockReturnValue({
@@ -234,7 +234,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(plantResult).toBeInstanceOf(Types.ObjectId);
@@ -269,13 +269,13 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toEqual(
       new ForbiddenException({
         statusCode: 403,
         message: PlantErrorMessage.SUPPLY_ERROR,
-      })
+      }),
     );
   });
 
@@ -304,7 +304,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -354,7 +354,7 @@ describe("App e2e", () => {
       plantService.deletePlant(createdUser.insertedId.toString(), {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      })
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -368,7 +368,7 @@ describe("App e2e", () => {
       plantService.deletePlant(insertedPendingPlantData.insertedId.toString(), {
         userId: insertedPendingPlantData.insertedId.toString(),
         walletAddress: account2.address,
-      })
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -383,8 +383,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -398,7 +398,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(deleteResult).toBe(true);
@@ -411,7 +411,7 @@ describe("App e2e", () => {
 
     expect(plantDataAfterDelete).toMatchObject({ status: PlantStatus.DELETE });
   });
-  it.only("edit plant", async () => {
+  it("edit plant", async () => {
     let account1 = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
@@ -441,7 +441,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const sign2 = await getEIP712Sign(
@@ -452,7 +452,7 @@ describe("App e2e", () => {
         birthDate: birthDate2,
         countryCode: countryCode2,
       },
-      2
+      2,
     );
 
     const invalidSign = await getEIP712Sign(
@@ -463,7 +463,7 @@ describe("App e2e", () => {
         birthDate: birthDate2,
         countryCode: countryCode2,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -529,8 +529,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -552,8 +552,8 @@ describe("App e2e", () => {
         {
           userId: insertedPendingPlantData.insertedId.toString(),
           walletAddress: account2.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -574,8 +574,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -597,8 +597,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -617,7 +617,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     let plantedDataAfterEdit = await mongoConnection.db
@@ -690,7 +690,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     let sign2 = await getEIP712Sign(
@@ -701,7 +701,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     //mock
@@ -870,7 +870,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     let sign2 = await getEIP712Sign(
@@ -880,7 +880,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     let resultWithNotExistUser = await request(httpServer)
@@ -1087,7 +1087,7 @@ describe("App e2e", () => {
         birthDate,
         countryCode,
       },
-      1
+      1,
     );
 
     let resultWithNotExistUser = await request(httpServer)
@@ -1303,7 +1303,7 @@ describe("App e2e", () => {
         birthDate,
         countryCode,
       },
-      1
+      1,
     );
 
     let invalidSignForPendingPlant = await getEIP712Sign(
@@ -1315,7 +1315,7 @@ describe("App e2e", () => {
         birthDate,
         countryCode,
       },
-      1
+      1,
     );
 
     let resultWithSupplyError = await request(httpServer)
@@ -1371,7 +1371,7 @@ describe("App e2e", () => {
         birthDate,
         countryCode,
       },
-      1
+      1,
     );
 
     (getTreeData as jest.Mock).mockReturnValue({
@@ -1509,5 +1509,709 @@ describe("App e2e", () => {
       .findOne({ _id: createdUser2.insertedId });
 
     expect(user2AfterPlant.plantingNonce).toBe(2);
+  });
+
+  it("plant assigned tree (planterType == 1) rejected", async () => {
+    let account = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const nonce2: number = 2;
+    const invalidNonce: number = 2;
+    const treeId: number = 1;
+    const treeId2: number = 2;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userBeforePlant.plantingNonce).toBe(1);
+
+    //---------------------reject because of signature
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: await getEIP712Sign(
+            account,
+            {
+              nonce: invalidNonce,
+              treeId: treeId,
+              treeSpecs: treeSpecs,
+              birthDate: birthDate,
+              countryCode: countryCode,
+            },
+            1,
+          ),
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: await getEIP712Sign(
+            account2,
+            {
+              nonce: nonce,
+              treeId: treeId,
+              treeSpecs: treeSpecs,
+              birthDate: birthDate,
+              countryCode: countryCode,
+            },
+            1,
+          ),
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+
+    //---------------------reject because of treeStatus
+
+    let sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 1,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_TREE_STATUS,
+      },
+    });
+
+    //---------------------reject because of status
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 2,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_PLANTER_STATUS,
+      },
+    });
+
+    //---------------------reject because of invalid planter
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account2.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_PLANTER,
+      },
+    });
+
+    //---------------------reject because of supply
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 5,
+      plantedCount: 5,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.SUPPLY_ERROR,
+      },
+    });
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 5,
+      plantedCount: 4,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    await plantService.plantAssignedTree(
+      {
+        treeId,
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account.address,
+      },
+    );
+
+    let sign2 = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce2,
+        treeId: treeId2,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId: treeId2,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.SUPPLY_ERROR,
+      },
+    });
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 1,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 5,
+      plantedCount: 3,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    await plantService.plantAssignedTree(
+      {
+        treeId: treeId2,
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign2,
+      },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account.address,
+      },
+    );
+  });
+
+  it("plant assigned tree (planterType == 3)", async () => {
+    let account = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+    let account3 = await web3.eth.accounts.create();
+
+    const nonce: number = 10;
+    const nonce2: number = 11;
+    const nonce3: number = 1;
+    const invalidNonce: number = 2;
+    const treeId: number = 1;
+    const treeId2: number = 2;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account.address),
+        nonce: 103631,
+        plantingNonce: 10,
+      });
+
+    let createdUser2 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account3.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userBeforePlant.plantingNonce).toBe(10);
+
+    //------------------------------------------
+
+    (getPlanterData as jest.Mock).mockReturnValue({
+      planterType: 3,
+      status: 1,
+      countryCode: 1,
+      score: 0,
+      supplyCap: 10,
+      plantedCount: 1,
+      longitude: 1,
+      latitude: 1,
+    });
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account2.address,
+      species: 0,
+      countryCode: 0,
+      saleType: 1,
+      treeStatus: 2,
+      plantDate: 0,
+      birthDate: 0,
+      treeSpecs: "",
+    });
+
+    (getPlanterOrganization as jest.Mock).mockReturnValue(account2.address);
+
+    let sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    let recordId = await plantService.plantAssignedTree(
+      {
+        treeId,
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account.address,
+      },
+    );
+
+    let plantedData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({
+        _id: recordId,
+      });
+
+    expect(plantedData).toMatchObject({
+      signer: getCheckedSumAddress(account.address),
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
+
+    let userAfterPlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userAfterPlant.plantingNonce).toBe(11);
+
+    let sign2 = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce2,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.PENDING_ASSIGNED_PLANT,
+      },
+    });
+
+    let sign3 = await getEIP712Sign(
+      account3,
+      {
+        nonce: nonce3,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    await expect(
+      plantService.plantAssignedTree(
+        {
+          treeId,
+          treeSpecs,
+          birthDate,
+          countryCode,
+          signature: sign3,
+        },
+        {
+          userId: createdUser2.insertedId.toString(),
+          walletAddress: account3.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.PENDING_ASSIGNED_PLANT,
+      },
+    });
+
+    await plantService.deleteAssignedTree(recordId, {
+      userId: createdUser.insertedId.toString(),
+      walletAddress: account.address,
+    });
+
+    let recordId2 = await plantService.plantAssignedTree(
+      {
+        treeId,
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign3,
+      },
+      {
+        userId: createdUser2.insertedId.toString(),
+        walletAddress: account3.address,
+      },
+    );
+
+    expect(recordId2).toBeInstanceOf(Types.ObjectId);
+  });
+
+  it("delete plant assigned tree (planterType == 1)", async () => {
+    let account = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeId: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account.address),
+        nonce: 103631,
+        plantingNonce: 2,
+      });
+
+    let createdUser2 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account2.address),
+        nonce: 103631,
+        plantingNonce: 2,
+      });
+
+    let sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    const insertedPendingPlantData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    let pendingPlantedData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    expect(pendingPlantedData.treeSpecs).toBe(treeSpecs);
+
+    ////------------------------------ reject signer is not correct
+
+    await expect(
+      plantService.deleteAssignedTree(
+        insertedPendingPlantData.insertedId.toString(),
+        {
+          userId: createdUser2.insertedId.toString(),
+          walletAddress: account2.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    ///------------------------------------------------
+
+    await plantService.deleteAssignedTree(
+      insertedPendingPlantData.insertedId.toString(),
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account.address,
+      },
+    );
+
+    let deletePlantedData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({
+        _id: insertedPendingPlantData.insertedId,
+      });
+
+    expect(deletePlantedData).toMatchObject({
+      _id: insertedPendingPlantData.insertedId,
+      signer: getCheckedSumAddress(account.address),
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      status: PlantStatus.DELETE,
+    });
+
+    ////------------------------------ reject signer is not correct
+
+    await expect(
+      plantService.deleteAssignedTree(
+        insertedPendingPlantData.insertedId.toString(),
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account.address,
+        },
+      ),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.INVLID_STATUS,
+      },
+    });
   });
 });
