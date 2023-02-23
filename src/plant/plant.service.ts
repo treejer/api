@@ -462,7 +462,7 @@ export class PlantService {
       3,
     );
 
-    if (signer !== userData.walletAddress)
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.updateTreeRepository.updateOne(

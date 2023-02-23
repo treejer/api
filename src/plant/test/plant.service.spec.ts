@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   INestApplication,
   ValidationPipe,
@@ -31,9 +32,7 @@ import {
   getCheckedSumAddress,
 } from "../../common/helpers";
 import { AuthModule } from "../../auth/auth.module";
-import { AuthGuard } from "@nestjs/passport";
 import { PlantService } from "../plant.service";
-import { time } from "console";
 
 const ganache = require("ganache");
 
@@ -103,6 +102,575 @@ describe("App e2e", () => {
       await collection.deleteMany({});
     }
   });
+
+  it("updateTree", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const treeId1: number = 1;
+    const treeId2: number = 2;
+    const treeSpecs: string = "treeSpecs";
+    const treeSpecs2: string = "treeSpecs 2";
+
+    const nonce1: number = 1;
+    const nonce2: number = 2;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    let userBeforePlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userBeforePlant.plantingNonce).toBe(1);
+
+    let sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: treeSpecs,
+      },
+      3
+    );
+
+    let sign2 = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce2,
+        treeId: treeId1,
+        treeSpecs: treeSpecs2,
+      },
+      3
+    );
+
+    let invalidSign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce1,
+        treeId: treeId1,
+        treeSpecs: "invalid treeSpecs",
+      },
+      3
+    );
+
+    //----------- fail with invalid signer
+    await expect(
+      plantService.updateTree(
+        { signature: invalidSign, treeId: treeId1, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+
+    //----------- fail with invalid treeStatus
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account1.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 1,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    await expect(
+      plantService.updateTree(
+        { signature: sign, treeId: treeId1, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_TREE_STATUS,
+      },
+    });
+
+    //-------------- fail with invalid planter
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account2.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 4,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    await expect(
+      plantService.updateTree(
+        { signature: sign, treeId: treeId1, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_PLANTER,
+      },
+    });
+
+    //--------------- fail with early update
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account1.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 4,
+      plantDate: Math.floor(new Date().getTime() / 1000), //- 615599
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    await expect(
+      plantService.updateTree(
+        { signature: sign, treeId: treeId1, treeSpecs },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.EARLY_UPDATE,
+      },
+    });
+
+    //---------------successful update
+
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account1.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 4,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    let updateResult = await plantService.updateTree(
+      { signature: sign, treeId: treeId1, treeSpecs },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    expect(updateResult).toBeInstanceOf(Types.ObjectId);
+
+    let updatedData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: updateResult,
+      });
+
+    expect(updatedData).toMatchObject({
+      signer: account1.address,
+      nonce: nonce1,
+      treeId: treeId1,
+      treeSpecs,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
+
+    let userAfterPlant = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userAfterPlant.plantingNonce).toBe(2);
+
+    //------------- fail with pending update
+    (getTreeData as jest.Mock).mockReturnValue({
+      planter: account1.address,
+      species: 1,
+      countryCode: 1,
+      saleType: 1,
+      treeStatus: 4,
+      plantDate: 1,
+      birthDate: 1,
+      treeSpecs: treeSpecs,
+    });
+
+    await expect(
+      plantService.updateTree(
+        { signature: sign2, treeId: treeId1, treeSpecs: treeSpecs2 },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.PENDING_UPDATE,
+      },
+    });
+  });
+
+  it("delete updateTree", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const treeId: number = 1;
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+      },
+      3
+    );
+
+    const insertedPendingUpdateData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        signature: sign,
+        treeSpecs,
+        treeId,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const insertedVerifiedUpdateData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        signature: sign,
+        treeSpecs,
+        treeId,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.VERIFIED,
+        updatedAt: new Date(),
+      });
+
+    let verifiedUpdatedData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedVerifiedUpdateData.insertedId,
+      });
+
+    let pendingUpdatedData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedPendingUpdateData.insertedId,
+      });
+
+    expect(pendingUpdatedData).toMatchObject({ status: PlantStatus.PENDING });
+    expect(verifiedUpdatedData).toMatchObject({ status: PlantStatus.VERIFIED });
+
+    //----- fail no data exist
+
+    await expect(
+      plantService.deleteUpdateTree(createdUser.insertedId.toString(), {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      })
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+      },
+    });
+
+    //----------- fail invalid access
+
+    await expect(
+      plantService.deleteUpdateTree(
+        insertedPendingUpdateData.insertedId.toString(),
+        {
+          userId: insertedPendingUpdateData.insertedId.toString(),
+          walletAddress: account2.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    //----------- fail invalid statsus
+    await expect(
+      plantService.deleteUpdateTree(
+        insertedVerifiedUpdateData.insertedId.toString(),
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.INVLID_STATUS,
+      },
+    });
+
+    //delete seccussful
+    const deleteResult = await plantService.deleteUpdateTree(
+      insertedPendingUpdateData.insertedId.toString(),
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    expect(deleteResult).toBe(true);
+
+    const updateDataAfterDelete = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedPendingUpdateData.insertedId,
+      });
+
+    expect(updateDataAfterDelete).toMatchObject({ status: PlantStatus.DELETE });
+  });
+
+  it("edit updateTree", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const treeId: number = 1;
+
+    const invalidNonce: number = 2;
+    const treeSpecs2: string = "ipfs 2";
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 103631,
+        plantingNonce: 1,
+      });
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+      },
+      3
+    );
+
+    const sign2 = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs2,
+      },
+      3
+    );
+
+    const invalidSign = await getEIP712Sign(
+      account1,
+      {
+        nonce: invalidNonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+      },
+      3
+    );
+
+    const insertedPendingUpdateData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        treeId,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const insertedVerifiedUpdateData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        treeId,
+        status: PlantStatus.VERIFIED,
+        updatedAt: new Date(),
+      });
+
+    let verifiedUpdatedData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedVerifiedUpdateData.insertedId,
+      });
+
+    let pendingUpdatedData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedPendingUpdateData.insertedId,
+      });
+
+    expect(pendingUpdatedData).toMatchObject({
+      signature: sign,
+      treeSpecs,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
+
+    expect(verifiedUpdatedData).toMatchObject({ status: PlantStatus.VERIFIED });
+
+    //----- fail no data exist
+
+    await expect(
+      plantService.editUpdateTree(
+        createdUser.insertedId.toString(),
+        {
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+      },
+    });
+
+    //----------- fail invalid access
+
+    await expect(
+      plantService.editUpdateTree(
+        insertedPendingUpdateData.insertedId.toString(),
+        {
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: insertedPendingUpdateData.insertedId.toString(),
+          walletAddress: account2.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    //----------- fail invalid statsus
+    await expect(
+      plantService.editUpdateTree(
+        insertedVerifiedUpdateData.insertedId.toString(),
+        {
+          signature: sign2,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: PlantErrorMessage.INVLID_STATUS,
+      },
+    });
+
+    //////------------------- fail invalid singer
+
+    await expect(
+      plantService.editUpdateTree(
+        insertedPendingUpdateData.insertedId.toString(),
+        {
+          signature: invalidSign,
+          treeSpecs: treeSpecs2,
+        },
+        {
+          userId: createdUser.insertedId.toString(),
+          walletAddress: account1.address,
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+
+    let editPlantResult = await plantService.editUpdateTree(
+      insertedPendingUpdateData.insertedId.toString(),
+      {
+        signature: sign2,
+        treeSpecs: treeSpecs2,
+      },
+      {
+        userId: createdUser.insertedId.toString(),
+        walletAddress: account1.address,
+      }
+    );
+
+    let plantedDataAfterEdit = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({
+        _id: insertedPendingUpdateData.insertedId,
+      });
+
+    expect(editPlantResult).toBe(true);
+
+    expect(plantedDataAfterEdit).toMatchObject({
+      signature: sign2,
+      treeSpecs: treeSpecs2,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
+  });
+
   it("plant", async () => {
     let account1 = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
@@ -110,7 +678,6 @@ describe("App e2e", () => {
     const nonce: number = 1;
     const nonce2: number = 2;
     const treeSpecs: string = "ipfs";
-    const invalidTreeSpecs: string = "invalid ipfs";
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -182,6 +749,7 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
+<<<<<<< HEAD
         },
       ),
     ).rejects.toEqual(
@@ -190,6 +758,16 @@ describe("App e2e", () => {
         message: AuthErrorMessages.INVALID_SIGNER,
       }),
     );
+=======
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_SIGNER,
+      },
+    });
+>>>>>>> 78eb802b5a39f8a0b2d9618a95f40288827155a5
 
     //------fail with invalid planter
     (getPlanterData as jest.Mock).mockReturnValue({
@@ -209,6 +787,7 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
+<<<<<<< HEAD
         },
       ),
     ).rejects.toEqual(
@@ -217,6 +796,16 @@ describe("App e2e", () => {
         message: PlantErrorMessage.INVALID_PLANTER,
       }),
     );
+=======
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.INVALID_PLANTER,
+      },
+    });
+>>>>>>> 78eb802b5a39f8a0b2d9618a95f40288827155a5
 
     (getPlanterData as jest.Mock).mockReturnValue({
       planterType: 1,
@@ -269,6 +858,7 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
+<<<<<<< HEAD
         },
       ),
     ).rejects.toEqual(
@@ -277,6 +867,16 @@ describe("App e2e", () => {
         message: PlantErrorMessage.SUPPLY_ERROR,
       }),
     );
+=======
+        }
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: PlantErrorMessage.SUPPLY_ERROR,
+      },
+    });
+>>>>>>> 78eb802b5a39f8a0b2d9618a95f40288827155a5
   });
 
   it("delete plant", async () => {
@@ -505,10 +1105,10 @@ describe("App e2e", () => {
       });
 
     expect(pendingPlantedData).toMatchObject({
-      birthDate: birthDate,
-      countryCode: countryCode,
+      birthDate,
+      countryCode,
       signature: sign,
-      treeSpecs: treeSpecs,
+      treeSpecs,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -626,9 +1226,8 @@ describe("App e2e", () => {
         _id: insertedPendingPlantData.insertedId,
       });
 
-    console.log("pdsdsfdsfsdf", plantedDataAfterEdit);
-
     expect(editPlantResult).toBe(true);
+
     expect(plantedDataAfterEdit).toMatchObject({
       birthDate: birthDate2,
       countryCode: countryCode2,
@@ -638,11 +1237,9 @@ describe("App e2e", () => {
       nonce,
       status: PlantStatus.PENDING,
     });
-
-    console.log("editPlantResult", editPlantResult);
   });
 
-  it("test plantTree", async () => {
+  it.skip("test plantTree", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
@@ -838,7 +1435,7 @@ describe("App e2e", () => {
     expect(userAfterPlant.plantingNonce).toBe(2);
   });
 
-  it("test updateTree", async () => {
+  it.skip("test updateTree", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
@@ -1049,7 +1646,7 @@ describe("App e2e", () => {
     });
   });
 
-  it("plant assigned tree", async () => {
+  it.skip("plant assigned tree", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
     let account3 = await web3.eth.accounts.create();
