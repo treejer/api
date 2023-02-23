@@ -96,13 +96,15 @@ describe("App e2e", () => {
   });
 
   afterEach(async () => {
-    // const collections = mongoConnection.collections;
-    // for (const key in collections) {
-    //   const collection = collections[key];
-    //   await collection.deleteMany({});
-    // }
+    const collections = await mongoConnection.db.collections();
 
-    mongoConnection.db.dropDatabase();
+    for (const key in collections) {
+      const collection = mongoConnection.collection(
+        collections[key].collectionName
+      );
+
+      await collection.deleteMany({});
+    }
   });
 
   it("updateTree", async () => {
