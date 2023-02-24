@@ -15,6 +15,8 @@ export const StatusErrorMessage = {
 
 export const PlantErrorMessage = {
   INVALID_PLANTER: "invalid planter",
+  INVALID_RECORD_ID: "invalid record id",
+  INVALID_PLANTER_STATUS: "invalid planter status",
   SUPPLY_ERROR: "supply error",
   INVALID_TREE_STATUS: "invalid tree status",
   EARLY_UPDATE: "early update",

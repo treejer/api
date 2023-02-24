@@ -181,6 +181,7 @@ export class PlantService {
 
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
+      _id: 0,
     });
 
     const signer = getSigner(
@@ -219,7 +220,7 @@ export class PlantService {
     const planterData = await getPlanterData(signer);
 
     if (planterData.status != 1)
-      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
+      throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER_STATUS);
 
     if (signer !== getCheckedSumAddress(tree.planter)) {
       if (
@@ -247,7 +248,7 @@ export class PlantService {
       signer: user.walletAddress,
     });
 
-    await this.userService.updateUserById(userData._id, {
+    await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
 
@@ -263,11 +264,11 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, treeId: 1, _id: 0 }
     );
 
     if (!assignedPlantData)
-      throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
+      throw new NotFoundException(PlantErrorMessage.INVALID_RECORD_ID);
 
     if (assignedPlantData.signer != user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
@@ -325,7 +326,7 @@ export class PlantService {
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
 
-    if (assignedPlantData.signer !== user.userId)
+    if (assignedPlantData.signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
 
     if (assignedPlantData.status !== PlantStatus.PENDING)
@@ -465,7 +466,7 @@ export class PlantService {
       3
     );
 
-    if (signer !== userData.walletAddress)
+    if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
     const result = await this.updateTreeRepository.updateOne(
