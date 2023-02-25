@@ -171,14 +171,23 @@ export class PlantService {
     return result.acknowledged;
   }
 
+  async editPlantDataStatus(
+    recordId: string,
+    status: number
+  ): Promise<boolean> {
+    const result = await this.treePlantRepository.updateOne(
+      { _id: recordId },
+      { status }
+    );
+    return result.acknowledged;
+  }
+
   //---------------------------  Assigned Tree ----------------------------------------------------
 
   async plantAssignedTree(
     dto: CreateAssignedTreePlantDto,
     user: JwtUserDto
   ): Promise<string> {
-    console.log("user.walletAddress", user.walletAddress);
-
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -344,6 +353,18 @@ export class PlantService {
     return result.acknowledged;
   }
 
+  async editAssignedTreeDataStatus(
+    recordId: string,
+    status: number
+  ): Promise<boolean> {
+    const result = await this.assignedTreePlantRepository.updateOne(
+      { _id: recordId },
+      { status }
+    );
+
+    return result.acknowledged;
+  }
+
   async updateTree(
     dto: CreateUpdateTreeDto,
     user: JwtUserDto
@@ -479,6 +500,46 @@ export class PlantService {
     });
 
     return result.acknowledged;
+  }
+
+  async editUpdateTreeDataStatus(
+    recordId: string,
+    status: number
+  ): Promise<boolean> {
+    const result = await this.updateTreeRepository.updateOne(
+      { _id: recordId },
+      { status }
+    );
+
+    return result.acknowledged;
+  }
+
+  async getPlantRequests(filter, sortOption, projection) {
+    return await this.treePlantRepository.sort(filter, sortOption, projection);
+  }
+
+  async getPlantDataWithId(recordId) {
+    return await this.treePlantRepository.findOne({ _id: recordId });
+  }
+
+  async getAssignedTreeDataWithId(recordId) {
+    return await this.assignedTreePlantRepository.findOne({ _id: recordId });
+  }
+
+  async getUpdateTreeDataWithId(recordId) {
+    return await this.updateTreeRepository.findOne({ _id: recordId });
+  }
+
+  async getAssignedTreeRequests(filter, sortOption, projection) {
+    return await this.assignedTreePlantRepository.sort(
+      filter,
+      sortOption,
+      projection
+    );
+  }
+
+  async getUpdateTreeRequests(filter, sortOption, projection) {
+    return await this.updateTreeRepository.sort(filter, sortOption, projection);
   }
 
   async pendingListCount(filter): Promise<number> {

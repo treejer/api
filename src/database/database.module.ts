@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigService } from "@nestjs/config";
+import { EntityRepository } from "./database.repository";
 @Module({
   imports: [
     MongooseModule.forRootAsync({
@@ -14,6 +15,6 @@ import { ConfigService } from "@nestjs/config";
     }),
   ],
   providers: [],
-  exports: [],
+  // exports: [EntityRepository],
 })
 export class DatabaseModule {}

@@ -26,5 +26,6 @@ export const PlantErrorMessage = {
   INVLID_STATUS: "invalid status",
   INVALID_TREE_ID: "invalid treeId",
   PLANT_DATA_NOT_EXIST: "plant data not exist",
+  ASSIGNED_TREE_DATA_NOT_EXIST: "assigned tree data not exist",
   UPDATE_DATA_NOT_EXIST: "update data not exist",
 };

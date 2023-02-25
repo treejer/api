@@ -33,8 +33,8 @@ import { User } from "../user/decorators";
 export class PlantController {
   constructor(private plantService: PlantService) {}
 
-  // @HasRoles(Role.PLANTER)
-  // @UseGuards(AuthGuard("jwt"))
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("regular/add")
   plant(@Body() dto: TreePlantDto, @User() user: JwtUserDto): Promise<string> {
     console.log("dddddddd", user);
