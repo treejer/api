@@ -6,6 +6,8 @@ import { PlantService } from "src/plant/plant.service";
 import { ConfigService } from "@nestjs/config";
 import { sleep } from "./sleep";
 
+import { PlantVerificationService } from "./../plantVerification.service";
+
 const Web3 = require("web3");
 
 const WEB3_PROVIDER = "ws://localhost:8545";
@@ -20,11 +22,11 @@ const contracts = [
 ];
 
 @Injectable()
-export class VerifyPlant {
+export class TreeFactoryListener {
   private ethereumEvents;
 
   constructor(
-    // private responseService: ResponseService,
+    private plantVerificationService: PlantVerificationService,
     private configService: ConfigService,
   ) {
     console.log("VerifyPlant run");
@@ -48,17 +50,19 @@ export class VerifyPlant {
     this.ethereumEvents.on(
       "block.confirmed",
       async (blockNumber, events, done) => {
-        console.log("block.confirmed", blockNumber);
+        console.log("block.confirmed", blockNumber, events);
         await new Promise(async (resolve, reject) => {
           if (events.length > 0) {
             for (let event of events) {
-              // await responseService.check(event);
+              console.log(
+                "event",
+                event,
+                (await web3.eth.getTransactionReceipt(event.transactionHash))
+                  .logs[0],
+              );
+              // await plantVerificationService.(event);
             }
-
-            // await sleep(10000);
           }
-
-          // await sleep(40000);
 
           resolve("done");
         });

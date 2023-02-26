@@ -20,7 +20,7 @@ export class PlantVerificationService {
 
     return await this.plantService.editPlantDataStatus(
       recordId,
-      PlantStatus.REJECTED
+      PlantStatus.REJECTED,
     );
   }
 
@@ -28,17 +28,17 @@ export class PlantVerificationService {
     return this.plantService.getPlantRequests(
       { status: PlantStatus.PENDING },
       { walletAddress: 1, nonce: 1 },
-      {}
+      {},
     );
   }
 
   async rejectAssignedTree(recordId: string) {
     const assignedPlantData = await this.plantService.getAssignedTreeDataWithId(
-      recordId
+      recordId,
     );
     if (!assignedPlantData)
       throw new NotFoundException(
-        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
+        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
       );
 
     if (assignedPlantData.status != PlantStatus.PENDING)
@@ -46,20 +46,20 @@ export class PlantVerificationService {
 
     return await this.plantService.editAssignedTreeDataStatus(
       recordId,
-      PlantStatus.REJECTED
+      PlantStatus.REJECTED,
     );
   }
   async getAssignedTreeRequests() {
     return this.plantService.getAssignedTreeRequests(
       { status: PlantStatus.PENDING },
       { walletAddress: 1, nonce: 1 },
-      {}
+      {},
     );
   }
 
   async rejectUpdate(recordId: string) {
     const updateData = await this.plantService.getUpdateTreeDataWithId(
-      recordId
+      recordId,
     );
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -68,14 +68,14 @@ export class PlantVerificationService {
 
     return await this.plantService.editUpdateTreeDataStatus(
       recordId,
-      PlantStatus.REJECTED
+      PlantStatus.REJECTED,
     );
   }
   async getUpdateRequests() {
     return this.plantService.getUpdateTreeRequests(
       { status: PlantStatus.PENDING },
       { walletAddress: 1, nonce: 1 },
-      {}
+      {},
     );
   }
 }
