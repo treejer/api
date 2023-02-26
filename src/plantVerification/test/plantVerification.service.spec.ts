@@ -179,6 +179,7 @@ describe("App e2e", () => {
     const plantDataAfterReject = await mongoConnection.db
       .collection(CollectionNames.TREE_PLANT)
       .findOne({ _id: insertedPendingPlantData.insertedId });
+
     expect(plantDataAfterReject.status).toBe(PlantStatus.REJECTED);
 
     await expect(
@@ -310,6 +311,7 @@ describe("App e2e", () => {
         treeId,
         status: PlantStatus.PENDING,
         updatedAt: new Date(),
+        createdAt: new Date(),
       });
 
     const insertedPlanteData = await mongoConnection.db
@@ -323,6 +325,7 @@ describe("App e2e", () => {
         nonce,
         status: PlantStatus.PENDING,
         updatedAt: new Date(),
+        createdAt: new Date(),
       });
 
     const updateDataBeforeReject = await mongoConnection.db
@@ -351,6 +354,7 @@ describe("App e2e", () => {
     const updadteDataAfterReject = await mongoConnection.db
       .collection(CollectionNames.UPDATE_TREES)
       .findOne({ _id: insertedPendingUpdateData.insertedId });
+
     expect(updadteDataAfterReject.status).toBe(PlantStatus.REJECTED);
 
     await expect(

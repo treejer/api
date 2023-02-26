@@ -179,6 +179,7 @@ export class PlantService {
       { _id: recordId },
       { status }
     );
+
     return result.acknowledged;
   }
 
@@ -245,8 +246,6 @@ export class PlantService {
       signer: signer,
       status: PlantStatus.PENDING,
     });
-
-    console.log("pendingPlantsCount", pendingPlantsCount);
 
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
@@ -514,10 +513,6 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async getPlantRequests(filter, sortOption, projection) {
-    return await this.treePlantRepository.sort(filter, sortOption, projection);
-  }
-
   async getPlantDataWithId(recordId) {
     return await this.treePlantRepository.findOne({ _id: recordId });
   }
@@ -528,6 +523,10 @@ export class PlantService {
 
   async getUpdateTreeDataWithId(recordId) {
     return await this.updateTreeRepository.findOne({ _id: recordId });
+  }
+
+  async getPlantRequests(filter, sortOption, projection) {
+    return await this.treePlantRepository.sort(filter, sortOption, projection);
   }
 
   async getAssignedTreeRequests(filter, sortOption, projection) {
