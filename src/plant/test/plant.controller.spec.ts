@@ -1,50 +1,11 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
-import { Connection, connect, Types, now } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
-var ethUtil = require("ethereumjs-util");
-
-const Web3 = require("web3");
-
-const request = require("supertest");
-
-import {
-  Messages,
-  PlantErrorMessage,
-  AuthErrorMessages,
-  PlantStatus,
-  CollectionNames,
-} from "../../common/constants";
-import Jwt from "jsonwebtoken";
-
-import {
-  getPlanterData,
-  getTreeData,
-  getPlanterOrganization,
-  getEIP712Sign,
-  getCheckedSumAddress,
-} from "../../common/helpers";
 import { AuthModule } from "../../auth/auth.module";
 import { PlantService } from "../plant.service";
 import { PlantController } from "../plant.controller";
-
-const ganache = require("ganache");
-
-jest.mock("../../common/helpers", () => ({
-  ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
-  ),
-  getPlanterData: jest.fn(),
-  getTreeData: jest.fn(),
-  getPlanterOrganization: jest.fn(),
-}));
 
 describe("App e2e", () => {
   let app: INestApplication;

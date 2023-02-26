@@ -17,10 +17,13 @@ import {
 import { DatabaseModule } from "../database/database.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "../user/user.module";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
   imports: [
     UserModule,
+    AuthModule,
+    DatabaseModule,
     MongooseModule.forFeature([
       { name: AssignedTreePlant.name, schema: AssignedTreePlantSchema },
     ]),
@@ -31,8 +34,6 @@ import { UserModule } from "../user/user.module";
     MongooseModule.forFeature([
       { name: UpdateTree.name, schema: UpdateTreeSchema },
     ]),
-
-    DatabaseModule,
   ],
   controllers: [PlantController],
   providers: [

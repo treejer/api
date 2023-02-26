@@ -5,20 +5,13 @@ import { UserModule } from "./../user/user.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 
-import { AtStrategy, RtStrategy } from "./strategies";
+import { AtStrategy, RolesGuard, RtStrategy } from "./strategies";
 import { VerificationRepository } from "./auth.repository";
 import { Verification, VerificationSchema } from "./schemas";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatabaseModule } from "./../database/database.module";
+import { UserService } from "../user/user.service";
 @Module({
-  controllers: [AuthController],
-  providers: [
-    AuthService,
-    ConfigService,
-    AtStrategy,
-    RtStrategy,
-    VerificationRepository,
-  ],
   imports: [
     UserModule,
     JwtModule.register({}),
@@ -27,5 +20,14 @@ import { DatabaseModule } from "./../database/database.module";
     ]),
     DatabaseModule,
   ],
+  controllers: [AuthController],
+  providers: [
+    VerificationRepository,
+    AuthService,
+    ConfigService,
+    AtStrategy,
+    RolesGuard,
+  ],
+  exports: [AuthService, AtStrategy, RolesGuard],
 })
 export class AuthModule {}
