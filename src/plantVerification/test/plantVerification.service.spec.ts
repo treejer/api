@@ -368,4 +368,52 @@ describe("App e2e", () => {
       },
     });
   });
+
+  it("get plant requests count", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+    let account3 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedIndexes = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.TREE_PLANT)
+        .insertOne({
+          birthDate,
+          countryCode,
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1.address)
+              : getCheckedSumAddress(account2.address),
+          nonce: i,
+          status: deletedIndexes.includes(i)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          updatedAt: new Date(),
+        });
+    }
+
+    let result = await plantVerificationService.getPlantRequests();
+  });
+  it("get assigned tree requests count", async () => {});
+  it("get update requests count", async () => {});
 });

@@ -171,14 +171,24 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async editPlantDataStatus(
-    recordId: string,
-    status: number
-  ): Promise<boolean> {
-    const result = await this.treePlantRepository.updateOne(
-      { _id: recordId },
-      { status }
-    );
+  async editPlantDataStatus(filter, status: number): Promise<boolean> {
+    const result = await this.treePlantRepository.updateOne(filter, { status });
+
+    return result.acknowledged;
+  }
+
+  async editAssignedTreeDataStatus(filter, status: number): Promise<boolean> {
+    const result = await this.assignedTreePlantRepository.updateOne(filter, {
+      status,
+    });
+
+    return result.acknowledged;
+  }
+
+  async editUpdateTreeDataStatus(filter, status: number): Promise<boolean> {
+    const result = await this.updateTreeRepository.updateOne(filter, {
+      status,
+    });
 
     return result.acknowledged;
   }
@@ -352,18 +362,6 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async editAssignedTreeDataStatus(
-    recordId: string,
-    status: number
-  ): Promise<boolean> {
-    const result = await this.assignedTreePlantRepository.updateOne(
-      { _id: recordId },
-      { status }
-    );
-
-    return result.acknowledged;
-  }
-
   async updateTree(
     dto: CreateUpdateTreeDto,
     user: JwtUserDto
@@ -501,28 +499,16 @@ export class PlantService {
     return result.acknowledged;
   }
 
-  async editUpdateTreeDataStatus(
-    recordId: string,
-    status: number
-  ): Promise<boolean> {
-    const result = await this.updateTreeRepository.updateOne(
-      { _id: recordId },
-      { status }
-    );
-
-    return result.acknowledged;
+  async getPlantData(filter) {
+    return await this.treePlantRepository.findOne(filter);
   }
 
-  async getPlantDataWithId(recordId) {
-    return await this.treePlantRepository.findOne({ _id: recordId });
+  async getAssignedTreeData(filter) {
+    return await this.assignedTreePlantRepository.findOne(filter);
   }
 
-  async getAssignedTreeDataWithId(recordId) {
-    return await this.assignedTreePlantRepository.findOne({ _id: recordId });
-  }
-
-  async getUpdateTreeDataWithId(recordId) {
-    return await this.updateTreeRepository.findOne({ _id: recordId });
+  async getUpdateTreeData(filter) {
+    return await this.updateTreeRepository.findOne(filter);
   }
 
   async getPlantRequests(filter, sortOption, projection) {
