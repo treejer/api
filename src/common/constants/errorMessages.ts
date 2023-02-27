@@ -13,6 +13,10 @@ export const StatusErrorMessage = {
   NOT_FOUND: "Not Found",
 };
 
+export const SignatureError = {
+  INVALID_SIGNATURE_LENTGH: "Invalid signature length",
+};
+
 export const PlantErrorMessage = {
   INVALID_PLANTER: "invalid planter",
   INVALID_RECORD_ID: "invalid record id",

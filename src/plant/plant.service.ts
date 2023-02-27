@@ -10,6 +10,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 
 import {

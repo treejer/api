@@ -47,20 +47,16 @@ export class AuthService {
       };
     }
 
-    try {
-      const newUser = await this.userService.create({
-        nonce,
-        walletAddress: checkedSumWallet,
-        plantingNonce: 1,
-      });
+    const newUser = await this.userService.create({
+      nonce,
+      walletAddress: checkedSumWallet,
+      plantingNonce: 1,
+    });
 
-      return {
-        message: Messages.SIGN_MESSAGE + newUser.nonce.toString(),
-        userId: newUser._id,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(error.toString());
-    }
+    return {
+      message: Messages.SIGN_MESSAGE + newUser.nonce.toString(),
+      userId: newUser._id,
+    };
   }
 
   async loginWithWallet(walletAddress: string, signature: string) {
@@ -89,24 +85,23 @@ export class AuthService {
 
     const nonce: number = getRandomNonce();
 
-    try {
-      await this.userService.updateUserById(user._id, { nonce });
+    await this.userService.updateUserById(user._id, { nonce });
 
-      return {
-        access_token: await this.getAccessToken(user._id, checkedSumWallet),
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(error.toString());
-    }
+    return {
+      access_token: await this.getAccessToken(user._id, checkedSumWallet),
+    };
   }
 
   async getAccessToken(userId: string, walletAddress: string) {
     const payload = { userId, walletAddress };
-
-    return this.jwtService.signAsync(payload, {
-      expiresIn: 60 * 60 * 24 * 30,
-      secret: this.configService.get<string>("JWT_SECRET"),
-    });
+    try {
+      return this.jwtService.signAsync(payload, {
+        expiresIn: 60 * 60 * 24 * 30,
+        secret: this.configService.get<string>("JWT_SECRET"),
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   //return 6 digit random token
