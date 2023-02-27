@@ -369,10 +369,13 @@ describe("App e2e", () => {
     });
   });
 
-  it("get plant requests count", async () => {
-    let account1 = await web3.eth.accounts.create();
-    let account2 = await web3.eth.accounts.create();
-    let account3 = await web3.eth.accounts.create();
+  it("get plant requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
@@ -380,7 +383,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
 
     const sign = await getEIP712Sign(
-      account1,
+      account,
       {
         nonce: nonce,
         treeSpecs: treeSpecs,
@@ -390,7 +393,7 @@ describe("App e2e", () => {
       2
     );
 
-    const deletedIndexes = [2, 6, 7];
+    const deletedNonces = [2, 6, 7];
 
     for (let i = 0; i < 10; i++) {
       await mongoConnection.db
@@ -402,10 +405,10 @@ describe("App e2e", () => {
           treeSpecs,
           signer:
             i % 2 == 0
-              ? getCheckedSumAddress(account1.address)
-              : getCheckedSumAddress(account2.address),
-          nonce: i,
-          status: deletedIndexes.includes(i)
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
             ? PlantStatus.DELETE
             : PlantStatus.PENDING,
           updatedAt: new Date(),
@@ -413,7 +416,150 @@ describe("App e2e", () => {
     }
 
     let result = await plantVerificationService.getPlantRequests();
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
   });
+
+  it("get assigned plant requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedNonces = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+        .insertOne({
+          birthDate,
+          countryCode,
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          treeId: i + 1,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+    }
+
+    let result = await plantVerificationService.getAssignedTreeRequests();
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
+  });
+
+  it("get update requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedNonces = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.UPDATE_TREES)
+        .insertOne({
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          treeId: i + 1,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+    }
+
+    let result = await plantVerificationService.getUpdateRequests();
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
+  });
+
   it("get assigned tree requests count", async () => {});
   it("get update requests count", async () => {});
 });
