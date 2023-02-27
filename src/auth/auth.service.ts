@@ -10,7 +10,6 @@ import { ConfigService } from "@nestjs/config";
 import { UserService } from "./../user/user.service";
 import { JwtService } from "@nestjs/jwt";
 
-import { VerificationRepository } from "./auth.repository";
 import { Messages } from "./../common/constants";
 import {
   getRandomNonce,
@@ -24,8 +23,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private userService: UserService,
-    private jwtService: JwtService,
-    private authRepo: VerificationRepository
+    private jwtService: JwtService
   ) {}
 
   getMe(userId: string) {
