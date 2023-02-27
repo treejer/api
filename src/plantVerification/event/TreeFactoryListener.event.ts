@@ -1,12 +1,15 @@
-const EthereumEvents = require("ethereum-events");
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+
 import * as CircleOfHop from "./contracts/CircleOfHop.json";
 
-import { PlantService } from "src/plant/plant.service";
 import { ConfigService } from "@nestjs/config";
-import { sleep } from "./sleep";
+
+const EthereumEvents = require("ethereum-events");
+
+import { sleep } from "../../common/helpers/sleep";
 
 import { PlantVerificationService } from "./../plantVerification.service";
+import { EventName } from "src/common/constants";
 
 const Web3 = require("web3");
 
@@ -17,7 +20,7 @@ const contracts = [
     name: "CircleOfHop",
     address: "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab",
     abi: CircleOfHop.abi,
-    events: ["Test", "Test2"],
+    events: ["TreeUpdatedVerified", "TreeVerified", "TreeAssigned"],
   },
 ];
 
@@ -50,17 +53,36 @@ export class TreeFactoryListener {
     this.ethereumEvents.on(
       "block.confirmed",
       async (blockNumber, events, done) => {
-        console.log("block.confirmed", blockNumber, events);
+        console.log("block.confirmed", blockNumber);
         await new Promise(async (resolve, reject) => {
           if (events.length > 0) {
             for (let event of events) {
-              console.log(
-                "event",
-                event,
-                (await web3.eth.getTransactionReceipt(event.transactionHash))
-                  .logs[0],
-              );
-              // await plantVerificationService.(event);
+              if (event.name === EventName.TREE_ASSIGNED) {
+                try {
+                  await plantVerificationService.verifyAssignedTree(
+                    Number(event.values._treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_ASSIGNED error", error);
+                }
+              } else if (event.name === EventName.TREE_PLANT) {
+                try {
+                  await plantVerificationService.verifyPlant(
+                    event.values.signer,
+                    Number(event.values.nonce),
+                  );
+                } catch (error) {
+                  console.log("TREE_PLANT error", error);
+                }
+              } else if (event.name === EventName.TREE_UPDATE) {
+                try {
+                  await plantVerificationService.verifyUpdate(
+                    Number(event.values._treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_UPDATE error", error);
+                }
+              }
             }
           }
 

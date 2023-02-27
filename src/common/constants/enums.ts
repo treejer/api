@@ -16,3 +16,9 @@ export enum Role {
   PLANTER = 2,
   ADMIN = 3,
 }
+
+export enum EventName {
+  TREE_ASSIGNED = "TreeAssigned",
+  TREE_UPDATE = "TreeUpdatedVerified",
+  TREE_PLANT = "TreeVerified",
+}
