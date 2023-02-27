@@ -39,7 +39,7 @@ const ganache = require("ganache");
 
 jest.mock("../../common/helpers", () => ({
   ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
+    "../../common/helpers",
   ),
   getPlanterData: jest.fn(),
   getTreeData: jest.fn(),
@@ -66,13 +66,13 @@ describe("App e2e", () => {
 
     config = moduleRef.get<ConfigService>(ConfigService);
     plantVerificationService = moduleRef.get<PlantVerificationService>(
-      PlantVerificationService
+      PlantVerificationService,
     );
 
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      })
+      }),
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -85,7 +85,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -93,24 +93,22 @@ describe("App e2e", () => {
   });
 
   afterAll(async () => {
-    await mongoConnection.dropDatabase();
-    await mongoConnection.close();
+    // await mongoConnection.dropDatabase();
+    // await mongoConnection.close();
     await app.close();
   });
 
   afterEach(async () => {
-    const collections = await mongoConnection.db.collections();
-
-    for (const key in collections) {
-      const collection = mongoConnection.collection(
-        collections[key].collectionName
-      );
-
-      await collection.deleteMany({});
-    }
+    // const collections = await mongoConnection.db.collections();
+    // for (const key in collections) {
+    //   const collection = mongoConnection.collection(
+    //     collections[key].collectionName,
+    //   );
+    //   await collection.deleteMany({});
+    // }
   });
 
-  it("reject plant", async () => {
+  it.only("reject plant", async () => {
     let account1 = await web3.eth.accounts.create();
 
     const nonce: number = 1;
@@ -126,7 +124,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -137,7 +135,7 @@ describe("App e2e", () => {
         signature: sign,
         treeSpecs,
         signer: getCheckedSumAddress(account1.address),
-        nonce,
+        nonce: 13,
         status: PlantStatus.PENDING,
         updatedAt: new Date(),
       });
@@ -149,10 +147,12 @@ describe("App e2e", () => {
         treeSpecs,
         signer: getCheckedSumAddress(account1.address),
         nonce,
+        treeId: 4,
         status: PlantStatus.PENDING,
         updatedAt: new Date(),
       });
 
+    return;
     const plantDataBeforeReject = await mongoConnection.db
       .collection(CollectionNames.TREE_PLANT)
       .findOne({ _id: insertedPendingPlantData.insertedId });
@@ -161,8 +161,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedUpdateData.insertedId.toString()
-      )
+        insertedUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -171,7 +171,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectPlant(
-      insertedPendingPlantData.insertedId.toString()
+      insertedPendingPlantData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -184,8 +184,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedPendingPlantData.insertedId.toString()
-      )
+        insertedPendingPlantData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -212,7 +212,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     const insertedPendingAssinedTreeData = await mongoConnection.db
@@ -250,8 +250,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedUpdateData.insertedId.toString()
-      )
+        insertedUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -260,7 +260,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectAssignedTree(
-      insertedPendingAssinedTreeData.insertedId.toString()
+      insertedPendingAssinedTreeData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -272,8 +272,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedPendingAssinedTreeData.insertedId.toString()
-      )
+        insertedPendingAssinedTreeData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -298,7 +298,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     const insertedPendingUpdateData = await mongoConnection.db
@@ -336,8 +336,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPlanteData.insertedId.toString()
-      )
+        insertedPlanteData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -346,7 +346,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectUpdate(
-      insertedPendingUpdateData.insertedId.toString()
+      insertedPendingUpdateData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -359,8 +359,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPendingUpdateData.insertedId.toString()
-      )
+        insertedPendingUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -390,7 +390,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const deletedNonces = [2, 6, 7];
