@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TwilioModule } from "nestjs-twilio";
+import { ConfigService } from "@nestjs/config";
 import { EmailController } from "./email.controller";
 import { EmailService } from "./email.service";
 
 import { MailerModule } from "@nestjs-modules/mailer";
-import { PugAdapter } from "@nestjs-modules/mailer/dist/adapters/pug.adapter";
 
 @Module({
   controllers: [EmailController],

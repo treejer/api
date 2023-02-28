@@ -7,10 +7,6 @@ export class EmailController {
 
   @Post("send")
   sendSms() {
-    return this.emailService.sendEmail(
-      "abdolazim010.ali@gmail.com",
-      "test",
-      "test env"
-    );
+    return this.emailService.sendEmail("email", "test", "test env");
   }
 }
