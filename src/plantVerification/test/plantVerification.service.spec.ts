@@ -25,26 +25,11 @@ import {
 } from "../../common/constants";
 import Jwt from "jsonwebtoken";
 
-import {
-  getPlanterData,
-  getTreeData,
-  getPlanterOrganization,
-  getEIP712Sign,
-  getCheckedSumAddress,
-} from "../../common/helpers";
+import { getEIP712Sign, getCheckedSumAddress } from "../../common/helpers";
 import { AuthModule } from "../../auth/auth.module";
 import { PlantVerificationService } from "../plantVerification.service";
 
 const ganache = require("ganache");
-
-jest.mock("../../common/helpers", () => ({
-  ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
-  ),
-  getPlanterData: jest.fn(),
-  getTreeData: jest.fn(),
-  getPlanterOrganization: jest.fn(),
-}));
 
 describe("App e2e", () => {
   let app: INestApplication;

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 
 import * as CircleOfHop from "./contracts/CircleOfHop.json";
 
@@ -7,11 +7,8 @@ import { ConfigService } from "@nestjs/config";
 const EthereumEvents = require("ethereum-events");
 
 import { PlantVerificationService } from "./../plantVerification.service";
-import { EventName } from "../../common/constants";
-
-const Web3 = require("web3");
-
-const WEB3_PROVIDER = "ws://localhost:8545";
+import { EventName } from "src/common/constants";
+import { Web3Service } from "./../../web3/web3.service";
 
 const contracts = [
   {
@@ -27,12 +24,11 @@ export class TreeFactoryListener {
   private ethereumEvents;
 
   constructor(
+    private web3Service: Web3Service,
     private plantVerificationService: PlantVerificationService,
     private configService: ConfigService
   ) {
     console.log("VerifyPlant run");
-
-    const web3 = new Web3(WEB3_PROVIDER);
 
     const options = {
       pollInterval: Number(this.configService.get<string>("POLL_INTERVAL")), // period between polls in milliseconds (default: 13000)
@@ -42,9 +38,17 @@ export class TreeFactoryListener {
       backoff: Number(this.configService.get<string>("BACK_OFF")), // retry backoff in milliseconds (default: 1000)
     };
 
-    console.log("options", options);
+    let web3S = web3Service.getWeb3SInstance();
 
-    this.ethereumEvents = new EthereumEvents(web3, contracts, options);
+    web3S.eth.net
+      .isListening()
+      .then(() => console.log("TreeFactoryListener : is connected"))
+      .catch((e) => {
+        console.error("TreeFactoryListener : Something went wrong : " + e);
+        throw new InternalServerErrorException(e.message);
+      });
+
+    this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
     this.ethereumEvents.start(1);
 

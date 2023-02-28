@@ -10,11 +10,7 @@ import { PlantModule } from "../plant.module";
 import { Connection, connect, Types, now } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
-var ethUtil = require("ethereumjs-util");
-
 const Web3 = require("web3");
-
-const request = require("supertest");
 
 import {
   Messages,
@@ -23,28 +19,14 @@ import {
   PlantStatus,
   CollectionNames,
 } from "../../common/constants";
-import Jwt from "jsonwebtoken";
 
-import {
-  getPlanterData,
-  getTreeData,
-  getPlanterOrganization,
-  getEIP712Sign,
-  getCheckedSumAddress,
-} from "../../common/helpers";
+import { getEIP712Sign, getCheckedSumAddress } from "../../common/helpers";
+
 import { AuthModule } from "../../auth/auth.module";
 import { PlantService } from "../plant.service";
+import { Web3Service } from "./../../web3/web3.service";
 
 const ganache = require("ganache");
-
-jest.mock("../../common/helpers", () => ({
-  ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
-  ),
-  getPlanterData: jest.fn(),
-  getTreeData: jest.fn(),
-  getPlanterOrganization: jest.fn(),
-}));
 
 describe("App e2e", () => {
   let app: INestApplication;
@@ -53,6 +35,7 @@ describe("App e2e", () => {
   let web3;
   let httpServer: any;
   let plantService: PlantService;
+  let web3Service: Web3Service;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -66,11 +49,12 @@ describe("App e2e", () => {
 
     config = moduleRef.get<ConfigService>(ConfigService);
     plantService = moduleRef.get<PlantService>(PlantService);
+    web3Service = moduleRef.get<Web3Service>(Web3Service);
 
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      })
+      }),
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -83,7 +67,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -101,7 +85,7 @@ describe("App e2e", () => {
 
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName
+        collections[key].collectionName,
       );
 
       await collection.deleteMany({});
@@ -143,7 +127,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     let sign2 = await getEIP712Sign(
@@ -153,7 +137,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs2,
       },
-      3
+      3,
     );
 
     let invalidSign = await getEIP712Sign(
@@ -163,7 +147,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: "invalid treeSpecs",
       },
-      3
+      3,
     );
 
     //----------- fail with invalid signer
@@ -173,8 +157,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -183,16 +167,19 @@ describe("App e2e", () => {
     });
 
     //----------- fail with invalid treeStatus
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account1.address,
-      species: 1,
-      countryCode: 1,
-      saleType: 1,
-      treeStatus: 1,
-      plantDate: 1,
-      birthDate: 1,
-      treeSpecs: treeSpecs,
-    });
+
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account1.address,
+        species: 1,
+        countryCode: 1,
+        saleType: 1,
+        treeStatus: 1,
+        plantDate: 1,
+        birthDate: 1,
+        treeSpecs: treeSpecs,
+      }),
+    );
 
     await expect(
       plantService.updateTree(
@@ -200,8 +187,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -210,16 +197,19 @@ describe("App e2e", () => {
     });
 
     //-------------- fail with invalid planter
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account2.address,
-      species: 1,
-      countryCode: 1,
-      saleType: 1,
-      treeStatus: 4,
-      plantDate: 1,
-      birthDate: 1,
-      treeSpecs: treeSpecs,
-    });
+
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account2.address,
+        species: 1,
+        countryCode: 1,
+        saleType: 1,
+        treeStatus: 4,
+        plantDate: 1,
+        birthDate: 1,
+        treeSpecs: treeSpecs,
+      }),
+    );
 
     await expect(
       plantService.updateTree(
@@ -227,8 +217,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -237,16 +227,19 @@ describe("App e2e", () => {
     });
 
     //--------------- fail with early update
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account1.address,
-      species: 1,
-      countryCode: 1,
-      saleType: 1,
-      treeStatus: 4,
-      plantDate: Math.floor(new Date().getTime() / 1000), //- 615599
-      birthDate: 1,
-      treeSpecs: treeSpecs,
-    });
+
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account1.address,
+        species: 1,
+        countryCode: 1,
+        saleType: 1,
+        treeStatus: 4,
+        plantDate: Math.floor(new Date().getTime() / 1000), //- 615599
+        birthDate: 1,
+        treeSpecs: treeSpecs,
+      }),
+    );
 
     await expect(
       plantService.updateTree(
@@ -254,8 +247,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -265,23 +258,25 @@ describe("App e2e", () => {
 
     //---------------successful update
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account1.address,
-      species: 1,
-      countryCode: 1,
-      saleType: 1,
-      treeStatus: 4,
-      plantDate: 1,
-      birthDate: 1,
-      treeSpecs: treeSpecs,
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account1.address,
+        species: 1,
+        countryCode: 1,
+        saleType: 1,
+        treeStatus: 4,
+        plantDate: 1,
+        birthDate: 1,
+        treeSpecs: treeSpecs,
+      }),
+    );
 
     let updateResult = await plantService.updateTree(
       { signature: sign, treeId: treeId1, treeSpecs },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(updateResult).toBeInstanceOf(Types.ObjectId);
@@ -310,16 +305,19 @@ describe("App e2e", () => {
     expect(userAfterPlant.plantingNonce).toBe(2);
 
     //------------- fail with pending update
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account1.address,
-      species: 1,
-      countryCode: 1,
-      saleType: 1,
-      treeStatus: 4,
-      plantDate: 1,
-      birthDate: 1,
-      treeSpecs: treeSpecs,
-    });
+
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account1.address,
+        species: 1,
+        countryCode: 1,
+        saleType: 1,
+        treeStatus: 4,
+        plantDate: 1,
+        birthDate: 1,
+        treeSpecs: treeSpecs,
+      }),
+    );
 
     await expect(
       plantService.updateTree(
@@ -327,8 +325,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -360,7 +358,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     const insertedPendingUpdateData = await mongoConnection.db
@@ -408,7 +406,7 @@ describe("App e2e", () => {
       plantService.deleteUpdateTree(createdUser.insertedId.toString(), {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      })
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -424,8 +422,8 @@ describe("App e2e", () => {
         {
           userId: insertedPendingUpdateData.insertedId.toString(),
           walletAddress: account2.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -440,8 +438,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -455,7 +453,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(deleteResult).toBe(true);
@@ -495,7 +493,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     const sign2 = await getEIP712Sign(
@@ -505,7 +503,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs2,
       },
-      3
+      3,
     );
 
     const invalidSign = await getEIP712Sign(
@@ -515,7 +513,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     const insertedPendingUpdateData = await mongoConnection.db
@@ -576,8 +574,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -597,8 +595,8 @@ describe("App e2e", () => {
         {
           userId: insertedPendingUpdateData.insertedId.toString(),
           walletAddress: account2.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -617,8 +615,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -638,8 +636,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -656,7 +654,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     let plantedDataAfterEdit = await mongoConnection.db
@@ -711,7 +709,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const sign2 = await getEIP712Sign(
@@ -722,7 +720,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const invalidSign = await getEIP712Sign(
@@ -733,20 +731,22 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     //------fail with invalid signer
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
     await expect(
       plantService.plant(
@@ -754,8 +754,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -764,16 +764,19 @@ describe("App e2e", () => {
     });
 
     //------fail with invalid planter
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 0,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 0,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
     await expect(
       plantService.plant(
@@ -781,8 +784,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -790,23 +793,25 @@ describe("App e2e", () => {
       },
     });
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 2,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
     const plantResult = await plantService.plant(
       { birthDate, countryCode, signature: sign, treeSpecs },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(plantResult).toBeInstanceOf(Types.ObjectId);
@@ -841,13 +846,13 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toEqual(
       new ForbiddenException({
         statusCode: 403,
         message: PlantErrorMessage.SUPPLY_ERROR,
-      })
+      }),
     );
   });
 
@@ -876,7 +881,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -926,7 +931,7 @@ describe("App e2e", () => {
       plantService.deletePlant(createdUser.insertedId.toString(), {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      })
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -940,7 +945,7 @@ describe("App e2e", () => {
       plantService.deletePlant(insertedPendingPlantData.insertedId.toString(), {
         userId: insertedPendingPlantData.insertedId.toString(),
         walletAddress: account2.address,
-      })
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -955,8 +960,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -970,7 +975,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     expect(deleteResult).toBe(true);
@@ -1013,7 +1018,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const sign2 = await getEIP712Sign(
@@ -1024,7 +1029,7 @@ describe("App e2e", () => {
         birthDate: birthDate2,
         countryCode: countryCode2,
       },
-      2
+      2,
     );
 
     const invalidSign = await getEIP712Sign(
@@ -1035,7 +1040,7 @@ describe("App e2e", () => {
         birthDate: birthDate2,
         countryCode: countryCode2,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -1101,8 +1106,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -1124,8 +1129,8 @@ describe("App e2e", () => {
         {
           userId: insertedPendingPlantData.insertedId.toString(),
           walletAddress: account2.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1146,8 +1151,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -1169,8 +1174,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1189,7 +1194,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
-      }
+      },
     );
 
     let plantedDataAfterEdit = await mongoConnection.db
@@ -1247,37 +1252,41 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     let recordId = await plantService.plantAssignedTree(
       { treeId, treeSpecs, birthDate, countryCode, signature: sign },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
-      }
+      },
     );
 
     let userAfterPlant = await mongoConnection.db
@@ -1317,30 +1326,34 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 2,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1348,10 +1361,10 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toEqual(
-      new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT)
+      new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT),
     );
   });
 
@@ -1386,27 +1399,31 @@ describe("App e2e", () => {
 
     //---------------------reject because of signature
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1424,14 +1441,14 @@ describe("App e2e", () => {
               birthDate: birthDate,
               countryCode: countryCode,
             },
-            1
+            1,
           ),
         },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1455,14 +1472,14 @@ describe("App e2e", () => {
               birthDate: birthDate,
               countryCode: countryCode,
             },
-            1
+            1,
           ),
         },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1481,19 +1498,21 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 1,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 1,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1507,8 +1526,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1518,27 +1537,31 @@ describe("App e2e", () => {
 
     //---------------------reject because of status
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 2,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 2,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1552,8 +1575,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1563,27 +1586,31 @@ describe("App e2e", () => {
 
     //---------------------reject because of invalid planter
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account2.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account2.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1597,8 +1624,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1608,27 +1635,31 @@ describe("App e2e", () => {
 
     //---------------------reject because of supply
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 5,
-      plantedCount: 5,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 5,
+        plantedCount: 5,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
     await expect(
       plantService.plantAssignedTree(
@@ -1642,8 +1673,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1651,16 +1682,18 @@ describe("App e2e", () => {
       },
     });
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 5,
-      plantedCount: 4,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 5,
+        plantedCount: 4,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
     await plantService.plantAssignedTree(
       {
@@ -1673,7 +1706,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
-      }
+      },
     );
 
     let sign2 = await getEIP712Sign(
@@ -1685,7 +1718,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     await expect(
@@ -1700,8 +1733,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -1709,16 +1742,18 @@ describe("App e2e", () => {
       },
     });
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 1,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 5,
-      plantedCount: 3,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 5,
+        plantedCount: 3,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
     await plantService.plantAssignedTree(
       {
@@ -1731,7 +1766,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
-      }
+      },
     );
   });
 
@@ -1776,29 +1811,35 @@ describe("App e2e", () => {
 
     //------------------------------------------
 
-    (getPlanterData as jest.Mock).mockReturnValue({
-      planterType: 3,
-      status: 1,
-      countryCode: 1,
-      score: 0,
-      supplyCap: 10,
-      plantedCount: 1,
-      longitude: 1,
-      latitude: 1,
-    });
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 3,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 10,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
 
-    (getTreeData as jest.Mock).mockReturnValue({
-      planter: account2.address,
-      species: 0,
-      countryCode: 0,
-      saleType: 1,
-      treeStatus: 2,
-      plantDate: 0,
-      birthDate: 0,
-      treeSpecs: "",
-    });
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account2.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
 
-    (getPlanterOrganization as jest.Mock).mockReturnValue(account2.address);
+    jest
+      .spyOn(web3Service, "getPlanterOrganization")
+      .mockReturnValue(Promise.resolve(account2.address));
 
     let sign = await getEIP712Sign(
       account,
@@ -1809,7 +1850,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     let recordId = await plantService.plantAssignedTree(
@@ -1823,7 +1864,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
-      }
+      },
     );
 
     let plantedData = await mongoConnection.db
@@ -1859,7 +1900,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     await expect(
@@ -1874,8 +1915,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -1892,7 +1933,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     await expect(
@@ -1907,8 +1948,8 @@ describe("App e2e", () => {
         {
           userId: createdUser2.insertedId.toString(),
           walletAddress: account3.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -1932,7 +1973,7 @@ describe("App e2e", () => {
       {
         userId: createdUser2.insertedId.toString(),
         walletAddress: account3.address,
-      }
+      },
     );
 
     expect(recordId2).toBeInstanceOf(Types.ObjectId);
@@ -1973,7 +2014,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -2006,8 +2047,8 @@ describe("App e2e", () => {
         {
           userId: createdUser2.insertedId.toString(),
           walletAddress: account2.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -2022,7 +2063,7 @@ describe("App e2e", () => {
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
-      }
+      },
     );
 
     let deletePlantedData = await mongoConnection.db
@@ -2049,8 +2090,8 @@ describe("App e2e", () => {
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
-        }
-      )
+        },
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,

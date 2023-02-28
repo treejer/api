@@ -1,4 +1,4 @@
-// import { Web3Module } from "./web3/web3.module";
+import { Web3Module } from "./web3/web3.module";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
@@ -12,7 +12,7 @@ import { EmailModule } from "./email/email.module";
 
 @Module({
   imports: [
-    // Web3Module.forRoot("http://localhost:8545"),
+    Web3Module,
     PlantVerificationModule,
     DatabaseModule,
     UserModule,

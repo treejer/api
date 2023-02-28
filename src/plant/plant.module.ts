@@ -18,11 +18,13 @@ import { DatabaseModule } from "../database/database.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "../user/user.module";
 import { AuthModule } from "../auth/auth.module";
+import { Web3Module } from "./../web3/web3.module";
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
+    Web3Module,
     DatabaseModule,
     MongooseModule.forFeature([
       { name: AssignedTreePlant.name, schema: AssignedTreePlantSchema },
