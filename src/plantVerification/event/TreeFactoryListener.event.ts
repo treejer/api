@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 
 import * as CircleOfHop from "./contracts/CircleOfHop.json";
 
@@ -38,13 +38,17 @@ export class TreeFactoryListener {
       backoff: Number(this.configService.get<string>("BACK_OFF")), // retry backoff in milliseconds (default: 1000)
     };
 
-    console.log("options", options);
+    let web3S = web3Service.getWeb3SInstance();
 
-    this.ethereumEvents = new EthereumEvents(
-      web3Service.getWeb3SInstance(),
-      contracts,
-      options,
-    );
+    web3S.eth.net
+      .isListening()
+      .then(() => console.log("TreeFactoryListener : is connected"))
+      .catch((e) => {
+        console.error("TreeFactoryListener : Something went wrong : " + e);
+        throw new InternalServerErrorException(e.message);
+      });
+
+    this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
     this.ethereumEvents.start(1);
 

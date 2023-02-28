@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { exit } from "process";
 import { IPlanterData } from "./interfaces/planterData.interface";
 import { ITreeData } from "./interfaces/treeData.interface";
 
@@ -17,24 +18,31 @@ export class Web3Service {
   private web3Instance;
   private web3SInstance;
   constructor(private config: ConfigService) {
-    console.log("mahdiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-    try {
-      this.web3Instance = new Web3(
-        config.get<string>("NODE_ENV") === "test"
-          ? config.get<string>("WEB3_PROVIDER_TEST")
-          : config.get<string>("WEB3_PROVIDER"),
+    this.web3Instance = new Web3(
+      config.get<string>("NODE_ENV") === "test"
+        ? config.get<string>("WEB3_PROVIDER_TEST")
+        : config.get<string>("WEB3_PROVIDER"),
+    );
+
+    this.web3SInstance = new Web3(
+      config.get<string>("NODE_ENV") === "test"
+        ? config.get<string>("WEB3S_PROVIDER_TEST")
+        : config.get<string>("WEB3S_PROVIDER"),
+    );
+
+    this.web3Instance.eth.net
+      .isListening()
+      .then(() => console.log("web3Instance : is connected"))
+      .catch((e) =>
+        console.error("web3Instance : Something went wrong : " + e),
       );
 
-      this.web3SInstance = new Web3(
-        config.get<string>("NODE_ENV") === "test"
-          ? config.get<string>("WEB3S_PROVIDER_TEST")
-          : config.get<string>("WEB3S_PROVIDER"),
+    this.web3SInstance.eth.net
+      .isListening()
+      .then(() => console.log("web3SInstance : is connected"))
+      .catch((e) =>
+        console.error("web3SInstance : Something went wrong : " + e),
       );
-    } catch (error) {
-      console.log("Web3Service can't connect to web3 url", error);
-
-      throw new InternalServerErrorException(error.message);
-    }
   }
 
   async getPlanterData(planterAddress: string): Promise<IPlanterData> {
