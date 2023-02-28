@@ -1,5 +1,11 @@
+import { BadRequestException } from "@nestjs/common";
+
 const ethUtil = require("ethereumjs-util");
 
 export function getCheckedSumAddress(address: string): string {
-  return ethUtil.toChecksumAddress(address);
+  try {
+    return ethUtil.toChecksumAddress(address);
+  } catch (error) {
+    throw new BadRequestException("invalid wallet address");
+  }
 }

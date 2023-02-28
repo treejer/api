@@ -4,3 +4,4 @@ export * from "./getSigner";
 export * from "./getEIP712Sign";
 export * from "./getCheckedSumAddress";
 export * from "./sleep";
+export * from "./recoverPublicAddresFromSignature";

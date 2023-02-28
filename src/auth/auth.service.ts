@@ -2,20 +2,20 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
 
-import * as ESU from "eth-sig-util";
 import { ConfigService } from "@nestjs/config";
 import { UserService } from "./../user/user.service";
 import { JwtService } from "@nestjs/jwt";
 
-import { VerificationRepository } from "./auth.repository";
 import { Messages } from "./../common/constants";
 import {
   getRandomNonce,
   checkPublicKey,
   getCheckedSumAddress,
+  recoverPublicAddressfromSignature,
 } from "./../common/helpers";
 
 @Injectable()
@@ -23,8 +23,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private userService: UserService,
-    private jwtService: JwtService,
-    private authRepo: VerificationRepository
+    private jwtService: JwtService
   ) {}
 
   getMe(userId: string) {
@@ -68,16 +67,18 @@ export class AuthService {
 
     const user = await this.userService.findUserByWallet(checkedSumWallet, {
       _id: 1,
+      nonce: 1,
     });
 
     if (!user) throw new NotFoundException("user not exist");
 
     const message = Messages.SIGN_MESSAGE + user.nonce.toString();
+
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
-    const recoveredAddress: string = ESU.recoverPersonalSignature({
-      data: msg,
-      sig: signature,
-    });
+    const recoveredAddress: string = recoverPublicAddressfromSignature(
+      signature,
+      msg
+    );
 
     if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
       throw new ForbiddenException("invalid credentials");
@@ -93,27 +94,14 @@ export class AuthService {
 
   async getAccessToken(userId: string, walletAddress: string) {
     const payload = { userId, walletAddress };
-
-    return this.jwtService.signAsync(payload, {
-      expiresIn: 60 * 60 * 24 * 30,
-      secret: this.configService.get<string>("JWT_SECRET"),
-    });
-  }
-
-  async getTokens(userId: string, username: string) {
-    const payload = { sub: userId, username };
-    const [at, rt] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        expiresIn: 60 * 15,
-        secret: "at-secret",
-      }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: 60 * 60 * 24,
-        secret: "rt-secret",
-      }),
-    ]);
-
-    return { access_token: at, refresh_token: rt };
+    try {
+      return this.jwtService.signAsync(payload, {
+        expiresIn: 60 * 60 * 24 * 30,
+        secret: this.configService.get<string>("JWT_SECRET"),
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   //return 6 digit random token
