@@ -8,7 +8,7 @@ const EthereumEvents = require("ethereum-events");
 
 import { PlantVerificationService } from "./../plantVerification.service";
 import { EventName } from "src/common/constants";
-import { Web3Service } from "src/web3/web3.service";
+import { Web3Service } from "./../../web3/web3.service";
 
 const contracts = [
   {

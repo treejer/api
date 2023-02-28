@@ -30,7 +30,7 @@ import {
 } from "../common/constants";
 
 import { JwtUserDto } from "../auth/dtos";
-import { Web3Service } from "src/web3/web3.service";
+import { Web3Service } from "./../web3/web3.service";
 
 @Injectable()
 export class PlantService {
