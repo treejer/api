@@ -6,14 +6,9 @@ import { ConfigService } from "@nestjs/config";
 
 const EthereumEvents = require("ethereum-events");
 
-import { sleep } from "../../common/helpers/sleep";
-
 import { PlantVerificationService } from "./../plantVerification.service";
 import { EventName } from "src/common/constants";
-
-const Web3 = require("web3");
-
-const WEB3_PROVIDER = "ws://localhost:8545";
+import { Web3Service } from "src/web3/web3.service";
 
 const contracts = [
   {
@@ -29,12 +24,11 @@ export class TreeFactoryListener {
   private ethereumEvents;
 
   constructor(
+    private web3Service: Web3Service,
     private plantVerificationService: PlantVerificationService,
     private configService: ConfigService,
   ) {
     console.log("VerifyPlant run");
-
-    const web3 = new Web3(WEB3_PROVIDER);
 
     const options = {
       pollInterval: Number(this.configService.get<string>("POLL_INTERVAL")), // period between polls in milliseconds (default: 13000)
@@ -46,7 +40,11 @@ export class TreeFactoryListener {
 
     console.log("options", options);
 
-    this.ethereumEvents = new EthereumEvents(web3, contracts, options);
+    this.ethereumEvents = new EthereumEvents(
+      web3Service.getWeb3SInstance(),
+      contracts,
+      options,
+    );
 
     this.ethereumEvents.start(1);
 

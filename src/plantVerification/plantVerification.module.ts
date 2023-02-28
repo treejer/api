@@ -7,9 +7,10 @@ import { PlantVerificationService } from "./plantVerification.service";
 import { PlantVerificationController } from "./plantVerification.controller";
 import { UserModule } from "../user/user.module";
 import { TreeFactoryListener } from "./event/TreeFactoryListener.event";
+import { Web3Module } from "src/web3/web3.module";
 
 @Module({
-  imports: [PlantModule, AuthModule, UserModule],
+  imports: [PlantModule, AuthModule, UserModule, Web3Module],
   controllers: [PlantVerificationController],
   providers: [PlantVerificationService, TreeFactoryListener],
   exports: [PlantVerificationService],

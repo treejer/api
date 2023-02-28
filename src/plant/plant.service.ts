@@ -18,12 +18,7 @@ import {
   TreePlantRepository,
 } from "./plant.repository";
 
-import {
-  getCheckedSumAddress,
-  getPlanterData,
-  getPlanterOrganization,
-  getTreeData,
-} from "../common/helpers";
+import { getCheckedSumAddress } from "../common/helpers";
 
 import { UserService } from "../user/user.service";
 import { getSigner } from "../common/helpers/getSigner";
@@ -34,6 +29,7 @@ import {
 } from "../common/constants";
 
 import { JwtUserDto } from "../auth/dtos";
+import { Web3Service } from "src/web3/web3.service";
 
 @Injectable()
 export class PlantService {
@@ -41,7 +37,8 @@ export class PlantService {
     private updateTreeRepository: UpdateTreeRepository,
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
-    private userService: UserService
+    private userService: UserService,
+    private web3Service: Web3Service,
   ) {}
 
   async plant(dto: TreePlantDto, user: JwtUserDto): Promise<string> {
@@ -58,13 +55,13 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const planterData = await getPlanterData(signer);
+    const planterData = await this.web3Service.getPlanterData(signer);
 
     if (planterData.status != 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
@@ -95,7 +92,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { signer: 1, status: 1, _id: 0 }
+      { signer: 1, status: 1, _id: 0 },
     );
 
     if (!plantData)
@@ -113,7 +110,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -122,13 +119,13 @@ export class PlantService {
   async editPlant(
     recordId: string,
     dto: TreePlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { signer: 1, status: 1, _id: 0 }
+      { signer: 1, status: 1, _id: 0 },
     );
 
     if (!plantData)
@@ -153,7 +150,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      2
+      2,
     );
 
     if (signer !== user.walletAddress)
@@ -161,7 +158,7 @@ export class PlantService {
 
     const result = await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     await this.userService.updateUserById(user.userId, {
@@ -197,7 +194,7 @@ export class PlantService {
 
   async plantAssignedTree(
     dto: CreateAssignedTreePlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
@@ -213,7 +210,7 @@ export class PlantService {
         birthDate: dto.birthDate,
         countryCode: dto.countryCode,
       },
-      1
+      1,
     );
 
     if (signer !== user.walletAddress)
@@ -226,18 +223,18 @@ export class PlantService {
       },
       {
         _id: 1,
-      }
+      },
     );
 
     if (plantData)
       throw new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
 
-    let tree = await getTreeData(dto.treeId);
+    let tree = await this.web3Service.getTreeData(dto.treeId);
 
     if (tree.treeStatus != 2)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
-    const planterData = await getPlanterData(signer);
+    const planterData = await this.web3Service.getPlanterData(signer);
 
     if (planterData.status != 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER_STATUS);
@@ -246,7 +243,8 @@ export class PlantService {
       if (
         !(
           planterData.planterType == 3 &&
-          tree.planter == (await getPlanterOrganization(signer))
+          tree.planter ==
+            (await this.web3Service.getPlanterOrganization(signer))
         )
       )
         throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
@@ -276,13 +274,13 @@ export class PlantService {
   async editAssignedTree(
     recordId: string,
     data: EditTreeAssignPlantDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
+      { status: 1, signer: 1, treeId: 1, _id: 0 },
     );
 
     if (!assignedPlantData)
@@ -307,7 +305,7 @@ export class PlantService {
         birthDate: data.birthDate,
         countryCode: data.countryCode,
       },
-      1
+      1,
     );
 
     if (signer !== user.walletAddress)
@@ -324,7 +322,7 @@ export class PlantService {
       {
         ...data,
         nonce: userData.plantingNonce,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -332,13 +330,13 @@ export class PlantService {
 
   async deleteAssignedTree(
     recordId: string,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, _id: 0 },
     );
 
     if (!assignedPlantData)
@@ -356,7 +354,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -364,7 +362,7 @@ export class PlantService {
 
   async updateTree(
     dto: CreateUpdateTreeDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<string> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
@@ -378,13 +376,13 @@ export class PlantService {
         treeId: dto.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    let tree = await getTreeData(dto.treeId);
+    let tree = await this.web3Service.getTreeData(dto.treeId);
 
     if (tree.treeStatus < 4)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
@@ -424,7 +422,7 @@ export class PlantService {
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, _id: 0 }
+      { status: 1, signer: 1, _id: 0 },
     );
 
     if (!updateData)
@@ -442,7 +440,7 @@ export class PlantService {
       },
       {
         status: PlantStatus.DELETE,
-      }
+      },
     );
 
     return result.acknowledged;
@@ -451,13 +449,13 @@ export class PlantService {
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
-    user: JwtUserDto
+    user: JwtUserDto,
   ): Promise<boolean> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
       },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
+      { status: 1, signer: 1, treeId: 1, _id: 0 },
     );
 
     if (!updateData)
@@ -481,7 +479,7 @@ export class PlantService {
         treeId: updateData.treeId,
         treeSpecs: dto.treeSpecs,
       },
-      3
+      3,
     );
 
     if (signer !== user.walletAddress)
@@ -489,7 +487,7 @@ export class PlantService {
 
     const result = await this.updateTreeRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: userData.plantingNonce }
+      { ...dto, nonce: userData.plantingNonce },
     );
 
     await this.userService.updateUserById(user.userId, {
@@ -519,7 +517,7 @@ export class PlantService {
     return await this.assignedTreePlantRepository.sort(
       filter,
       sortOption,
-      projection
+      projection,
     );
   }
 
