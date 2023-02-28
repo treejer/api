@@ -7,6 +7,8 @@ import { UserModule } from "./user/user.module";
 import { PlantModule } from "./plant/plant.module";
 import { PlantVerificationModule } from "./plantVerification/plantVerification.module";
 import { ConfigService } from "@nestjs/config";
+import { SmsModule } from "./sms/sms.module";
+import { EmailModule } from "./email/email.module";
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { ConfigService } from "@nestjs/config";
     UserModule,
     AuthModule,
     PlantModule,
+    SmsModule,
+    EmailModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [],

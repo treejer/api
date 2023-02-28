@@ -6,10 +6,8 @@ import { ConfigService } from "@nestjs/config";
 
 const EthereumEvents = require("ethereum-events");
 
-import { sleep } from "../../common/helpers/sleep";
-
 import { PlantVerificationService } from "./../plantVerification.service";
-import { EventName } from "src/common/constants";
+import { EventName } from "../../common/constants";
 
 const Web3 = require("web3");
 
@@ -30,7 +28,7 @@ export class TreeFactoryListener {
 
   constructor(
     private plantVerificationService: PlantVerificationService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {
     console.log("VerifyPlant run");
 
@@ -60,7 +58,7 @@ export class TreeFactoryListener {
               if (event.name === EventName.TREE_ASSIGNED) {
                 try {
                   await plantVerificationService.verifyAssignedTree(
-                    Number(event.values._treeId),
+                    Number(event.values._treeId)
                   );
                 } catch (error) {
                   console.log("TREE_ASSIGNED error", error);
@@ -69,7 +67,7 @@ export class TreeFactoryListener {
                 try {
                   await plantVerificationService.verifyPlant(
                     event.values.signer,
-                    Number(event.values.nonce),
+                    Number(event.values.nonce)
                   );
                 } catch (error) {
                   console.log("TREE_PLANT error", error);
@@ -77,7 +75,7 @@ export class TreeFactoryListener {
               } else if (event.name === EventName.TREE_UPDATE) {
                 try {
                   await plantVerificationService.verifyUpdate(
-                    Number(event.values._treeId),
+                    Number(event.values._treeId)
                   );
                 } catch (error) {
                   console.log("TREE_UPDATE error", error);
@@ -89,7 +87,7 @@ export class TreeFactoryListener {
           resolve("done");
         });
         done();
-      },
+      }
     );
   }
 }
