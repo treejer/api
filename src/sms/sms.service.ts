@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TwilioService } from "nestjs-twilio";
-const MessagingResponse = require("twilio").twiml.MessagingResponse;
+
 @Injectable()
 export class SmsService {
   public constructor(

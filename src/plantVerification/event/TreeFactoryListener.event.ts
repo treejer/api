@@ -7,7 +7,7 @@ import { ConfigService } from "@nestjs/config";
 const EthereumEvents = require("ethereum-events");
 
 import { PlantVerificationService } from "./../plantVerification.service";
-import { EventName } from "src/common/constants";
+import { EventName } from "../../common/constants";
 import { Web3Service } from "./../../web3/web3.service";
 
 const contracts = [
