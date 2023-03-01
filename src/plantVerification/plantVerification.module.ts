@@ -16,4 +16,10 @@ import { TreeFactoryListener } from "./event/TreeFactoryListener.event";
   providers: [PlantVerificationService, TreeFactoryListener],
   exports: [PlantVerificationService],
 })
-export class PlantVerificationModule {}
+export class PlantVerificationModule {
+  constructor(private treeFactoryListener: TreeFactoryListener) {}
+
+  async configure() {
+    await this.treeFactoryListener.configure();
+  }
+}
