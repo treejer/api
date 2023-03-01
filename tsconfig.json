@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true, 
+    "resolveJsonModule": true,
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
