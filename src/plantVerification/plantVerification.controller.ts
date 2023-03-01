@@ -1,8 +1,8 @@
 import { Controller, Get, Put, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { HasRoles } from "../auth/decorators";
-import { RolesGuard } from "../auth/strategies";
-import { Role } from "../common/constants";
+import { HasRoles } from "src/auth/decorators";
+import { RolesGuard } from "src/auth/strategies";
+import { Role } from "src/common/constants";
 import { PlantVerificationService } from "./plantVerification.service";
 
 @Controller("plantVerification")

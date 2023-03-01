@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
-import { Connection, connect, Types, now } from "mongoose";
+import { Connection, connect } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 var ethUtil = require("ethereumjs-util");
@@ -15,25 +15,9 @@ const Web3 = require("web3");
 
 const request = require("supertest");
 
-import {
-  Messages,
-  PlantErrorMessage,
-  AuthErrorMessages,
-  PlantStatus,
-  CollectionNames,
-} from "../../common/constants";
-import Jwt from "jsonwebtoken";
-
-import {
-  getPlanterData,
-  getTreeData,
-  getPlanterOrganization,
-  getEIP712Sign,
-  getCheckedSumAddress,
-} from "../../common/helpers";
-import { AuthModule } from "../../auth/auth.module";
 import { PlantService } from "../plant.service";
 import { PlantController } from "../plant.controller";
+import { AuthModule } from "src/auth/auth.module";
 
 const ganache = require("ganache");
 

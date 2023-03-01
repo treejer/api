@@ -9,16 +9,18 @@ import {
   UpdateTree,
   UpdateTreeSchema,
 } from "./schemas";
+
 import {
   AssignedTreePlantRepository,
   UpdateTreeRepository,
   TreePlantRepository,
 } from "./plant.repository";
-import { DatabaseModule } from "../database/database.module";
+
 import { MongooseModule } from "@nestjs/mongoose";
-import { UserModule } from "../user/user.module";
-import { AuthModule } from "../auth/auth.module";
-import { Web3Module } from "./../web3/web3.module";
+import { UserModule } from "src/user/user.module";
+import { AuthModule } from "src/auth/auth.module";
+import { Web3Module } from "src/web3/web3.module";
+import { DatabaseModule } from "src/database/database.module";
 
 @Module({
   imports: [

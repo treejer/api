@@ -3,12 +3,11 @@ import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import * as CircleOfHop from "./contracts/CircleOfHop.json";
 
 import { ConfigService } from "@nestjs/config";
+import { Web3Service } from "src/web3/web3.service";
+import { PlantVerificationService } from "../plantVerification.service";
+import { EventName } from "src/common/constants";
 
 const EthereumEvents = require("ethereum-events");
-
-import { PlantVerificationService } from "./../plantVerification.service";
-import { EventName } from "../../common/constants";
-import { Web3Service } from "./../../web3/web3.service";
 
 const contracts = [
   {

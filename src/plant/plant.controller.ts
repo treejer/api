@@ -1,23 +1,20 @@
 import {
   Controller,
-  Get,
   Body,
   Post,
-  Req,
-  Res,
-  Redirect,
-  Query,
   Delete,
   Param,
   Patch,
   UseGuards,
 } from "@nestjs/common";
-import { Request } from "express";
+
+import { Role } from "src/common/constants";
+import { User } from "src/user/decorators";
+import { JwtUserDto } from "src/auth/dtos";
+import { HasRoles } from "src/auth/decorators";
+import { RolesGuard } from "src/auth/strategies";
 import { PlantService } from "./plant.service";
 import { AuthGuard } from "@nestjs/passport";
-import { RolesGuard } from "../auth/strategies";
-import { HasRoles } from "../auth/decorators";
-import { Role } from "../common/constants";
 
 import {
   CreateAssignedTreePlantDto,
@@ -26,8 +23,6 @@ import {
   EditUpdateTreeDto,
   TreePlantDto,
 } from "./dtos";
-import { JwtUserDto } from "../auth/dtos";
-import { User } from "../user/decorators";
 
 @Controller("plant")
 export class PlantController {

@@ -1,33 +1,20 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-  ConflictException,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { PlantVerificationModule } from "../plantVerification.module";
-import { Connection, connect, Types, now } from "mongoose";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 
-var ethUtil = require("ethereumjs-util");
+import { Connection, connect } from "mongoose";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const Web3 = require("web3");
 
-const request = require("supertest");
-
-import {
-  Messages,
-  PlantErrorMessage,
-  AuthErrorMessages,
-  PlantStatus,
-  CollectionNames,
-} from "../../common/constants";
-import Jwt from "jsonwebtoken";
-
-import { getEIP712Sign, getCheckedSumAddress } from "../../common/helpers";
-import { AuthModule } from "../../auth/auth.module";
 import { PlantVerificationService } from "../plantVerification.service";
+import { PlantVerificationModule } from "../plantVerification.module";
+import { getCheckedSumAddress, getEIP712Sign } from "src/common/helpers";
+import { AuthModule } from "src/auth/auth.module";
+import {
+  CollectionNames,
+  PlantErrorMessage,
+  PlantStatus,
+} from "src/common/constants";
 
 const ganache = require("ganache");
 

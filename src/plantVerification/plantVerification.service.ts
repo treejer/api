@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { PlantErrorMessage, PlantStatus } from "../common/constants";
-import { PlantService } from "../plant/plant.service";
-import { sleep } from "../common/helpers/sleep";
+
+import { PlantErrorMessage, PlantStatus } from "src/common/constants";
+import { PlantService } from "src/plant/plant.service";
 
 @Injectable()
 export class PlantVerificationService {

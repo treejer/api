@@ -9,7 +9,7 @@ import {
   TreePlantDocument,
 } from "./schemas";
 import { Model } from "mongoose";
-import { EntityRepository } from "../database/database.repository";
+import { EntityRepository } from "src/database/database.repository";
 
 @Injectable()
 export class AssignedTreePlantRepository extends EntityRepository<AssignedTreePlantDocument> {
