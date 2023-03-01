@@ -27,7 +27,9 @@ export class TreeFactoryListener {
     private web3Service: Web3Service,
     private plantVerificationService: PlantVerificationService,
     private configService: ConfigService,
-  ) {
+  ) {}
+
+  async configure() {
     console.log("VerifyPlant run");
 
     const options = {
@@ -38,7 +40,7 @@ export class TreeFactoryListener {
       backoff: Number(this.configService.get<string>("BACK_OFF")), // retry backoff in milliseconds (default: 1000)
     };
 
-    let web3S = web3Service.getWeb3SInstance();
+    let web3S = this.web3Service.getWeb3SInstance();
 
     web3S.eth.net
       .isListening()
@@ -52,46 +54,45 @@ export class TreeFactoryListener {
 
     this.ethereumEvents.start(1);
 
-    this.ethereumEvents.on(
-      "block.confirmed",
-      async (blockNumber, events, done) => {
-        console.log("block.confirmed", blockNumber);
-        await new Promise(async (resolve, reject) => {
-          if (events.length > 0) {
-            for (let event of events) {
-              if (event.name === EventName.TREE_ASSIGNED) {
-                try {
-                  await plantVerificationService.verifyAssignedTree(
-                    Number(event.values._treeId),
-                  );
-                } catch (error) {
-                  console.log("TREE_ASSIGNED error", error);
-                }
-              } else if (event.name === EventName.TREE_PLANT) {
-                try {
-                  await plantVerificationService.verifyPlant(
-                    event.values.signer,
-                    Number(event.values.nonce),
-                  );
-                } catch (error) {
-                  console.log("TREE_PLANT error", error);
-                }
-              } else if (event.name === EventName.TREE_UPDATE) {
-                try {
-                  await plantVerificationService.verifyUpdate(
-                    Number(event.values._treeId),
-                  );
-                } catch (error) {
-                  console.log("TREE_UPDATE error", error);
-                }
-              }
+    this.ethereumEvents.on("block.confirmed", this.method);
+  }
+
+  async method(blockNumber, events, done) {
+    console.log("block.confirmed", blockNumber);
+    await new Promise(async (resolve, reject) => {
+      if (events.length > 0) {
+        for (let event of events) {
+          if (event.name === EventName.TREE_ASSIGNED) {
+            try {
+              await this.plantVerificationService.verifyAssignedTree(
+                Number(event.values._treeId),
+              );
+            } catch (error) {
+              console.log("TREE_ASSIGNED error", error);
+            }
+          } else if (event.name === EventName.TREE_PLANT) {
+            try {
+              await this.plantVerificationService.verifyPlant(
+                event.values.signer,
+                Number(event.values.nonce),
+              );
+            } catch (error) {
+              console.log("TREE_PLANT error", error);
+            }
+          } else if (event.name === EventName.TREE_UPDATE) {
+            try {
+              await this.plantVerificationService.verifyUpdate(
+                Number(event.values._treeId),
+              );
+            } catch (error) {
+              console.log("TREE_UPDATE error", error);
             }
           }
+        }
+      }
 
-          resolve("done");
-        });
-        done();
-      },
-    );
+      resolve("done");
+    });
+    done();
   }
 }

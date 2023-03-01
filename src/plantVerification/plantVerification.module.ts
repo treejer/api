@@ -15,4 +15,10 @@ import { Web3Module } from "src/web3/web3.module";
   providers: [PlantVerificationService, TreeFactoryListener],
   exports: [PlantVerificationService],
 })
-export class PlantVerificationModule {}
+export class PlantVerificationModule {
+  constructor(private treeFactoryListener: TreeFactoryListener) {}
+
+  async configure() {
+    await this.treeFactoryListener.configure();
+  }
+}
