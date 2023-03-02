@@ -4,6 +4,7 @@ import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CollectionNames, Role } from "./common/constants";
+import { CreateAssignedTreePlantDto } from "./plant/dtos";
 import { getEIP712Sign } from "./common/helpers";
 const Web3 = require("web3");
 
@@ -62,7 +63,70 @@ describe("App e2e", () => {
     }
   });
 
-  it("test plant", async () => {
+  it.only("test assign plant", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const treeId = 110;
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    console.log("acc", account);
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+    console.log("accessToken", accessToken);
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    // let xx = await mongoConnection.db
+    //   .collection(CollectionNames.USER)
+    //   .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1
+    );
+
+    let res1 = await request(httpServer)
+      .post("/plant/assignedTree/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeId: 0,
+        treeSpecs: "sdasdsadas",
+        birthDate: 2131231232,
+        countryCode: 232,
+        signature: signResult.signature,
+      });
+
+    console.log("res1", res1);
+  });
+
+  it.skip("test plant", async () => {
     let account = await web3.eth.accounts.create();
 
     const nonce: number = 1;
@@ -90,7 +154,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.USER } }
+        { $set: { userRole: Role.PLANTER } }
       );
 
     let xx = await mongoConnection.db
