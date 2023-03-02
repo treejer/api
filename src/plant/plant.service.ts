@@ -18,14 +18,14 @@ import {
   TreePlantRepository,
 } from "./plant.repository";
 
-import { getCheckedSumAddress, getSigner } from "src/common/helpers";
-import { UserService } from "src/user/user.service";
+import { getCheckedSumAddress, getSigner } from "../common/helpers";
+import { UserService } from "../user/user.service";
 import {
   AuthErrorMessages,
   PlantErrorMessage,
   PlantStatus,
-} from "src/common/constants";
-import { JwtUserDto } from "src/auth/dtos";
+} from "../common/constants";
+import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
 
 @Injectable()

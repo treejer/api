@@ -1,34 +1,18 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { PlantModule } from "../plant.module";
-import { Connection, connect } from "mongoose";
+import { AppModule } from "./../../app.module";
+import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-
-var ethUtil = require("ethereumjs-util");
-
+import { CollectionNames, Role } from "./../../common/constants";
+import { CreateAssignedTreePlantDto } from "./../../plant/dtos";
+import { getEIP712Sign } from "./../../common/helpers";
+import { PlantService } from "../plant.service";
 const Web3 = require("web3");
 
 const request = require("supertest");
-
-import { PlantService } from "../plant.service";
-import { PlantController } from "../plant.controller";
-import { AuthModule } from "src/auth/auth.module";
+const Jwt = require("jsonwebtoken");
 
 const ganache = require("ganache");
-
-jest.mock("../../common/helpers", () => ({
-  ...jest.requireActual<typeof import("../../common/helpers")>(
-    "../../common/helpers"
-  ),
-  getPlanterData: jest.fn(),
-  getTreeData: jest.fn(),
-  getPlanterOrganization: jest.fn(),
-}));
 
 describe("App e2e", () => {
   let app: INestApplication;
@@ -37,26 +21,18 @@ describe("App e2e", () => {
   let web3;
   let httpServer: any;
   let plantService: PlantService;
-  let plantController: PlantController;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [
-        AuthModule,
-        PlantModule,
-        ConfigModule.forRoot({ isGlobal: true }),
-      ],
+      imports: [AppModule, ConfigModule.forRoot({ isGlobal: true })],
       providers: [ConfigService],
     }).compile();
 
     config = moduleRef.get<ConfigService>(ConfigService);
-    plantService = moduleRef.get<PlantService>(PlantService);
-    plantController = moduleRef.get<PlantController>(PlantController);
-    web3 = new Web3(
-      ganache.provider({
-        wallet: { deterministic: true },
-      })
-    );
+
+    console.log("ganache.provider()", ganache.provider());
+
+    web3 = new Web3("http://localhost:8545");
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
       .connection;
@@ -64,6 +40,7 @@ describe("App e2e", () => {
     app = moduleRef.createNestApplication();
 
     httpServer = app.getHttpServer();
+    // plantService = moduleRef.get<PlantService>(PlantService);
 
     app.useGlobalPipes(
       new ValidationPipe({
@@ -89,21 +66,124 @@ describe("App e2e", () => {
     }
   });
 
-  it("qqqqq", async () => {
-    let account1 = await web3.eth.accounts.create();
+  it.skip("test assign plant", async () => {
+    let account = await web3.eth.accounts.create();
 
-    let result = "result";
-    jest
-      .spyOn(plantController, "plant")
-      .mockImplementation(async (dto, user) => result);
+    const treeId = 110;
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
 
-    let res = await request(httpServer)
-      .post(`/plant/regular/add`)
-      .send(
-        { birthDate: 1, countryCode: 1, signature: "a", treeSpecs: "a" },
-        { userId: "a", walletAddress: account1.address }
+    console.log("acc", account);
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+    console.log("accessToken", accessToken);
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
       );
 
-    console.log("res", res.body);
+    // let xx = await mongoConnection.db
+    //   .collection(CollectionNames.USER)
+    //   .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1
+    );
+
+    let res1 = await request(httpServer)
+      .post("/plant/assignedTree/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeId: 0,
+        treeSpecs: "sdasdsadas",
+        birthDate: 2131231232,
+        countryCode: 232,
+        signature: signResult.signature,
+      });
+
+    console.log("res1", res1);
+  });
+
+  it("test plant", async () => {
+    const result: string = "aliiiiiiiiiiii";
+    // jest.spyOn(plantService, "plant").mockReturnValue(Promise.resolve(result));
+
+    let account = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+    console.log("accessToken", accessToken);
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    let xx = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    let plantResult = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({
+        Authorization: "Bearer " + accessToken,
+      })
+      .send({ treeSpecs, birthDate, countryCode, signature: sign });
+    console.log("plantResult res", plantResult.body);
   });
 });

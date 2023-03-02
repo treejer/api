@@ -32,8 +32,6 @@ export class PlantController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("regular/add")
   plant(@Body() dto: TreePlantDto, @User() user: JwtUserDto): Promise<string> {
-    console.log("dto", dto);
-
     return this.plantService.plant(dto, user);
   }
 
@@ -43,7 +41,7 @@ export class PlantController {
   editPlant(
     @Param("id") id: string,
     @Body() dto: TreePlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editPlant(id, dto, user);
   }
@@ -60,9 +58,8 @@ export class PlantController {
   @Post("assignedTree/add")
   plantAssignedTree(
     @Body() dto: CreateAssignedTreePlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
-    console.log("mahdiiiiiiiiiiiiiiiiiiiiiiiiii", dto);
     return this.plantService.plantAssignedTree(dto, user);
   }
 
@@ -72,7 +69,7 @@ export class PlantController {
   editAssignedTree(
     @Param("id") id: string,
     @Body() dto: EditTreeAssignPlantDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
   }
@@ -97,7 +94,7 @@ export class PlantController {
   editUpdateTree(
     @Param("id") id: string,
     @Body() body: EditUpdateTreeDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editUpdateTree(id, body, user);
   }
