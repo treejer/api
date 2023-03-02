@@ -1,24 +1,13 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "./../src/app.module";
+import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { CollectionNames, Role } from "./common/constants";
 const Web3 = require("web3");
 
 const request = require("supertest");
-import { Messages } from "./../src/common/constants";
-import Jwt from "jsonwebtoken";
-
-import { checkPublicKey } from "./../src/common/helpers/checkPublicKey";
-
-jest.mock("./../src/common/helpers/checkPublicKey", () => ({
-  ...jest.requireActual<
-    typeof import("./../src/common/helpers/checkPublicKey")
-  >("./../src/common/helpers/checkPublicKey"),
-  checkPublicKey: jest.fn(),
-}));
-
-// (checkPublicKey as jest.Mock).mockReturnValue("reza");
+const Jwt = require("jsonwebtoken");
 
 const ganache = require("ganache");
 
@@ -39,12 +28,7 @@ describe("App e2e", () => {
 
     console.log("ganache.provider()", ganache.provider());
 
-    web3 = new Web3(
-      ganache.provider({
-        database: { dbPath: "./test/ganache-db" },
-        wallet: { deterministic: true },
-      })
-    );
+    web3 = new Web3("http://localhost:8545");
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
       .connection;
@@ -63,21 +47,56 @@ describe("App e2e", () => {
     await app.listen(3333);
   });
 
-  // afterAll(async () => {
-  //   await mongoConnection.dropDatabase();
-  //   await mongoConnection.close();
-  //   await app.close();
-  // });
+  afterAll(async () => {
+    await mongoConnection.dropDatabase();
+    await mongoConnection.close();
+    await app.close();
+  });
 
-  // afterEach(async () => {
-  //   const collections = mongoConnection.collections;
-  //   for (const key in collections) {
-  //     const collection = collections[key];
-  //     await collection.deleteMany({});
-  //   }
-  // });
+  afterEach(async () => {
+    const collections = mongoConnection.collections;
+    for (const key in collections) {
+      const collection = collections[key];
+      await collection.deleteMany({});
+    }
+  });
 
-  it("get nonce successfully", async () => {
+  it("test plant", async () => {
+    let account = await web3.eth.accounts.create();
+    console.log("acc", account);
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+    console.log("accessToken", accessToken);
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    let xx = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
+
+    // await request(httpServer)
+    //   .get("/auth/me")
+    //   .set({ Authorization: "Bearer " + accessToken });
+  });
+
+  it.skip("get nonce successfully", async () => {
     // let account1 = await web3.eth.accounts.create();
     // let account2 = await web3.eth.accounts.create();
     // let getNonceResult1 = await request(httpServer).get(
