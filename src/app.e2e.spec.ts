@@ -4,6 +4,7 @@ import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CollectionNames, Role } from "./common/constants";
+import { getEIP712Sign } from "./common/helpers";
 const Web3 = require("web3");
 
 const request = require("supertest");
@@ -63,7 +64,12 @@ describe("App e2e", () => {
 
   it("test plant", async () => {
     let account = await web3.eth.accounts.create();
-    console.log("acc", account);
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+
+    const birthDate: number = 1;
+    const countryCode: number = 1;
 
     let res = await request(httpServer).get(
       `/auth/get-nonce/${account.address}`
@@ -84,16 +90,31 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } }
+        { $set: { userRole: Role.USER } }
       );
 
     let xx = await mongoConnection.db
       .collection(CollectionNames.USER)
       .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
 
-    // await request(httpServer)
-    //   .get("/auth/me")
-    //   .set({ Authorization: "Bearer " + accessToken });
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    let plantResult = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({
+        Authorization: "Bearer " + accessToken,
+      })
+      .send({ treeSpecs, birthDate, countryCode, signature: sign });
+    console.log("plantResult", plantResult);
   });
 
   it.skip("get nonce successfully", async () => {

@@ -32,6 +32,8 @@ export class PlantController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("regular/add")
   plant(@Body() dto: TreePlantDto, @User() user: JwtUserDto): Promise<string> {
+    console.log("dto", dto);
+
     return this.plantService.plant(dto, user);
   }
 
