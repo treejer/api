@@ -4,6 +4,8 @@ import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CollectionNames, Role } from "./common/constants";
+import { CreateAssignedTreePlantDto } from "./plant/dtos";
+import { getEIP712Sign } from "./common/helpers";
 const Web3 = require("web3");
 
 const request = require("supertest");
@@ -40,7 +42,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -61,12 +63,75 @@ describe("App e2e", () => {
     }
   });
 
-  it("test plant", async () => {
+  it.only("test assign plant", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const treeId = 110;
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    console.log("acc", account);
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`,
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+    console.log("accessToken", accessToken);
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } },
+      );
+
+    // let xx = await mongoConnection.db
+    //   .collection(CollectionNames.USER)
+    //   .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    let res1 = await request(httpServer)
+      .post("/plant/assignedTree/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeId: 0,
+        treeSpecs: "sdasdsadas",
+        birthDate: 2131231232,
+        countryCode: 232,
+        signature: signResult.signature,
+      });
+
+    console.log("res1", res1);
+  });
+
+  it.skip("test plant", async () => {
     let account = await web3.eth.accounts.create();
     console.log("acc", account);
 
     let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`
+      `/auth/get-nonce/${account.address}`,
     );
 
     let signResult = account.sign(res.body.message);
@@ -84,7 +149,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } }
+        { $set: { userRole: Role.PLANTER } },
       );
 
     let xx = await mongoConnection.db
@@ -167,7 +232,7 @@ describe("App e2e", () => {
     expect(getNonceResult1.body.message).toBe("invalid wallet");
 
     let getNonceResult2 = await request(httpServer).get(
-      `/auth/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`
+      `/auth/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`,
     );
 
     expect(getNonceResult2.statusCode).toBe(400);
@@ -177,7 +242,7 @@ describe("App e2e", () => {
     expect(getNonceResult2.body.message).toBe("invalid wallet");
 
     let getNonceResult3 = await request(httpServer).get(
-      `/auth/nonce/${"not wallet address"}`
+      `/auth/nonce/${"not wallet address"}`,
     );
 
     expect(getNonceResult3.statusCode).toBe(400);
@@ -231,7 +296,7 @@ describe("App e2e", () => {
     const invalidMessageToSign: string = "invalid message to sign";
 
     let getNonceResultForAccount1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`
+      `/auth/nonce/${account1.address}`,
     );
 
     //fail because signature is not string
@@ -290,11 +355,11 @@ describe("App e2e", () => {
 
     // other user sign with another user's nonce
     let getNonceResultForAccount2 = await request(httpServer).get(
-      `/auth/nonce/${account2.address}`
+      `/auth/nonce/${account2.address}`,
     );
 
     let invalidSignatureResult2 = await account2.sign(
-      getNonceResultForAccount1.body.message
+      getNonceResultForAccount1.body.message,
     );
 
     let loginResult6 = await request(httpServer)
@@ -308,11 +373,11 @@ describe("App e2e", () => {
     expect(loginResult6.body.message).toBe("invalid credentials");
     //---------------- sign with correct user and every thing work correct
     const signatureResult1 = await account1.sign(
-      getNonceResultForAccount1.body.message
+      getNonceResultForAccount1.body.message,
     );
 
     const signatureResult2 = await account2.sign(
-      getNonceResultForAccount2.body.message
+      getNonceResultForAccount2.body.message,
     );
 
     let loginResult7 = await request(httpServer)
@@ -331,7 +396,7 @@ describe("App e2e", () => {
     const account1 = await web3.eth.accounts.create();
 
     const getNonceResult1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`
+      `/auth/nonce/${account1.address}`,
     );
 
     let signResult1 = account1.sign(getNonceResult1.body.message);
