@@ -2097,7 +2097,7 @@ describe("App e2e", () => {
     });
   });
 
-  it.only("edit plant assigned tree (planterType == 1)", async () => {
+  it("edit plant assigned tree (planterType == 1)", async () => {
     let account = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
