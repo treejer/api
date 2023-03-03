@@ -6,6 +6,8 @@ export const AuthErrorMessages = {
   INVALID_CREDENTIALS: "invalid credentials",
   CANNOT_GET: "Cannot GET ",
   INVALID_ACCESS: "invalid access",
+  INVALID_ROLE: "invalid role",
+  UNAUTHORIZED: "Unauthorized",
 };
 
 export const StatusErrorMessage = {
