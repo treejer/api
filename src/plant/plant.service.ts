@@ -27,7 +27,7 @@ import {
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
-import { CreateResult, EditResult } from "./interfaces";
+import { CreateResult, DeleteResult, EditResult } from "./interfaces";
 
 @Injectable()
 export class PlantService {
@@ -39,7 +39,7 @@ export class PlantService {
     private web3Service: Web3Service,
   ) {}
 
-  async plant(dto: TreePlantDto, user: JwtUserDto): Promise<string> {
+  async plant(dto: TreePlantDto, user: JwtUserDto): Promise<CreateResult> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -81,11 +81,10 @@ export class PlantService {
     await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
-
-    return createdData._id;
+    return { recordId: createdData._id };
   }
 
-  async deletePlant(recordId: string, user: JwtUserDto): Promise<boolean> {
+  async deletePlant(recordId: string, user: JwtUserDto): Promise<DeleteResult> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -111,14 +110,14 @@ export class PlantService {
       },
     );
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async editPlant(
     recordId: string,
     dto: TreePlantDto,
     user: JwtUserDto,
-  ): Promise<boolean> {
+  ): Promise<EditResult> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -163,7 +162,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async editPlantDataStatus(filter, status: number): Promise<boolean> {
