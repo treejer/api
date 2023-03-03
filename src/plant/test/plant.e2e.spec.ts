@@ -1169,7 +1169,6 @@ describe("App e2e", () => {
   it("test editPlant", async () => {
     let account = await web3.eth.accounts.create();
 
-    const treeId = 110;
     const nonce: number = 1;
     const nonce2: number = 2;
 
