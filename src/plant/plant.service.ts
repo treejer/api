@@ -361,7 +361,7 @@ export class PlantService {
   async updateTree(
     dto: CreateUpdateTreeDto,
     user: JwtUserDto,
-  ): Promise<string> {
+  ): Promise<CreateResult> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -412,10 +412,13 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return createdData._id;
+    return { recordId: createdData._id };
   }
 
-  async deleteUpdateTree(recordId: string, user: JwtUserDto): Promise<boolean> {
+  async deleteUpdateTree(
+    recordId: string,
+    user: JwtUserDto,
+  ): Promise<EditResult> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -441,14 +444,14 @@ export class PlantService {
       },
     );
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async editUpdateTree(
     recordId: string,
     dto: EditUpdateTreeDto,
     user: JwtUserDto,
-  ): Promise<boolean> {
+  ): Promise<EditResult> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -492,7 +495,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async getPlantData(filter) {
