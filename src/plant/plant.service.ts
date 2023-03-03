@@ -27,7 +27,7 @@ import {
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
-import { CreateResult } from "./interfaces";
+import { CreateResult, EditResult } from "./interfaces";
 
 @Injectable()
 export class PlantService {
@@ -273,7 +273,7 @@ export class PlantService {
     recordId: string,
     data: EditTreeAssignPlantDto,
     user: JwtUserDto,
-  ): Promise<boolean> {
+  ): Promise<EditResult> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -323,13 +323,13 @@ export class PlantService {
       },
     );
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async deleteAssignedTree(
     recordId: string,
     user: JwtUserDto,
-  ): Promise<boolean> {
+  ): Promise<EditResult> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -355,7 +355,7 @@ export class PlantService {
       },
     );
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   async updateTree(

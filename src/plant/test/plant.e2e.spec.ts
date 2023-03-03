@@ -66,9 +66,13 @@ describe("App e2e", () => {
   });
 
   afterEach(async () => {
-    const collections = mongoConnection.collections;
+    const collections = await mongoConnection.db.collections();
+
     for (const key in collections) {
-      const collection = collections[key];
+      const collection = mongoConnection.collection(
+        collections[key].collectionName,
+      );
+
       await collection.deleteMany({});
     }
   });
@@ -224,6 +228,8 @@ describe("App e2e", () => {
         signature: sign,
       });
 
+    expect(res.status).toEqual(400);
+
     res = await request(httpServer)
       .post("/plant/assignedTree/add")
       .set({ Authorization: "Bearer " + accessToken })
@@ -237,14 +243,19 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
   });
 
-  it.only("test editAssignedTree", async () => {
+  it("test editAssignedTree", async () => {
     let account = await web3.eth.accounts.create();
 
     const treeId = 110;
     const nonce: number = 1;
+    const nonce2: number = 2;
+
     const treeSpecs: string = "ipfs";
+    const treeSpecs2: string = "ipfs2";
+
     const birthDate: number = 1;
     const countryCode: number = 1;
+    const countryCode2: number = 2;
 
     let res = await request(httpServer).get(
       `/auth/get-nonce/${account.address}`,
@@ -257,7 +268,6 @@ describe("App e2e", () => {
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
-    console.log("accessToken", accessToken);
 
     let decodedAccessToken = Jwt.decode(accessToken);
 
@@ -284,8 +294,6 @@ describe("App e2e", () => {
         birthDate,
         signature: sign,
       });
-
-    // console.log("res", res);
 
     expect(res.status).toEqual(401);
     expect(res.body.message).toEqual(AuthErrorMessages.UNAUTHORIZED);
@@ -346,21 +354,6 @@ describe("App e2e", () => {
       .post("/plant/assignedTree/add")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
-        treeId: 15,
-        treeSpecs,
-        birthDate,
-        countryCode,
-        signature: sign,
-      });
-
-    expect(res.status).toEqual(403);
-
-    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
-
-    res = await request(httpServer)
-      .post("/plant/assignedTree/add")
-      .set({ Authorization: "Bearer " + accessToken })
-      .send({
         treeId,
         treeSpecs,
         birthDate,
@@ -368,37 +361,190 @@ describe("App e2e", () => {
         signature: sign,
       });
 
-    expect(res.status).toEqual(201);
+    let sign2 = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce2,
+        treeId: treeId,
+        treeSpecs: treeSpecs2,
+        birthDate: birthDate,
+        countryCode: countryCode2,
+      },
+      1,
+    );
 
-    expect(res.body).toHaveProperty("recordId");
-
-    //----------------------------------------------
-
-    jest
-      .spyOn(plantService, "plantAssignedTree")
-      .mockReturnValue(Promise.resolve({ recordId: "124" }));
+    let recordId = res.body.recordId;
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .patch(`/plant/assignedTree/edit/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
-        treeSpecs,
+        treeSpecs: treeSpecs2,
         birthDate,
-        countryCode,
-        signature: sign,
+        countryCode: countryCode2,
+        signature: sign2,
       });
 
+    expect(res.status).toEqual(200);
+
+    expect(res.body.acknowledged).toEqual(true);
+
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .patch(`/plant/assignedTree/edit/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
-        treeId,
-        treeSpecs,
-        countryCode,
-        signature: sign,
+        treeSpecs: treeSpecs2,
+        countryCode: countryCode2,
+        signature: sign2,
       });
 
     expect(res.status).toEqual(400);
+
+    res = await request(httpServer)
+      .patch(`/plant/assignedTree/edit/${recordId}`)
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs: treeSpecs2,
+        countryCode: countryCode2,
+      });
+
+    expect(res.status).toEqual(400);
+  });
+
+  it("test deleteAssignedTree", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const treeId = 110;
+    const nonce: number = 1;
+    const nonce2: number = 2;
+
+    const treeSpecs: string = "ipfs";
+    const treeSpecs2: string = "ipfs2";
+
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+    const countryCode2: number = 2;
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`,
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeId: treeId,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      1,
+    );
+
+    //------------------------------------------> Reject . user hasn't jwt token
+
+    res = await request(httpServer)
+      .delete(`/plant/assignedTree/delete/${treeId}`)
+      .set({ Authorization: "Bearer " + "fake accessToken" })
+      .send({
+        treeSpecs,
+        countryCode,
+        birthDate,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.UNAUTHORIZED);
+
+    //------------------------------------------> Reject . user isn't planter
+
+    res = await request(httpServer)
+      .delete(`/plant/assignedTree/delete/${treeId}`)
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        countryCode,
+        birthDate,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_ROLE);
+
+    //-------------------------
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } },
+      );
+
+    //------------------------------------------> Success
+
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      }),
+    );
+
+    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+      Promise.resolve({
+        planter: account.address,
+        species: 0,
+        countryCode: 0,
+        saleType: 1,
+        treeStatus: 2,
+        plantDate: 0,
+        birthDate: 0,
+        treeSpecs: "",
+      }),
+    );
+
+    res = await request(httpServer)
+      .post("/plant/assignedTree/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeId,
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    let recordId = res.body.recordId;
+
+    res = await request(httpServer)
+      .delete(`/plant/assignedTree/delete/${recordId}`)
+      .set({ Authorization: "Bearer " + accessToken });
+
+    expect(res.status).toEqual(200);
+
+    expect(res.body.acknowledged).toEqual(true);
+
+    res = await request(httpServer)
+      .delete(`/plant/assignedTree/delete/${"recordId"}`)
+      .set({ Authorization: "Bearer " + accessToken });
+
+    console.log("res", res);
+    expect(res.status).toEqual(500);
   });
 
   it.skip("test plant", async () => {
