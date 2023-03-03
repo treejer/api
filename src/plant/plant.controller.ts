@@ -23,6 +23,7 @@ import {
   EditUpdateTreeDto,
   TreePlantDto,
 } from "./dtos";
+import { CreateResult } from "./interfaces";
 
 @Controller("plant")
 export class PlantController {
@@ -31,7 +32,10 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("regular/add")
-  plant(@Body() dto: TreePlantDto, @User() user: JwtUserDto): Promise<string> {
+  plant(
+    @Body() dto: TreePlantDto,
+    @User() user: JwtUserDto
+  ): Promise<CreateResult> {
     return this.plantService.plant(dto, user);
   }
 

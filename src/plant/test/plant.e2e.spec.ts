@@ -52,7 +52,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      }),
+      })
     );
 
     await app.init();
@@ -83,7 +83,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
 
     let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
+      `/auth/get-nonce/${account.address}`
     );
 
     let signResult = account.sign(res.body.message);
@@ -106,7 +106,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
@@ -147,7 +147,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -162,7 +162,7 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     jest.spyOn(web3Service, "getTreeData").mockReturnValue(
@@ -175,7 +175,7 @@ describe("App e2e", () => {
         plantDate: 0,
         birthDate: 0,
         treeSpecs: "",
-      }),
+      })
     );
 
     res = await request(httpServer)
@@ -237,7 +237,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
   });
 
-  it.only("test editAssignedTree", async () => {
+  it("test editAssignedTree", async () => {
     let account = await web3.eth.accounts.create();
 
     const treeId = 110;
@@ -247,7 +247,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
 
     let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
+      `/auth/get-nonce/${account.address}`
     );
 
     let signResult = account.sign(res.body.message);
@@ -270,7 +270,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
@@ -311,7 +311,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -326,7 +326,7 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     jest.spyOn(web3Service, "getTreeData").mockReturnValue(
@@ -339,7 +339,7 @@ describe("App e2e", () => {
         plantDate: 0,
         birthDate: 0,
         treeSpecs: "",
-      }),
+      })
     );
 
     res = await request(httpServer)
@@ -401,10 +401,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
   });
 
-  it.skip("test plant", async () => {
-    const result: string = "aliiiiiiiiiiii";
-    // jest.spyOn(plantService, "plant").mockReturnValue(Promise.resolve(result));
-
+  it("test plant", async () => {
     let account = await web3.eth.accounts.create();
 
     const nonce: number = 1;
@@ -414,7 +411,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
 
     let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
+      `/auth/get-nonce/${account.address}`
     );
 
     let signResult = account.sign(res.body.message);
@@ -424,20 +421,8 @@ describe("App e2e", () => {
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
-    console.log("accessToken", accessToken);
 
     let decodedAccessToken = Jwt.decode(accessToken);
-
-    let createdUser = await mongoConnection.db
-      .collection(CollectionNames.USER)
-      .updateOne(
-        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
-      );
-
-    let xx = await mongoConnection.db
-      .collection(CollectionNames.USER)
-      .findOne({ _id: new Types.ObjectId(decodedAccessToken["userId"]) });
 
     const sign = await getEIP712Sign(
       account,
@@ -447,15 +432,296 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2,
+      2
     );
 
-    let plantResult = await request(httpServer)
+    //------------------------------------------> Reject . user hasn't jwt token
+
+    res = await request(httpServer)
       .post("/plant/regular/add")
-      .set({
-        Authorization: "Bearer " + accessToken,
+      .set({ Authorization: "Bearer " + "fake accessToken" })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.UNAUTHORIZED);
+
+    //------------------------------------------> Reject . user isn't planter
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_ROLE);
+
+    //-------------------------
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    //------------------------------------------> Success
+
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
       })
-      .send({ treeSpecs, birthDate, countryCode, signature: sign });
-    console.log("plantResult res", plantResult.body);
+    );
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs: "invalid ipfs hash",
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(403);
+
+    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+    console.log("res", res);
+
+    expect(res.status).toEqual(201);
+    expect(res.body).toHaveProperty("recordId");
+
+    jest
+      .spyOn(plantService, "plant")
+      .mockReturnValue(Promise.resolve({ recordId: "124" }));
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(400);
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(400);
+  });
+
+  it.only("test delete plant", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    let res = await request(httpServer).get(
+      `/auth/get-nonce/${account.address}`
+    );
+
+    let signResult = account.sign(res.body.message);
+
+    let loginResult = await request(httpServer)
+      .post(`/auth/login/${account.address}`)
+      .send({ signature: signResult.signature });
+
+    const accessToken: string = loginResult.body.access_token;
+
+    let decodedAccessToken = Jwt.decode(accessToken);
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      })
+    );
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+    // console.log("res", res.body.recordId);
+
+    res = await request(httpServer)
+      .delete(`/plant/regular/delete/${res.body.recordId}`)
+      .set({ Authorization: "Bearer " + accessToken });
+
+    console.log("res", res);
+
+    return;
+    //------------------------------------------> Reject . user hasn't jwt token
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + "fake accessToken" })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.UNAUTHORIZED);
+
+    //------------------------------------------> Reject . user isn't planter
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(401);
+    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_ROLE);
+
+    //-------------------------
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
+        { $set: { userRole: Role.PLANTER } }
+      );
+
+    //------------------------------------------> Success
+
+    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+      Promise.resolve({
+        planterType: 1,
+        status: 1,
+        countryCode: 1,
+        score: 0,
+        supplyCap: 2,
+        plantedCount: 1,
+        longitude: 1,
+        latitude: 1,
+      })
+    );
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs: "invalid ipfs hash",
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(403);
+
+    expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        countryCode,
+        signature: sign,
+      });
+    console.log("res", res);
+
+    expect(res.status).toEqual(201);
+    expect(res.body).toHaveProperty("recordId");
+
+    jest
+      .spyOn(plantService, "plant")
+      .mockReturnValue(Promise.resolve({ recordId: "124" }));
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        birthDate,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(400);
+
+    res = await request(httpServer)
+      .post("/plant/regular/add")
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({
+        treeSpecs,
+        countryCode,
+        signature: sign,
+      });
+
+    expect(res.status).toEqual(400);
   });
 });
