@@ -51,47 +51,53 @@ export class TreeFactoryListener {
 
     this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
-    this.ethereumEvents.start(1);
+    this.ethereumEvents.start(
+      await this.plantVerificationService.loadLastState(),
+    );
 
-    this.ethereumEvents.on("block.confirmed", this.method);
-  }
-
-  async method(blockNumber, events, done) {
-    console.log("block.confirmed", blockNumber);
-    await new Promise(async (resolve, reject) => {
-      if (events.length > 0) {
-        for (let event of events) {
-          if (event.name === EventName.TREE_ASSIGNED) {
-            try {
-              await this.plantVerificationService.verifyAssignedTree(
-                Number(event.values._treeId),
-              );
-            } catch (error) {
-              console.log("TREE_ASSIGNED error", error);
-            }
-          } else if (event.name === EventName.TREE_PLANT) {
-            try {
-              await this.plantVerificationService.verifyPlant(
-                event.values.signer,
-                Number(event.values.nonce),
-              );
-            } catch (error) {
-              console.log("TREE_PLANT error", error);
-            }
-          } else if (event.name === EventName.TREE_UPDATE) {
-            try {
-              await this.plantVerificationService.verifyUpdate(
-                Number(event.values._treeId),
-              );
-            } catch (error) {
-              console.log("TREE_UPDATE error", error);
+    this.ethereumEvents.on(
+      "block.confirmed",
+      async (blockNumber, events, done) => {
+        console.log("block.confirmed", blockNumber);
+        await new Promise(async (resolve, reject) => {
+          if (events.length > 0) {
+            for (let event of events) {
+              if (event.name === EventName.TREE_ASSIGNED) {
+                try {
+                  await this.plantVerificationService.verifyAssignedTree(
+                    Number(event.values._treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_ASSIGNED error", error);
+                }
+              } else if (event.name === EventName.TREE_PLANT) {
+                try {
+                  await this.plantVerificationService.verifyPlant(
+                    event.values.signer,
+                    Number(event.values.nonce),
+                  );
+                } catch (error) {
+                  console.log("TREE_PLANT error", error);
+                }
+              } else if (event.name === EventName.TREE_UPDATE) {
+                try {
+                  await this.plantVerificationService.verifyUpdate(
+                    Number(event.values._treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_UPDATE error", error);
+                }
+              }
             }
           }
-        }
-      }
 
-      resolve("done");
-    });
-    done();
+          await this.plantVerificationService.saveLastState(blockNumber);
+
+          resolve("done");
+        });
+
+        done();
+      },
+    );
   }
 }

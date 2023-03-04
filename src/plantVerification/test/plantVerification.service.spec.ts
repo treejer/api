@@ -536,22 +536,28 @@ describe("App e2e", () => {
   it("get update requests count", async () => {});
 
   it.only("test saveLastState", async () => {
-    // const lastDataBeforeUpdate = await mongoConnection.db
-    //   .collection(CollectionNames.LAST_STATE)
-    //   .findOne({});
-
-    // console.log("lastDataBeforeUpdate", lastDataBeforeUpdate);
-
-    // const insertedUpdateData = await mongoConnection.db
-    //   .collection(CollectionNames.UPDATE_TREES)
-    //   .updateOne();
-
     let result = await plantVerificationService.saveLastState(14);
 
-    const lastDataBeforeUpdate = await mongoConnection.db
+    let lastDataBeforeUpdate = await mongoConnection.db
       .collection(CollectionNames.LAST_STATE)
       .findOne({});
 
-    console.log("lastDataBeforeUpdate", lastDataBeforeUpdate);
+    expect(result).toHaveProperty("recordId");
+
+    expect(lastDataBeforeUpdate.lastBlockNumber).toEqual(14);
+
+    result = await plantVerificationService.saveLastState(20);
+
+    lastDataBeforeUpdate = await mongoConnection.db
+      .collection(CollectionNames.LAST_STATE)
+      .findOne({});
+
+    expect(lastDataBeforeUpdate.lastBlockNumber).toEqual(20);
+
+    expect(result).toHaveProperty("acknowledged");
+
+    let res = await plantVerificationService.loadLastState();
+
+    expect(res).toEqual(20);
   });
 });

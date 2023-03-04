@@ -8,6 +8,7 @@ import { PlantErrorMessage, PlantStatus } from "src/common/constants";
 import { PlantService } from "src/plant/plant.service";
 import { LastStateRepository } from "./plantVerification.repository";
 import { EditResult, CreateResult } from "./interfaces";
+import { Types } from "mongoose";
 
 @Injectable()
 export class PlantVerificationService {
@@ -142,16 +143,18 @@ export class PlantVerificationService {
   async saveLastState(
     lastBlockNumber: number,
   ): Promise<EditResult | CreateResult> {
-    let lastState = await this.lastStateRepository.findOne({});
+    let lastState = await this.lastStateRepository.findOne({}, { _id: 1 });
     let result;
 
     if (!lastState) {
-      result = await this.lastStateRepository.create({ lastBlockNumber });
+      result = await this.lastStateRepository.create({
+        lastBlockNumber,
+      });
 
       result = { recordId: result._id };
     } else {
       result = await this.lastStateRepository.updateOne(
-        {},
+        { _id: lastState._id },
         { lastBlockNumber },
       );
 
@@ -161,7 +164,12 @@ export class PlantVerificationService {
     return result;
   }
 
-  async loadLastState() {
-    return await this.lastStateRepository.findOne({});
+  async loadLastState(): Promise<number> {
+    let result = await this.lastStateRepository.findOne(
+      {},
+      { lastBlockNumber: 1, _id: 0 },
+    );
+
+    return result ? result.lastBlockNumber : 1;
   }
 }
