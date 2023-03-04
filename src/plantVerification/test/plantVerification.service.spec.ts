@@ -38,13 +38,13 @@ describe("App e2e", () => {
 
     config = moduleRef.get<ConfigService>(ConfigService);
     plantVerificationService = moduleRef.get<PlantVerificationService>(
-      PlantVerificationService
+      PlantVerificationService,
     );
 
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      })
+      }),
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -57,7 +57,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -74,7 +74,7 @@ describe("App e2e", () => {
     const collections = await mongoConnection.db.collections();
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName
+        collections[key].collectionName,
       );
       await collection.deleteMany({});
     }
@@ -96,7 +96,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -133,8 +133,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedUpdateData.insertedId.toString()
-      )
+        insertedUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -143,7 +143,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectPlant(
-      insertedPendingPlantData.insertedId.toString()
+      insertedPendingPlantData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -156,8 +156,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedPendingPlantData.insertedId.toString()
-      )
+        insertedPendingPlantData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -184,7 +184,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1
+      1,
     );
 
     const insertedPendingAssinedTreeData = await mongoConnection.db
@@ -222,8 +222,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedUpdateData.insertedId.toString()
-      )
+        insertedUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -232,7 +232,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectAssignedTree(
-      insertedPendingAssinedTreeData.insertedId.toString()
+      insertedPendingAssinedTreeData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -244,8 +244,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedPendingAssinedTreeData.insertedId.toString()
-      )
+        insertedPendingAssinedTreeData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -270,7 +270,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3
+      3,
     );
 
     const insertedPendingUpdateData = await mongoConnection.db
@@ -308,8 +308,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPlanteData.insertedId.toString()
-      )
+        insertedPlanteData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -318,7 +318,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectUpdate(
-      insertedPendingUpdateData.insertedId.toString()
+      insertedPendingUpdateData.insertedId.toString(),
     );
 
     expect(rejectResult).toBe(true);
@@ -331,8 +331,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPendingUpdateData.insertedId.toString()
-      )
+        insertedPendingUpdateData.insertedId.toString(),
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -362,7 +362,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const deletedNonces = [2, 6, 7];
@@ -396,7 +396,7 @@ describe("App e2e", () => {
       } else {
         expect(result[index].signer).toBe(account2);
         expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length]
+          account2Nonces[index - account1Nonces.length],
         );
       }
 
@@ -425,7 +425,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const deletedNonces = [2, 6, 7];
@@ -461,7 +461,7 @@ describe("App e2e", () => {
       } else {
         expect(result[index].signer).toBe(account2);
         expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length]
+          account2Nonces[index - account1Nonces.length],
         );
       }
 
@@ -490,7 +490,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2
+      2,
     );
 
     const deletedNonces = [2, 6, 7];
@@ -524,7 +524,7 @@ describe("App e2e", () => {
       } else {
         expect(result[index].signer).toBe(account2);
         expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length]
+          account2Nonces[index - account1Nonces.length],
         );
       }
 
@@ -534,4 +534,24 @@ describe("App e2e", () => {
 
   it("get assigned tree requests count", async () => {});
   it("get update requests count", async () => {});
+
+  it.only("test saveLastState", async () => {
+    // const lastDataBeforeUpdate = await mongoConnection.db
+    //   .collection(CollectionNames.LAST_STATE)
+    //   .findOne({});
+
+    // console.log("lastDataBeforeUpdate", lastDataBeforeUpdate);
+
+    // const insertedUpdateData = await mongoConnection.db
+    //   .collection(CollectionNames.UPDATE_TREES)
+    //   .updateOne();
+
+    let result = await plantVerificationService.saveLastState(14);
+
+    const lastDataBeforeUpdate = await mongoConnection.db
+      .collection(CollectionNames.LAST_STATE)
+      .findOne({});
+
+    console.log("lastDataBeforeUpdate", lastDataBeforeUpdate);
+  });
 });

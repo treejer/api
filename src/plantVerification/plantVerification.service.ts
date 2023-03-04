@@ -7,6 +7,7 @@ import {
 import { PlantErrorMessage, PlantStatus } from "src/common/constants";
 import { PlantService } from "src/plant/plant.service";
 import { LastStateRepository } from "./plantVerification.repository";
+import { EditResult, CreateResult } from "./interfaces";
 
 @Injectable()
 export class PlantVerificationService {
@@ -138,12 +139,29 @@ export class PlantVerificationService {
     );
   }
 
-  async saveLastState() {
-    // const result = await this.lastStateRepository.updateOne(
-    //   { _id: recordId },
-    //   { ...dto, nonce: userData.plantingNonce },
-    // );
+  async saveLastState(
+    lastBlockNumber: number,
+  ): Promise<EditResult | CreateResult> {
+    let lastState = await this.lastStateRepository.findOne({});
+    let result;
+
+    if (!lastState) {
+      result = await this.lastStateRepository.create({ lastBlockNumber });
+
+      result = { recordId: result._id };
+    } else {
+      result = await this.lastStateRepository.updateOne(
+        {},
+        { lastBlockNumber },
+      );
+
+      result = { acknowledged: result.acknowledged };
+    }
+
+    return result;
   }
 
-  async loadLastState() {}
+  async loadLastState() {
+    return await this.lastStateRepository.findOne({});
+  }
 }

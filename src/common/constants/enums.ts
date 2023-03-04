@@ -9,6 +9,7 @@ export enum CollectionNames {
   UPDATE_TREES = "updatetrees",
   TREE_PLANT = "treeplants",
   ASSIGNED_TREE_PLANT = "assignedtreeplants",
+  LAST_STATE = "lastState",
 }
 
 export enum Role {

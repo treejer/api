@@ -10,7 +10,8 @@ import { UserModule } from "src/user/user.module";
 import { PlantModule } from "src/plant/plant.module";
 import { TreeFactoryListener } from "./event/TreeFactoryListener.event";
 import { MongooseModule } from "@nestjs/mongoose";
-import { LastState } from "./schemas";
+import { LastState, LastStateSchema } from "./schemas";
+import { LastStateRepository } from "./plantVerification.repository";
 
 @Module({
   imports: [
@@ -18,10 +19,16 @@ import { LastState } from "./schemas";
     AuthModule,
     UserModule,
     Web3Module,
-    MongooseModule.forFeature([{ name: LastState.name, schema: LastState }]),
+    MongooseModule.forFeature([
+      { name: LastState.name, schema: LastStateSchema },
+    ]),
   ],
   controllers: [PlantVerificationController],
-  providers: [PlantVerificationService, TreeFactoryListener],
+  providers: [
+    PlantVerificationService,
+    TreeFactoryListener,
+    LastStateRepository,
+  ],
   exports: [PlantVerificationService],
 })
 export class PlantVerificationModule {

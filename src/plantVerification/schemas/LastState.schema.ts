@@ -5,8 +5,11 @@ export type LastStateDocument = LastState & Document;
 
 @Schema()
 export class LastState extends Document {
-  @Prop({ type: String })
-  signer;
+  @Prop({ type: Number, default: 1 })
+  lastBlockNumber;
+
+  @Prop({ type: Date, default: Date.now })
+  updatedAt;
 }
 
-export const AssignedTreePlantSchema = SchemaFactory.createForClass(LastState);
+export const LastStateSchema = SchemaFactory.createForClass(LastState);
