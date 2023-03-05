@@ -31,10 +31,4 @@ import { LastStateRepository } from "./plantVerification.repository";
   ],
   exports: [PlantVerificationService],
 })
-export class PlantVerificationModule {
-  constructor(private treeFactoryListener: TreeFactoryListener) {}
-
-  async configure() {
-    await this.treeFactoryListener.configure();
-  }
-}
+export class PlantVerificationModule {}

@@ -9,8 +9,11 @@ import { SmsModule } from "./sms/sms.module";
 import { EmailModule } from "./email/email.module";
 import { AuthModule } from "./auth/auth.module";
 
+import { CommandModule } from "nestjs-command";
+
 @Module({
   imports: [
+    CommandModule,
     Web3Module,
     PlantVerificationModule,
     DatabaseModule,

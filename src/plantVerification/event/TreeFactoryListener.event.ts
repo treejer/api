@@ -6,6 +6,9 @@ import { ConfigService } from "@nestjs/config";
 import { Web3Service } from "src/web3/web3.service";
 import { PlantVerificationService } from "../plantVerification.service";
 import { EventName } from "src/common/constants";
+import { Command, Positional, Option } from "nestjs-command";
+
+// import * as Config from :
 
 const EthereumEvents = require("ethereum-events");
 
@@ -28,26 +31,70 @@ export class TreeFactoryListener {
     private configService: ConfigService,
   ) {}
 
-  async configure() {
+  @Command({
+    command: "listener:run",
+    describe: "TreeFactory listener run",
+  })
+  async configure(
+    @Option({
+      name: "pollInterval",
+      describe: "period between polls in milliseconds (default: 13000)",
+      type: "number",
+      required: false,
+    })
+    pollInterval: number = Number(
+      this.configService.get<string>("POLL_INTERVAL"),
+    ),
+
+    @Option({
+      name: "confirmations",
+      describe: "n° of confirmation blocks (default: 12)",
+      type: "number",
+      required: false,
+    })
+    confirmations: number = Number(
+      this.configService.get<string>("CONFIRMATIONS"),
+    ),
+    @Option({
+      name: "chunkSize",
+      describe: "n° of blocks to fetch at a time (default: 10000)",
+      type: "number",
+      required: false,
+    })
+    chunkSize: number = Number(this.configService.get<string>("CHUNK_SIZE")),
+    @Option({
+      name: "concurrency",
+      describe: "maximum n° of concurrent web3 requests (default: 10)",
+      type: "number",
+      required: false,
+    })
+    concurrency: number = Number(this.configService.get<string>("CONCURRENCY")),
+    @Option({
+      name: "backoff",
+      describe: "retry backoff in milliseconds (default: 1000)",
+      type: "number",
+      required: false,
+    })
+    backoff: number = Number(this.configService.get<string>("BACK_OFF")),
+    @Option({
+      name: "url",
+      describe: "web3 provider url",
+      type: "string",
+      required: false,
+    })
+    url: string,
+  ) {
     console.log("VerifyPlant run");
 
     const options = {
-      pollInterval: Number(this.configService.get<string>("POLL_INTERVAL")), // period between polls in milliseconds (default: 13000)
-      confirmations: Number(this.configService.get<string>("CONFIRMATIONS")), // n° of confirmation blocks (default: 12)
-      chunkSize: Number(this.configService.get<string>("CHUNK_SIZE")), // n° of blocks to fetch at a time (default: 10000)
-      concurrency: Number(this.configService.get<string>("CONCURRENCY")), // maximum n° of concurrent web3 requests (default: 10)
-      backoff: Number(this.configService.get<string>("BACK_OFF")), // retry backoff in milliseconds (default: 1000)
+      pollInterval,
+      confirmations,
+      chunkSize,
+      concurrency,
+      backoff,
     };
 
-    let web3S = this.web3Service.getWeb3SInstance();
-
-    web3S.eth.net
-      .isListening()
-      .then(() => console.log("TreeFactoryListener : is connected"))
-      .catch((e) => {
-        console.error("TreeFactoryListener : Something went wrong : " + e);
-        throw new InternalServerErrorException(e.message);
-      });
+    let web3S = this.web3Service.getWeb3SInstance(url);
 
     this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
