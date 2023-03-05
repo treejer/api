@@ -1,39 +1,48 @@
-import { Controller, Get, Put, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Patch, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { ApiTags } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
 import { Role } from "src/common/constants";
 import { PlantVerificationService } from "./plantVerification.service";
 
-@Controller("plantVerification")
+@ApiTags("plantVerification")
+@Controller()
 export class PlantVerificationController {
   constructor(private plantVerificationService: PlantVerificationService) {}
 
-  @HasRoles(Role.PLANTER)
+  @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Put("plant/reject")
-  rejectPlant() {
-    // return this.plantVerificationService.rejectPlant();
+  @Patch("plant_requests/:id/reject")
+  rejectPlant(@Param("id") id: string) {
+    return this.plantVerificationService.rejectPlant(id);
   }
-  @Get("plant/getRequests")
+
+  @Get("plant_requests/verification")
   getPlantRequests() {
     return this.plantVerificationService.getPlantRequests();
   }
 
-  @Put("assignedTree/reject")
-  rejectAssignedTree() {
-    // return this.plantVerificationService.rejectAssignedTree();
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Patch("assigned_requests/:id/reject")
+  rejectAssignedTree(@Param("id") id: string) {
+    return this.plantVerificationService.rejectAssignedTree(id);
   }
-  @Get("assignedTree/getRequests")
+
+  @Get("assigned_requests/verification")
   getAssignedTreeRequests() {
     return this.plantVerificationService.getAssignedTreeRequests();
   }
 
-  @Put("update/reject")
-  rejectUpdate() {
-    // return this.plantVerificationService.rejectUpdate();
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Patch("update_requests/:id/reject")
+  rejectUpdate(@Param("id") id: string) {
+    return this.plantVerificationService.rejectUpdate(id);
   }
-  @Get("update/getRequests")
+
+  @Get("update_requests/verification")
   getUpdateRequests() {
     return this.plantVerificationService.getUpdateRequests();
   }

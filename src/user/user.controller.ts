@@ -1,28 +1,10 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 
 import { UserService } from "./user.service";
 
+@ApiTags("user")
 @Controller("users")
 export class UserController {
   constructor(private userService: UserService) {}
-
-  @Get()
-  getUserList() {
-    return this.userService.getUserList();
-  }
-
-  @Get("/sort")
-  getSortedUsersByNonce() {
-    return this.userService.getSortedUserByNonce();
-  }
-
-  @Get("/profile")
-  getUserByWalletAddressWithQueryParam(@Query("wallet") wallet: string) {
-    return this.userService.findUserByWallet(wallet);
-  }
-
-  @Get("/profile/:wallet")
-  getUserByWalletAddressWithRoute(@Param("wallet") wallet: string) {
-    return this.userService.findUserByWallet(wallet);
-  }
 }

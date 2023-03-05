@@ -50,7 +50,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      }),
+      })
     );
 
     await app.init();
@@ -65,12 +65,10 @@ describe("App e2e", () => {
 
   afterEach(async () => {
     const collections = await mongoConnection.db.collections();
-
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName,
+        collections[key].collectionName
       );
-
       await collection.deleteMany({});
     }
     jest.restoreAllMocks();
@@ -85,9 +83,7 @@ describe("App e2e", () => {
     const birthDate: number = 1;
     const countryCode: number = 1;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -108,13 +104,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeId,
@@ -130,7 +126,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId,
@@ -149,7 +145,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -164,7 +160,7 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     jest.spyOn(web3Service, "getTreeData").mockReturnValue(
@@ -177,11 +173,11 @@ describe("App e2e", () => {
         plantDate: 0,
         birthDate: 0,
         treeSpecs: "",
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: 15,
@@ -196,7 +192,7 @@ describe("App e2e", () => {
     expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId,
@@ -217,7 +213,7 @@ describe("App e2e", () => {
       .mockReturnValue(Promise.resolve({ recordId: "124" }));
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -229,7 +225,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId,
@@ -255,9 +251,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
     const countryCode2: number = 2;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -278,13 +272,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .patch(`/plant/assignedTree/edit/${treeId}`)
+      .patch(`/assigned_requests/${treeId}`)
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
@@ -299,7 +293,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .patch(`/plant/assignedTree/edit/${treeId}`)
+      .patch(`/assigned_requests/${treeId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -317,7 +311,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -332,7 +326,7 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     jest.spyOn(web3Service, "getTreeData").mockReturnValue(
@@ -345,11 +339,11 @@ describe("App e2e", () => {
         plantDate: 0,
         birthDate: 0,
         treeSpecs: "",
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId,
@@ -368,13 +362,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode2,
       },
-      1,
+      1
     );
 
     let recordId = res.body.recordId;
 
     res = await request(httpServer)
-      .patch(`/plant/assignedTree/edit/${recordId}`)
+      .patch(`/assigned_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -388,7 +382,7 @@ describe("App e2e", () => {
     expect(res.body.acknowledged).toEqual(true);
 
     res = await request(httpServer)
-      .patch(`/plant/assignedTree/edit/${recordId}`)
+      .patch(`/assigned_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -399,7 +393,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .patch(`/plant/assignedTree/edit/${recordId}`)
+      .patch(`/assigned_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -423,9 +417,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
     const countryCode2: number = 2;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -446,13 +438,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .delete(`/plant/assignedTree/delete/${treeId}`)
+      .delete(`/assigned_requests/${treeId}`)
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
@@ -467,7 +459,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .delete(`/plant/assignedTree/delete/${treeId}`)
+      .delete(`/assigned_requests/${treeId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -485,7 +477,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -500,7 +492,7 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     jest.spyOn(web3Service, "getTreeData").mockReturnValue(
@@ -513,11 +505,11 @@ describe("App e2e", () => {
         plantDate: 0,
         birthDate: 0,
         treeSpecs: "",
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/assignedTree/add")
+      .post("/assigned_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId,
@@ -530,15 +522,13 @@ describe("App e2e", () => {
     let recordId = res.body.recordId;
 
     res = await request(httpServer)
-      .delete(`/plant/assignedTree/delete/${recordId}`)
+      .delete(`/assigned_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken });
 
-    expect(res.status).toEqual(200);
-
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.status).toEqual(204);
 
     res = await request(httpServer)
-      .delete(`/plant/assignedTree/delete/${"recordId"}`)
+      .delete(`/assigned_requests/${"recordId"}`)
       .set({ Authorization: "Bearer " + accessToken });
 
     expect(res.status).toEqual(500);
@@ -551,9 +541,7 @@ describe("App e2e", () => {
     const treeSpecs: string = "treeSpecs";
     const nonce1: number = 1;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account1.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account1.address}`);
 
     let signResult = account1.sign(res.body.message);
 
@@ -572,7 +560,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3,
+      3
     );
 
     //---------------successful update
@@ -587,13 +575,13 @@ describe("App e2e", () => {
         plantDate: 1,
         birthDate: 1,
         treeSpecs: treeSpecs,
-      }),
+      })
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeId: treeId1,
@@ -607,7 +595,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -624,13 +612,13 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: 321,
@@ -643,7 +631,7 @@ describe("App e2e", () => {
     expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -662,7 +650,7 @@ describe("App e2e", () => {
       .mockReturnValue(Promise.resolve({ recordId: "124" }));
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -672,7 +660,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -691,9 +679,7 @@ describe("App e2e", () => {
     const treeSpecs2: string = "ipfs 2";
     const nonce: number = 2;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account1.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account1.address}`);
 
     let signResult = account1.sign(res.body.message);
 
@@ -712,7 +698,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3,
+      3
     );
 
     //---------------successful update
@@ -727,13 +713,13 @@ describe("App e2e", () => {
         plantDate: 1,
         birthDate: 1,
         treeSpecs: treeSpecs,
-      }),
+      })
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .patch(`/plant/update/edit/${treeId1}`)
+      .patch(`/update_requests/${treeId1}`)
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeId: treeId1,
@@ -747,7 +733,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .patch(`/plant/update/edit/${treeId1}`)
+      .patch(`/update_requests/${treeId1}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -764,13 +750,13 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -788,11 +774,11 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs2,
       },
-      3,
+      3
     );
 
     res = await request(httpServer)
-      .patch(`/plant/update/edit/${recordId}`)
+      .patch(`/update_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         signature: sign2,
@@ -804,7 +790,7 @@ describe("App e2e", () => {
     expect(res.body.acknowledged).toEqual(true);
 
     res = await request(httpServer)
-      .patch(`/plant/update/edit/${recordId}`)
+      .patch(`/update_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         signature: sign2,
@@ -813,7 +799,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .patch(`/plant/update/edit/${recordId}`)
+      .patch(`/update_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -831,9 +817,7 @@ describe("App e2e", () => {
     const treeSpecs2: string = "ipfs 2";
     const nonce: number = 2;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account1.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account1.address}`);
 
     let signResult = account1.sign(res.body.message);
 
@@ -852,7 +836,7 @@ describe("App e2e", () => {
         treeId: treeId1,
         treeSpecs: treeSpecs,
       },
-      3,
+      3
     );
 
     //---------------successful update
@@ -867,13 +851,13 @@ describe("App e2e", () => {
         plantDate: 1,
         birthDate: 1,
         treeSpecs: treeSpecs,
-      }),
+      })
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .delete(`/plant/update/delete/${treeId1}`)
+      .delete(`/update_requests/${treeId1}`)
       .set({ Authorization: "Bearer " + "fake accessToken" });
 
     expect(res.status).toEqual(401);
@@ -882,7 +866,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .delete(`/plant/update/delete/${treeId1}`)
+      .delete(`/update_requests/${treeId1}`)
       .set({ Authorization: "Bearer " + accessToken });
 
     expect(res.status).toEqual(401);
@@ -894,13 +878,13 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
 
     res = await request(httpServer)
-      .post("/plant/update/add")
+      .post("/update_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeId: treeId1,
@@ -913,15 +897,13 @@ describe("App e2e", () => {
     //----------------------------------------------
 
     res = await request(httpServer)
-      .delete(`/plant/update/delete/${recordId}`)
+      .delete(`/update_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken });
 
-    expect(res.status).toEqual(200);
-
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.status).toEqual(204);
 
     res = await request(httpServer)
-      .delete(`/plant/update/delete/${treeId1}`)
+      .delete(`/update_requests/${treeId1}`)
       .set({ Authorization: "Bearer " + accessToken });
 
     expect(res.status).toEqual(500);
@@ -936,9 +918,7 @@ describe("App e2e", () => {
     const birthDate: number = 1;
     const countryCode: number = 1;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -958,13 +938,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2,
+      2
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
@@ -979,7 +959,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -997,7 +977,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -1012,11 +992,11 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: "invalid ipfs hash",
@@ -1030,7 +1010,7 @@ describe("App e2e", () => {
     expect(res.body.message).toEqual(AuthErrorMessages.INVALID_SIGNER);
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1047,7 +1027,7 @@ describe("App e2e", () => {
       .mockReturnValue(Promise.resolve({ recordId: "124" }));
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1058,7 +1038,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1078,9 +1058,7 @@ describe("App e2e", () => {
     const birthDate: number = 1;
     const countryCode: number = 1;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -1100,11 +1078,11 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2,
+      2
     );
 
     res = await request(httpServer)
-      .delete(`/plant/regular/delete/fakeId`)
+      .delete(`/plant_requests/fakeId`)
       .set({ Authorization: "Bearer " + "fake accessToken" });
 
     expect(res.status).toEqual(401);
@@ -1113,7 +1091,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .delete(`/plant/regular/delete/fakeId`)
+      .delete(`/plant_requests/fakeId`)
       .set({ Authorization: "Bearer " + accessToken });
 
     expect(res.status).toEqual(401);
@@ -1123,7 +1101,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
@@ -1136,11 +1114,11 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1152,15 +1130,13 @@ describe("App e2e", () => {
     let recordId = res.body.recordId;
 
     res = await request(httpServer)
-      .delete(`/plant/regular/delete/${recordId}`)
+      .delete(`/plant_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken });
 
-    expect(res.status).toEqual(200);
-
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.status).toEqual(204);
 
     res = await request(httpServer)
-      .delete(`/plant/regular/delete/${"recordId"}`)
+      .delete(`/plant_requests/${"recordId"}`)
       .set({ Authorization: "Bearer " + accessToken });
 
     expect(res.status).toEqual(500);
@@ -1179,9 +1155,7 @@ describe("App e2e", () => {
     const countryCode: number = 1;
     const countryCode2: number = 2;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`,
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -1201,13 +1175,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2,
+      2
     );
 
     //------------------------------------------> Reject . user hasn't jwt token
 
     res = await request(httpServer)
-      .patch(`/plant/regular/edit/fakeId`)
+      .patch(`/plant_requests/fakeId`)
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
@@ -1222,7 +1196,7 @@ describe("App e2e", () => {
     //------------------------------------------> Reject . user isn't planter
 
     res = await request(httpServer)
-      .patch(`/plant/regular/edit/fakeId`)
+      .patch(`/plant_requests/fakeId`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1240,7 +1214,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .updateOne(
         { _id: new Types.ObjectId(decodedAccessToken["userId"]) },
-        { $set: { userRole: Role.PLANTER } },
+        { $set: { userRole: Role.PLANTER } }
       );
 
     //------------------------------------------> Success
@@ -1255,11 +1229,11 @@ describe("App e2e", () => {
         plantedCount: 1,
         longitude: 1,
         latitude: 1,
-      }),
+      })
     );
 
     res = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
@@ -1276,13 +1250,13 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode2,
       },
-      2,
+      2
     );
 
     let recordId = res.body.recordId;
 
     res = await request(httpServer)
-      .patch(`/plant/regular/edit/${recordId}`)
+      .patch(`/plant_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -1296,7 +1270,7 @@ describe("App e2e", () => {
     expect(res.body.acknowledged).toEqual(true);
 
     res = await request(httpServer)
-      .patch(`/plant/regular/edit/${recordId}`)
+      .patch(`/plant_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
@@ -1307,7 +1281,7 @@ describe("App e2e", () => {
     expect(res.status).toEqual(400);
 
     res = await request(httpServer)
-      .patch(`/plant/regular/edit/${recordId}`)
+      .patch(`/plant_requests/${recordId}`)
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,

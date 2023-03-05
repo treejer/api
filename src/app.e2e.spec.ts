@@ -74,9 +74,7 @@ describe("App e2e", () => {
 
     console.log("acc", account);
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -122,8 +120,6 @@ describe("App e2e", () => {
         countryCode: 232,
         signature: signResult.signature,
       });
-
-    console.log("res1", res1);
   });
 
   it.skip("test plant", async () => {
@@ -135,9 +131,7 @@ describe("App e2e", () => {
     const birthDate: number = 1;
     const countryCode: number = 1;
 
-    let res = await request(httpServer).get(
-      `/auth/get-nonce/${account.address}`
-    );
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
@@ -146,7 +140,6 @@ describe("App e2e", () => {
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
-    console.log("accessToken", accessToken);
 
     let decodedAccessToken = Jwt.decode(accessToken);
 
@@ -173,12 +166,11 @@ describe("App e2e", () => {
     );
 
     let plantResult = await request(httpServer)
-      .post("/plant/regular/add")
+      .post("/plant_requests")
       .set({
         Authorization: "Bearer " + accessToken,
       })
       .send({ treeSpecs, birthDate, countryCode, signature: sign });
-    console.log("plantResult", plantResult);
   });
 
   it.skip("get nonce successfully", async () => {
