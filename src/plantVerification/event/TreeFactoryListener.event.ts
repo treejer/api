@@ -8,8 +8,6 @@ import { PlantVerificationService } from "../plantVerification.service";
 import { EventName } from "src/common/constants";
 import { Command, Positional, Option } from "nestjs-command";
 
-// import * as Config from :
-
 const EthereumEvents = require("ethereum-events");
 
 @Injectable()
