@@ -12,15 +12,6 @@ import { Command, Positional, Option } from "nestjs-command";
 
 const EthereumEvents = require("ethereum-events");
 
-const contracts = [
-  {
-    name: "CircleOfHop",
-    address: "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab",
-    abi: CircleOfHop.abi,
-    events: ["TreeUpdatedVerified", "TreeVerified", "TreeAssigned"],
-  },
-];
-
 @Injectable()
 export class TreeFactoryListener {
   private ethereumEvents;
@@ -85,6 +76,17 @@ export class TreeFactoryListener {
     url: string,
   ) {
     console.log("VerifyPlant run");
+
+    const contracts = [
+      {
+        name: this.configService.get<string>("LISTENER_CONTRACT_NAME"),
+        address: this.configService.get<string>("LISTENER_CONTRACT_ADDRESS"),
+        abi: CircleOfHop.abi,
+        events: this.configService
+          .get<string>("LISTENER_CONTRACT_EVENTS")
+          .split(" "),
+      },
+    ];
 
     const options = {
       pollInterval,
