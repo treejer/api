@@ -37,3 +37,6 @@ lerna-debug.log*
 
 # env
 /.env
+
+# pm2
+/.pm2
