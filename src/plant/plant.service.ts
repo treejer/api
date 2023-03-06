@@ -29,13 +29,11 @@ import {
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
 import {
-  CreateRequestResult,
   DeleteRequestResult,
-  EditRequestResultDto,
   AssignedRequestStatusEditResultDto,
   UpdateRequestStatusEditResultDto,
 } from "./dtos";
-import { PlantRequestResultDto } from "./dtos/plantRequestResult.dto";
+
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 
 @Injectable()
@@ -48,10 +46,7 @@ export class PlantService {
     private web3Service: Web3Service
   ) {}
 
-  async plant(
-    dto: PlantRequestDto,
-    user: JwtUserDto
-  ): Promise<CreateRequestResult> {
+  async plant(dto: PlantRequestDto, user: JwtUserDto): Promise<TreePlant> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -93,7 +88,8 @@ export class PlantService {
     await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
-    return { recordId: createdData._id };
+
+    return createdData;
   }
 
   async deletePlant(
@@ -132,13 +128,10 @@ export class PlantService {
     recordId: string,
     dto: PlantRequestDto,
     user: JwtUserDto
-  ): Promise<EditRequestResultDto> {
-    const plantData = await this.treePlantRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { signer: 1, status: 1, _id: 0 }
-    );
+  ): Promise<TreePlant> {
+    const plantData = await this.treePlantRepository.findOne({
+      _id: recordId,
+    });
 
     if (!plantData)
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
@@ -168,16 +161,21 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const result = await this.treePlantRepository.updateOne(
-      { _id: recordId },
-      { ...dto, nonce: 1 }
-    );
-
     await this.userService.updateUserById(user.userId, {
-      plantingNonce: 1 + 1,
+      plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { acknowledged: result.acknowledged };
+    await this.treePlantRepository.updateOne(
+      { _id: recordId },
+      { ...dto, nonce: userData.plantingNonce }
+    );
+
+    Object.assign(plantData, dto, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return plantData;
   }
 
   async editPlantDataStatus(
@@ -216,7 +214,7 @@ export class PlantService {
   async plantAssignedTree(
     dto: CreateAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<CreateRequestResult> {
+  ): Promise<AssignedTreePlant> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -289,20 +287,17 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { recordId: assignedPlant._id };
+    return assignedPlant;
   }
 
   async editAssignedTree(
     recordId: string,
     data: EditAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<EditRequestResultDto> {
-    const assignedPlantData = await this.assignedTreePlantRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
-    );
+  ): Promise<AssignedTreePlant> {
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
+      _id: recordId,
+    });
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_RECORD_ID);
@@ -336,7 +331,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    const result = await this.assignedTreePlantRepository.updateOne(
+    await this.assignedTreePlantRepository.updateOne(
       {
         _id: recordId,
       },
@@ -346,7 +341,12 @@ export class PlantService {
       }
     );
 
-    return { acknowledged: result.acknowledged };
+    Object.assign(assignedPlantData, data, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return assignedPlantData;
   }
 
   async deleteAssignedTree(
@@ -384,7 +384,7 @@ export class PlantService {
   async updateTree(
     dto: CreateUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<CreateRequestResult> {
+  ): Promise<UpdateTree> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -435,7 +435,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { recordId: createdData._id };
+    return createdData;
   }
 
   async deleteUpdateTree(
@@ -474,13 +474,10 @@ export class PlantService {
     recordId: string,
     dto: EditUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<EditRequestResultDto> {
-    const updateData = await this.updateTreeRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
-    );
+  ): Promise<UpdateTree> {
+    const updateData = await this.updateTreeRepository.findOne({
+      _id: recordId,
+    });
 
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -518,7 +515,12 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { acknowledged: result.acknowledged };
+    Object.assign(updateData, dto, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return updateData;
   }
 
   async getPlantData(filter) {

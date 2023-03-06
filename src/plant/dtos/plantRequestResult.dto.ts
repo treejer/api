@@ -15,10 +15,6 @@ export class PlantRequestResultDto {
   nonce: number;
 
   @ApiResponseProperty()
-  @IsNumber()
-  treeId: number;
-
-  @ApiResponseProperty()
   @IsString()
   treeSpecs: string;
 

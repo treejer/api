@@ -21,21 +21,19 @@ import { AuthGuard } from "@nestjs/passport";
 import {
   CreateAssignedRequestDto,
   CreateUpdateRequestDto,
-  DeleteRequestResult,
   EditAssignedRequestDto,
   EditUpdateRequestDto,
   PlantRequestDto,
+  PlantRequestResultDto,
+  AssignedRequestResultDto,
+  UpdateRequestResultDto,
 } from "./dtos";
-import { CreateRequestResult, EditRequestResultDto } from "./dtos";
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { PlantRequestResultDto } from "./dtos/plantRequestResult.dto";
-import { AssignedRequestResultDto } from "./dtos/assignedRequestResult.dto";
-import { UpdateRequestResultDto } from "./dtos/updateRequestResult.dto";
 
 @Controller()
 @ApiTags("plant")
@@ -47,7 +45,7 @@ export class PlantController {
   @ApiResponse({
     status: 201,
     description: "plant request has been successfully created.",
-    type: CreateRequestResult,
+    type: PlantRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -79,10 +77,7 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("plant_requests")
-  plant(
-    @Body() dto: PlantRequestDto,
-    @User() user: JwtUserDto
-  ): Promise<CreateRequestResult> {
+  plant(@Body() dto: PlantRequestDto, @User() user: JwtUserDto) {
     return this.plantService.plant(dto, user);
   }
 
@@ -91,7 +86,7 @@ export class PlantController {
   @ApiResponse({
     status: 200,
     description: "plant request has been successfully edited.",
-    type: EditRequestResultDto,
+    type: PlantRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -127,7 +122,7 @@ export class PlantController {
     @Param("id") id: string,
     @Body() dto: PlantRequestDto,
     @User() user: JwtUserDto
-  ): Promise<EditRequestResultDto> {
+  ) {
     return this.plantService.editPlant(id, dto, user);
   }
 
@@ -196,7 +191,7 @@ export class PlantController {
   @ApiResponse({
     status: 201,
     description: "assigned request has been successfully created.",
-    type: CreateRequestResult,
+    type: AssignedRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -240,7 +235,7 @@ export class PlantController {
   @ApiResponse({
     status: 200,
     description: "assigned request has been successfully edited.",
-    type: EditRequestResultDto,
+    type: AssignedRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -345,7 +340,7 @@ export class PlantController {
   @ApiResponse({
     status: 201,
     description: "update request has been successfully created.",
-    type: CreateRequestResult,
+    type: UpdateRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -386,7 +381,7 @@ export class PlantController {
   @ApiResponse({
     status: 200,
     description: "update request has been successfully edited.",
-    type: EditRequestResultDto,
+    type: UpdateRequestResultDto,
   })
   @ApiResponse({
     status: 400,
