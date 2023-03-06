@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsString } from "class-validator";
 
-export class TreePlantDto {
+export class PlantRequestDto {
   @ApiProperty()
   @IsString()
   treeSpecs: string;

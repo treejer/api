@@ -1,9 +1,10 @@
 import {
-  CreateAssignedTreePlantDto,
-  TreePlantDto,
-  EditTreeAssignPlantDto,
-  CreateUpdateTreeDto,
-  EditUpdateTreeDto,
+  CreateAssignedRequestDto,
+  PlantRequestDto,
+  EditAssignedRequestDto,
+  CreateUpdateRequestDto,
+  EditUpdateRequestDto,
+  PlantRequestStatusEditResultDto,
 } from "./dtos";
 import {
   ForbiddenException,
@@ -27,7 +28,15 @@ import {
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
-import { CreateResult, DeleteResult, EditResult } from "./dtos";
+import {
+  CreateRequestResult,
+  DeleteRequestResult,
+  EditRequestResultDto,
+  AssignedRequestStatusEditResultDto,
+  UpdateRequestStatusEditResultDto,
+} from "./dtos";
+import { PlantRequestResultDto } from "./dtos/plantRequestResult.dto";
+import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 
 @Injectable()
 export class PlantService {
@@ -39,7 +48,10 @@ export class PlantService {
     private web3Service: Web3Service
   ) {}
 
-  async plant(dto: TreePlantDto, user: JwtUserDto): Promise<CreateResult> {
+  async plant(
+    dto: PlantRequestDto,
+    user: JwtUserDto
+  ): Promise<CreateRequestResult> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -84,7 +96,10 @@ export class PlantService {
     return { recordId: createdData._id };
   }
 
-  async deletePlant(recordId: string, user: JwtUserDto): Promise<DeleteResult> {
+  async deletePlant(
+    recordId: string,
+    user: JwtUserDto
+  ): Promise<DeleteRequestResult> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -115,9 +130,9 @@ export class PlantService {
 
   async editPlant(
     recordId: string,
-    dto: TreePlantDto,
+    dto: PlantRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
+  ): Promise<EditRequestResultDto> {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -165,34 +180,43 @@ export class PlantService {
     return { acknowledged: result.acknowledged };
   }
 
-  async editPlantDataStatus(filter, status: number): Promise<boolean> {
+  async editPlantDataStatus(
+    filter,
+    status: number
+  ): Promise<PlantRequestStatusEditResultDto> {
     const result = await this.treePlantRepository.updateOne(filter, { status });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
-  async editAssignedTreeDataStatus(filter, status: number): Promise<boolean> {
+  async editAssignedTreeDataStatus(
+    filter,
+    status: number
+  ): Promise<AssignedRequestStatusEditResultDto> {
     const result = await this.assignedTreePlantRepository.updateOne(filter, {
       status,
     });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
-  async editUpdateTreeDataStatus(filter, status: number): Promise<boolean> {
+  async editUpdateTreeDataStatus(
+    filter,
+    status: number
+  ): Promise<UpdateRequestStatusEditResultDto> {
     const result = await this.updateTreeRepository.updateOne(filter, {
       status,
     });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   //---------------------------  Assigned Tree ----------------------------------------------------
 
   async plantAssignedTree(
-    dto: CreateAssignedTreePlantDto,
+    dto: CreateAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<CreateResult> {
+  ): Promise<CreateRequestResult> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -270,9 +294,9 @@ export class PlantService {
 
   async editAssignedTree(
     recordId: string,
-    data: EditTreeAssignPlantDto,
+    data: EditAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
+  ): Promise<EditRequestResultDto> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -328,7 +352,7 @@ export class PlantService {
   async deleteAssignedTree(
     recordId: string,
     user: JwtUserDto
-  ): Promise<EditResult> {
+  ): Promise<DeleteRequestResult> {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -358,9 +382,9 @@ export class PlantService {
   }
 
   async updateTree(
-    dto: CreateUpdateTreeDto,
+    dto: CreateUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<CreateResult> {
+  ): Promise<CreateRequestResult> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -417,7 +441,7 @@ export class PlantService {
   async deleteUpdateTree(
     recordId: string,
     user: JwtUserDto
-  ): Promise<EditResult> {
+  ): Promise<DeleteRequestResult> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -448,9 +472,9 @@ export class PlantService {
 
   async editUpdateTree(
     recordId: string,
-    dto: EditUpdateTreeDto,
+    dto: EditUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
+  ): Promise<EditRequestResultDto> {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -509,11 +533,15 @@ export class PlantService {
     return await this.updateTreeRepository.findOne(filter);
   }
 
-  async getPlantRequests(filter, sortOption, projection) {
+  async getPlantRequests(filter, sortOption, projection): Promise<TreePlant[]> {
     return await this.treePlantRepository.sort(filter, sortOption, projection);
   }
 
-  async getAssignedTreeRequests(filter, sortOption, projection) {
+  async getAssignedTreeRequests(
+    filter,
+    sortOption,
+    projection
+  ): Promise<AssignedTreePlant[]> {
     return await this.assignedTreePlantRepository.sort(
       filter,
       sortOption,
@@ -521,7 +549,11 @@ export class PlantService {
     );
   }
 
-  async getUpdateTreeRequests(filter, sortOption, projection) {
+  async getUpdateTreeRequests(
+    filter,
+    sortOption,
+    projection
+  ): Promise<UpdateTree[]> {
     return await this.updateTreeRepository.sort(filter, sortOption, projection);
   }
 

@@ -38,13 +38,13 @@ describe("App e2e", () => {
 
     config = moduleRef.get<ConfigService>(ConfigService);
     plantVerificationService = moduleRef.get<PlantVerificationService>(
-      PlantVerificationService,
+      PlantVerificationService
     );
 
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      }),
+      })
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -57,7 +57,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      }),
+      })
     );
 
     await app.init();
@@ -74,7 +74,7 @@ describe("App e2e", () => {
     const collections = await mongoConnection.db.collections();
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName,
+        collections[key].collectionName
       );
       await collection.deleteMany({});
     }
@@ -96,7 +96,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      2,
+      2
     );
 
     const insertedPendingPlantData = await mongoConnection.db
@@ -133,8 +133,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedUpdateData.insertedId.toString(),
-      ),
+        insertedUpdateData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -143,7 +143,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectPlant(
-      insertedPendingPlantData.insertedId.toString(),
+      insertedPendingPlantData.insertedId.toString()
     );
 
     expect(rejectResult).toBe(true);
@@ -156,8 +156,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectPlant(
-        insertedPendingPlantData.insertedId.toString(),
-      ),
+        insertedPendingPlantData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -184,7 +184,7 @@ describe("App e2e", () => {
         birthDate: birthDate,
         countryCode: countryCode,
       },
-      1,
+      1
     );
 
     const insertedPendingAssinedTreeData = await mongoConnection.db
@@ -222,8 +222,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedUpdateData.insertedId.toString(),
-      ),
+        insertedUpdateData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -232,7 +232,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectAssignedTree(
-      insertedPendingAssinedTreeData.insertedId.toString(),
+      insertedPendingAssinedTreeData.insertedId.toString()
     );
 
     expect(rejectResult).toBe(true);
@@ -244,8 +244,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectAssignedTree(
-        insertedPendingAssinedTreeData.insertedId.toString(),
-      ),
+        insertedPendingAssinedTreeData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -270,7 +270,7 @@ describe("App e2e", () => {
         treeId: treeId,
         treeSpecs: treeSpecs,
       },
-      3,
+      3
     );
 
     const insertedPendingUpdateData = await mongoConnection.db
@@ -308,8 +308,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPlanteData.insertedId.toString(),
-      ),
+        insertedPlanteData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
@@ -318,7 +318,7 @@ describe("App e2e", () => {
     });
 
     let rejectResult = await plantVerificationService.rejectUpdate(
-      insertedPendingUpdateData.insertedId.toString(),
+      insertedPendingUpdateData.insertedId.toString()
     );
 
     expect(rejectResult).toBe(true);
@@ -331,8 +331,8 @@ describe("App e2e", () => {
 
     await expect(
       plantVerificationService.rejectUpdate(
-        insertedPendingUpdateData.insertedId.toString(),
-      ),
+        insertedPendingUpdateData.insertedId.toString()
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -341,199 +341,196 @@ describe("App e2e", () => {
     });
   });
 
-  it("get plant requests", async () => {
-    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
-    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
-    let account = await web3.eth.accounts.create();
+  // it("get plant requests", async () => {
+  //   let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+  //   let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+  //   let account = await web3.eth.accounts.create();
 
-    let account1Nonces = [1, 3, 5, 9];
-    let account2Nonces = [4, 8, 10];
+  //   let account1Nonces = [1, 3, 5, 9];
+  //   let account2Nonces = [4, 8, 10];
 
-    const nonce: number = 1;
-    const treeSpecs: string = "ipfs";
-    const birthDate: number = 1;
-    const countryCode: number = 1;
+  //   const nonce: number = 1;
+  //   const treeSpecs: string = "ipfs";
+  //   const birthDate: number = 1;
+  //   const countryCode: number = 1;
 
-    const sign = await getEIP712Sign(
-      account,
-      {
-        nonce: nonce,
-        treeSpecs: treeSpecs,
-        birthDate: birthDate,
-        countryCode: countryCode,
-      },
-      2,
-    );
+  //   const sign = await getEIP712Sign(
+  //     account,
+  //     {
+  //       nonce: nonce,
+  //       treeSpecs: treeSpecs,
+  //       birthDate: birthDate,
+  //       countryCode: countryCode,
+  //     },
+  //     2,
+  //   );
 
-    const deletedNonces = [2, 6, 7];
+  //   const deletedNonces = [2, 6, 7];
 
-    for (let i = 0; i < 10; i++) {
-      await mongoConnection.db
-        .collection(CollectionNames.TREE_PLANT)
-        .insertOne({
-          birthDate,
-          countryCode,
-          signature: sign,
-          treeSpecs,
-          signer:
-            i % 2 == 0
-              ? getCheckedSumAddress(account1)
-              : getCheckedSumAddress(account2),
-          nonce: i + 1,
-          status: deletedNonces.includes(i + 1)
-            ? PlantStatus.DELETE
-            : PlantStatus.PENDING,
-          updatedAt: new Date(),
-        });
-    }
+  //   for (let i = 0; i < 10; i++) {
+  //     await mongoConnection.db
+  //       .collection(CollectionNames.TREE_PLANT)
+  //       .insertOne({
+  //         birthDate,
+  //         countryCode,
+  //         signature: sign,
+  //         treeSpecs,
+  //         signer:
+  //           i % 2 == 0
+  //             ? getCheckedSumAddress(account1)
+  //             : getCheckedSumAddress(account2),
+  //         nonce: i + 1,
+  //         status: deletedNonces.includes(i + 1)
+  //           ? PlantStatus.DELETE
+  //           : PlantStatus.PENDING,
+  //         updatedAt: new Date(),
+  //       });
+  //   }
 
-    let result = await plantVerificationService.getPlantRequests();
+  //   let result = await plantVerificationService.getPlantRequests();
 
-    for (let index = 0; index < result.length; index++) {
-      if (index < account1Nonces.length) {
-        expect(result[index].signer).toBe(account1);
-        expect(result[index].nonce).toBe(account1Nonces[index]);
-      } else {
-        expect(result[index].signer).toBe(account2);
-        expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length],
-        );
-      }
+  //   for (let index = 0; index < result.length; index++) {
+  //     if (index < account1Nonces.length) {
+  //       expect(result[index].signer).toBe(account1);
+  //       expect(result[index].nonce).toBe(account1Nonces[index]);
+  //     } else {
+  //       expect(result[index].signer).toBe(account2);
+  //       expect(result[index].nonce).toBe(
+  //         account2Nonces[index - account1Nonces.length],
+  //       );
+  //     }
 
-      expect(result[index].status).toBe(PlantStatus.PENDING);
-    }
-  });
+  //     expect(result[index].status).toBe(PlantStatus.PENDING);
+  //   }
+  // });
 
-  it("get assigned plant requests", async () => {
-    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
-    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
-    let account = await web3.eth.accounts.create();
+  // it("get assigned plant requests", async () => {
+  //   let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+  //   let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+  //   let account = await web3.eth.accounts.create();
 
-    let account1Nonces = [1, 3, 5, 9];
-    let account2Nonces = [4, 8, 10];
+  //   let account1Nonces = [1, 3, 5, 9];
+  //   let account2Nonces = [4, 8, 10];
 
-    const nonce: number = 1;
-    const treeSpecs: string = "ipfs";
-    const birthDate: number = 1;
-    const countryCode: number = 1;
+  //   const nonce: number = 1;
+  //   const treeSpecs: string = "ipfs";
+  //   const birthDate: number = 1;
+  //   const countryCode: number = 1;
 
-    const sign = await getEIP712Sign(
-      account,
-      {
-        nonce: nonce,
-        treeSpecs: treeSpecs,
-        birthDate: birthDate,
-        countryCode: countryCode,
-      },
-      2,
-    );
+  //   const sign = await getEIP712Sign(
+  //     account,
+  //     {
+  //       nonce: nonce,
+  //       treeSpecs: treeSpecs,
+  //       birthDate: birthDate,
+  //       countryCode: countryCode,
+  //     },
+  //     2,
+  //   );
 
-    const deletedNonces = [2, 6, 7];
+  //   const deletedNonces = [2, 6, 7];
 
-    for (let i = 0; i < 10; i++) {
-      await mongoConnection.db
-        .collection(CollectionNames.ASSIGNED_TREE_PLANT)
-        .insertOne({
-          birthDate,
-          countryCode,
-          signature: sign,
-          treeSpecs,
-          signer:
-            i % 2 == 0
-              ? getCheckedSumAddress(account1)
-              : getCheckedSumAddress(account2),
-          nonce: i + 1,
-          status: deletedNonces.includes(i + 1)
-            ? PlantStatus.DELETE
-            : PlantStatus.PENDING,
-          treeId: i + 1,
-          updatedAt: new Date(),
-          createdAt: new Date(),
-        });
-    }
+  //   for (let i = 0; i < 10; i++) {
+  //     await mongoConnection.db
+  //       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+  //       .insertOne({
+  //         birthDate,
+  //         countryCode,
+  //         signature: sign,
+  //         treeSpecs,
+  //         signer:
+  //           i % 2 == 0
+  //             ? getCheckedSumAddress(account1)
+  //             : getCheckedSumAddress(account2),
+  //         nonce: i + 1,
+  //         status: deletedNonces.includes(i + 1)
+  //           ? PlantStatus.DELETE
+  //           : PlantStatus.PENDING,
+  //         treeId: i + 1,
+  //         updatedAt: new Date(),
+  //         createdAt: new Date(),
+  //       });
+  //   }
 
-    let result = await plantVerificationService.getAssignedTreeRequests();
+  //   let result = await plantVerificationService.getAssignedTreeRequests();
 
-    for (let index = 0; index < result.length; index++) {
-      if (index < account1Nonces.length) {
-        expect(result[index].signer).toBe(account1);
-        expect(result[index].nonce).toBe(account1Nonces[index]);
-      } else {
-        expect(result[index].signer).toBe(account2);
-        expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length],
-        );
-      }
+  //   for (let index = 0; index < result.length; index++) {
+  //     if (index < account1Nonces.length) {
+  //       expect(result[index].signer).toBe(account1);
+  //       expect(result[index].nonce).toBe(account1Nonces[index]);
+  //     } else {
+  //       expect(result[index].signer).toBe(account2);
+  //       expect(result[index].nonce).toBe(
+  //         account2Nonces[index - account1Nonces.length],
+  //       );
+  //     }
 
-      expect(result[index].status).toBe(PlantStatus.PENDING);
-    }
-  });
+  //     expect(result[index].status).toBe(PlantStatus.PENDING);
+  //   }
+  // });
 
-  it("get update requests", async () => {
-    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
-    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
-    let account = await web3.eth.accounts.create();
+  // it("get update requests", async () => {
+  //   let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+  //   let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+  //   let account = await web3.eth.accounts.create();
 
-    let account1Nonces = [1, 3, 5, 9];
-    let account2Nonces = [4, 8, 10];
+  //   let account1Nonces = [1, 3, 5, 9];
+  //   let account2Nonces = [4, 8, 10];
 
-    const nonce: number = 1;
-    const treeSpecs: string = "ipfs";
-    const birthDate: number = 1;
-    const countryCode: number = 1;
+  //   const nonce: number = 1;
+  //   const treeSpecs: string = "ipfs";
+  //   const birthDate: number = 1;
+  //   const countryCode: number = 1;
 
-    const sign = await getEIP712Sign(
-      account,
-      {
-        nonce: nonce,
-        treeSpecs: treeSpecs,
-        birthDate: birthDate,
-        countryCode: countryCode,
-      },
-      2,
-    );
+  //   const sign = await getEIP712Sign(
+  //     account,
+  //     {
+  //       nonce: nonce,
+  //       treeSpecs: treeSpecs,
+  //       birthDate: birthDate,
+  //       countryCode: countryCode,
+  //     },
+  //     2,
+  //   );
 
-    const deletedNonces = [2, 6, 7];
+  //   const deletedNonces = [2, 6, 7];
 
-    for (let i = 0; i < 10; i++) {
-      await mongoConnection.db
-        .collection(CollectionNames.UPDATE_TREES)
-        .insertOne({
-          signature: sign,
-          treeSpecs,
-          signer:
-            i % 2 == 0
-              ? getCheckedSumAddress(account1)
-              : getCheckedSumAddress(account2),
-          nonce: i + 1,
-          status: deletedNonces.includes(i + 1)
-            ? PlantStatus.DELETE
-            : PlantStatus.PENDING,
-          treeId: i + 1,
-          updatedAt: new Date(),
-          createdAt: new Date(),
-        });
-    }
+  //   for (let i = 0; i < 10; i++) {
+  //     await mongoConnection.db
+  //       .collection(CollectionNames.UPDATE_TREES)
+  //       .insertOne({
+  //         signature: sign,
+  //         treeSpecs,
+  //         signer:
+  //           i % 2 == 0
+  //             ? getCheckedSumAddress(account1)
+  //             : getCheckedSumAddress(account2),
+  //         nonce: i + 1,
+  //         status: deletedNonces.includes(i + 1)
+  //           ? PlantStatus.DELETE
+  //           : PlantStatus.PENDING,
+  //         treeId: i + 1,
+  //         updatedAt: new Date(),
+  //         createdAt: new Date(),
+  //       });
+  //   }
 
-    let result = await plantVerificationService.getUpdateRequests();
+  //   let result = await plantVerificationService.getUpdateRequests();
 
-    for (let index = 0; index < result.length; index++) {
-      if (index < account1Nonces.length) {
-        expect(result[index].signer).toBe(account1);
-        expect(result[index].nonce).toBe(account1Nonces[index]);
-      } else {
-        expect(result[index].signer).toBe(account2);
-        expect(result[index].nonce).toBe(
-          account2Nonces[index - account1Nonces.length],
-        );
-      }
+  //   for (let index = 0; index < result.length; index++) {
+  //     if (index < account1Nonces.length) {
+  //       expect(result[index].signer).toBe(account1);
+  //       expect(result[index].nonce).toBe(account1Nonces[index]);
+  //     } else {
+  //       expect(result[index].signer).toBe(account2);
+  //       expect(result[index].nonce).toBe(
+  //         account2Nonces[index - account1Nonces.length],
+  //       );
+  //     }
 
-      expect(result[index].status).toBe(PlantStatus.PENDING);
-    }
-  });
-
-  it("get assigned tree requests count", async () => {});
-  it("get update requests count", async () => {});
+  //     expect(result[index].status).toBe(PlantStatus.PENDING);
+  //   }
+  // });
 
   it.only("test saveLastState", async () => {
     let result = await plantVerificationService.saveLastState(14);

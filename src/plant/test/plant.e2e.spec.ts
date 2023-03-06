@@ -8,7 +8,7 @@ import {
   CollectionNames,
   Role,
 } from "./../../common/constants";
-import { CreateAssignedTreePlantDto } from "./../../plant/dtos";
+
 import { getCheckedSumAddress, getEIP712Sign } from "./../../common/helpers";
 import { PlantService } from "../plant.service";
 import { Web3Service } from "src/web3/web3.service";

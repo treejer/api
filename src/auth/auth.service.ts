@@ -17,6 +17,7 @@ import {
   getCheckedSumAddress,
   recoverPublicAddressfromSignature,
 } from "./../common/helpers";
+import { LoginResultDto, NonceResultDto } from "./dtos";
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,7 @@ export class AuthService {
     return this.userService.findUserById(userId);
   }
 
-  async getNonce(wallet: string) {
+  async getNonce(wallet: string): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
     if (!checkPublicKey(checkedSumWallet))
@@ -59,7 +60,10 @@ export class AuthService {
     };
   }
 
-  async loginWithWallet(walletAddress: string, signature: string) {
+  async loginWithWallet(
+    walletAddress: string,
+    signature: string
+  ): Promise<LoginResultDto> {
     const checkedSumWallet = getCheckedSumAddress(walletAddress);
 
     if (!checkPublicKey(checkedSumWallet))

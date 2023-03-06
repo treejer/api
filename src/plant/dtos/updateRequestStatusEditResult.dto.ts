@@ -1,7 +1,7 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
 import { IsBoolean } from "class-validator";
 
-export class DeleteResult {
+export class UpdateRequestStatusEditResultDto {
   @ApiResponseProperty()
   @IsBoolean()
   acknowledged: boolean;

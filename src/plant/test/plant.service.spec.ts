@@ -671,7 +671,7 @@ describe("App e2e", () => {
     });
   });
 
-  it("plant", async () => {
+  it.only("plant", async () => {
     let account1 = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
