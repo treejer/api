@@ -21,7 +21,10 @@ export class PlantVerificationService {
     private lastStateRepository: LastStateRepository
   ) {}
 
-  async verifyPlant(signer: string, nonce: number) {
+  async verifyPlant(
+    signer: string,
+    nonce: number
+  ): Promise<PlantRequestStatusEditResultDto> {
     const plantData = await this.plantService.getPlantData({
       signer,
       nonce,
@@ -31,14 +34,16 @@ export class PlantVerificationService {
     if (!plantData)
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
 
-    return await this.plantService.editPlantDataStatus(
+    await this.plantService.editPlantDataStatus(
       { signer, nonce },
       PlantStatus.VERIFIED
     );
-  }
-  async verifyAssignedTree(treeId: number) {
-    console.log("verifyAssignedTree treeId", treeId);
 
+    return { _id: plantData._id, status: PlantStatus.VERIFIED };
+  }
+  async verifyAssignedTree(
+    treeId: number
+  ): Promise<AssignedRequestStatusEditResultDto> {
     const assignedPlantData = await this.plantService.getAssignedTreeData({
       treeId,
       status: PlantStatus.PENDING,
@@ -48,15 +53,17 @@ export class PlantVerificationService {
         PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
       );
 
-    return await this.plantService.editAssignedTreeDataStatus(
+    await this.plantService.editAssignedTreeDataStatus(
       { treeId, status: PlantStatus.PENDING },
       PlantStatus.VERIFIED
     );
+
+    return { _id: assignedPlantData._id, status: PlantStatus.VERIFIED };
   }
 
-  async verifyUpdate(treeId: number) {
-    console.log("verifyUpdate treeId", treeId);
-
+  async verifyUpdate(
+    treeId: number
+  ): Promise<UpdateRequestStatusEditResultDto> {
     const updateData = await this.plantService.getUpdateTreeData({
       treeId,
       status: PlantStatus.PENDING,
@@ -64,10 +71,12 @@ export class PlantVerificationService {
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
 
-    return await this.plantService.editUpdateTreeDataStatus(
+    await this.plantService.editUpdateTreeDataStatus(
       { treeId, status: PlantStatus.PENDING },
       PlantStatus.VERIFIED
     );
+
+    return { _id: updateData._id, status: PlantStatus.VERIFIED };
   }
 
   async rejectPlant(
