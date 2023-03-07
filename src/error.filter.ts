@@ -30,7 +30,8 @@ export class ErrorFilter implements ExceptionFilter {
           };
 
     if (
-      this.configService.get<string>("NODE_ENV") === "test" &&
+      this.configService.get<string>("NODE_ENV") === "production" &&
+      Boolean(this.configService.get<string>("BUGSNAG_ACTIVE")) === true &&
       !(error instanceof HttpException)
     ) {
       this.bugsnag.notify(

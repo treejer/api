@@ -8,14 +8,13 @@ export class BugsnagService {
   private bugsnag;
 
   constructor(private configService: ConfigService) {
-    if (configService.get<string>("NODE_ENV") === "test") {
+    if (
+      configService.get<string>("NODE_ENV") === "production" &&
+      Boolean(configService.get<string>("BUGSNAG_ACTIVE")) === true
+    ) {
       Bugsnag.start({
-        apiKey: "315934ce92749f304e6ac402b9158b97",
+        apiKey: configService.get<string>("BUGSNAG_API_KEY"),
         autoTrackSessions: false,
-        endpoints: {
-          notify: "http://127.0.0.1:3333/errors",
-          sessions: "http://127.0.0.1:3333/sesstions",
-        },
       });
 
       this.bugsnag = Bugsnag;
