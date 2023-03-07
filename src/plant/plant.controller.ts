@@ -7,6 +7,7 @@ import {
   Patch,
   UseGuards,
   HttpCode,
+  Req,
 } from "@nestjs/common";
 
 import { Role } from "src/common/constants";
@@ -77,10 +78,17 @@ export class PlantController {
   @Post("plant_requests")
   plant(
     @Body() dto: TreePlantDto,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ): Promise<CreateResult> {
     return this.plantService.plant(dto, user);
   }
+
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard("jwt"))
+  // @Post("plant_requests2")
+  // plant2(@Req() req: Request) {
+  //   // console.log("req errors", req.body.events[0]);
+  // }
 
   @ApiBearerAuth()
   @ApiOperation({ summary: "edit plant request" })
@@ -122,7 +130,7 @@ export class PlantController {
   editPlant(
     @Param("id") id: string,
     @Body() dto: TreePlantDto,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ): Promise<EditResult> {
     return this.plantService.editPlant(id, dto, user);
   }
@@ -198,7 +206,7 @@ export class PlantController {
   @Post("assigned_requests")
   plantAssignedTree(
     @Body() dto: CreateAssignedTreePlantDto,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ) {
     return this.plantService.plantAssignedTree(dto, user);
   }
@@ -243,7 +251,7 @@ export class PlantController {
   editAssignedTree(
     @Param("id") id: string,
     @Body() dto: EditTreeAssignPlantDto,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
   }
@@ -361,7 +369,7 @@ export class PlantController {
   editUpdateTree(
     @Param("id") id: string,
     @Body() body: EditUpdateTreeDto,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ) {
     return this.plantService.editUpdateTree(id, body, user);
   }

@@ -8,13 +8,25 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from "@nestjs/swagger";
+import { ErrorFilter } from "./error.filter";
+import { BugsnagService } from "./bugsnag/bugsnag.service";
+import { ConfigService } from "@nestjs/config";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useStaticAssets(join(__dirname, "..", "public"));
   app.setBaseViewsDir(join(__dirname, "..", "views"));
   app.setViewEngine("hbs");
+
+  const bugsnagService = app.get(BugsnagService);
+  const configService = app.get(ConfigService);
+
+  app.useGlobalFilters(
+    new ErrorFilter(bugsnagService.getBugsnag(), configService),
+  );
+
   const config = new DocumentBuilder()
     .setTitle("Treejer API")
     .setDescription("API for treejer mobile app and webapp")
