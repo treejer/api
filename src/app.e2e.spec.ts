@@ -4,7 +4,6 @@ import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CollectionNames, Role } from "./common/constants";
-import { CreateAssignedTreePlantDto } from "./plant/dtos";
 import { getEIP712Sign } from "./common/helpers";
 const Web3 = require("web3");
 

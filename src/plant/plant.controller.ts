@@ -7,10 +7,10 @@ import {
   Patch,
   UseGuards,
   HttpCode,
-  Req,
+  Get,
 } from "@nestjs/common";
 
-import { Role } from "src/common/constants";
+import { PlantStatus, Role } from "src/common/constants";
 import { User } from "src/user/decorators";
 import { JwtUserDto } from "src/auth/dtos";
 import { HasRoles } from "src/auth/decorators";
@@ -19,14 +19,15 @@ import { PlantService } from "./plant.service";
 import { AuthGuard } from "@nestjs/passport";
 
 import {
-  CreateAssignedTreePlantDto,
-  CreateUpdateTreeDto,
-  DeleteResult,
-  EditTreeAssignPlantDto,
-  EditUpdateTreeDto,
-  TreePlantDto,
+  CreateAssignedRequestDto,
+  CreateUpdateRequestDto,
+  EditAssignedRequestDto,
+  EditUpdateRequestDto,
+  PlantRequestDto,
+  PlantRequestResultDto,
+  AssignedRequestResultDto,
+  UpdateRequestResultDto,
 } from "./dtos";
-import { CreateResult, EditResult } from "./dtos";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -44,7 +45,7 @@ export class PlantController {
   @ApiResponse({
     status: 201,
     description: "plant request has been successfully created.",
-    type: CreateResult,
+    type: PlantRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -66,7 +67,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal Server Error" },
@@ -76,26 +77,16 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("plant_requests")
-  plant(
-    @Body() dto: TreePlantDto,
-    @User() user: JwtUserDto,
-  ): Promise<CreateResult> {
+  plant(@Body() dto: PlantRequestDto, @User() user: JwtUserDto) {
     return this.plantService.plant(dto, user);
   }
-
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard("jwt"))
-  // @Post("plant_requests2")
-  // plant2(@Req() req: Request) {
-  //   // console.log("req errors", req.body.events[0]);
-  // }
 
   @ApiBearerAuth()
   @ApiOperation({ summary: "edit plant request" })
   @ApiResponse({
     status: 200,
     description: "plant request has been successfully edited.",
-    type: EditResult,
+    type: PlantRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -117,7 +108,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -129,9 +120,9 @@ export class PlantController {
   @Patch("plant_requests/:id")
   editPlant(
     @Param("id") id: string,
-    @Body() dto: TreePlantDto,
+    @Body() dto: PlantRequestDto,
     @User() user: JwtUserDto,
-  ): Promise<EditResult> {
+  ) {
     return this.plantService.editPlant(id, dto, user);
   }
 
@@ -152,7 +143,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -168,11 +159,39 @@ export class PlantController {
   }
 
   @ApiBearerAuth()
+  @ApiOperation({ summary: "get plant requests." })
+  @ApiResponse({
+    status: 200,
+    description: "get plant requests for verification",
+    isArray: true,
+    type: PlantRequestResultDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server error.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("plant_requests/verification")
+  getPlantRequests() {
+    return this.plantService.getPlantRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 },
+      {},
+    );
+  }
+
+  @ApiBearerAuth()
   @ApiOperation({ summary: "create assigned request." })
   @ApiResponse({
     status: 201,
     description: "assigned request has been successfully created.",
-    type: CreateResult,
+    type: AssignedRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -194,7 +213,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal Server Error" },
@@ -205,7 +224,7 @@ export class PlantController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("assigned_requests")
   plantAssignedTree(
-    @Body() dto: CreateAssignedTreePlantDto,
+    @Body() dto: CreateAssignedRequestDto,
     @User() user: JwtUserDto,
   ) {
     return this.plantService.plantAssignedTree(dto, user);
@@ -216,7 +235,7 @@ export class PlantController {
   @ApiResponse({
     status: 200,
     description: "assigned request has been successfully edited.",
-    type: EditResult,
+    type: AssignedRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -238,7 +257,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -250,7 +269,7 @@ export class PlantController {
   @Patch("assigned_requests/:id")
   editAssignedTree(
     @Param("id") id: string,
-    @Body() dto: EditTreeAssignPlantDto,
+    @Body() dto: EditAssignedRequestDto,
     @User() user: JwtUserDto,
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
@@ -273,7 +292,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -289,11 +308,39 @@ export class PlantController {
   }
 
   @ApiBearerAuth()
+  @ApiOperation({ summary: "get assigned requests." })
+  @ApiResponse({
+    status: 200,
+    description: "get assigned requests for verification",
+    isArray: true,
+    type: AssignedRequestResultDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server error.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("assigned_requests/verification")
+  getAssignedTreeRequests() {
+    return this.plantService.getAssignedTreeRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 },
+      {},
+    );
+  }
+
+  @ApiBearerAuth()
   @ApiOperation({ summary: "create update request." })
   @ApiResponse({
     status: 201,
     description: "update request has been successfully created.",
-    type: CreateResult,
+    type: UpdateRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -315,7 +362,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal Server Error" },
@@ -325,7 +372,7 @@ export class PlantController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Post("update_requests")
-  updateTree(@Body() body: CreateUpdateTreeDto, @User() user: JwtUserDto) {
+  updateTree(@Body() body: CreateUpdateRequestDto, @User() user: JwtUserDto) {
     return this.plantService.updateTree(body, user);
   }
 
@@ -334,7 +381,7 @@ export class PlantController {
   @ApiResponse({
     status: 200,
     description: "update request has been successfully edited.",
-    type: EditResult,
+    type: UpdateRequestResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -356,7 +403,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -368,7 +415,7 @@ export class PlantController {
   @Patch("update_requests/:id")
   editUpdateTree(
     @Param("id") id: string,
-    @Body() body: EditUpdateTreeDto,
+    @Body() body: EditUpdateRequestDto,
     @User() user: JwtUserDto,
   ) {
     return this.plantService.editUpdateTree(id, body, user);
@@ -391,7 +438,7 @@ export class PlantController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: "Response for Internal server error.",
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: "Internal server error" },
@@ -404,5 +451,33 @@ export class PlantController {
   @Delete("update_requests/:id")
   deleteUpdateTree(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.plantService.deleteUpdateTree(id, user);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get update requests." })
+  @ApiResponse({
+    status: 200,
+    description: "get update requests for verification",
+    isArray: true,
+    type: UpdateRequestResultDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server error.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("update_requests/verification")
+  getUpdateRequests() {
+    return this.plantService.getUpdateTreeRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 },
+      {},
+    );
   }
 }

@@ -14,7 +14,7 @@ import { Types } from "mongoose";
 export class PlantVerificationService {
   constructor(
     private plantService: PlantService,
-    private lastStateRepository: LastStateRepository,
+    private lastStateRepository: LastStateRepository
   ) {}
 
   async verifyPlant(signer: string, nonce: number) {
@@ -31,7 +31,7 @@ export class PlantVerificationService {
 
     return await this.plantService.editPlantDataStatus(
       { signer, nonce },
-      PlantStatus.VERIFIED,
+      PlantStatus.VERIFIED
     );
   }
   async verifyAssignedTree(treeId: number) {
@@ -43,12 +43,12 @@ export class PlantVerificationService {
     });
     if (!assignedPlantData)
       throw new NotFoundException(
-        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
       );
 
     return await this.plantService.editAssignedTreeDataStatus(
       { treeId, status: PlantStatus.PENDING },
-      PlantStatus.VERIFIED,
+      PlantStatus.VERIFIED
     );
   }
 
@@ -64,7 +64,7 @@ export class PlantVerificationService {
 
     return await this.plantService.editUpdateTreeDataStatus(
       { treeId, status: PlantStatus.PENDING },
-      PlantStatus.VERIFIED,
+      PlantStatus.VERIFIED
     );
   }
 
@@ -81,15 +81,7 @@ export class PlantVerificationService {
 
     return await this.plantService.editPlantDataStatus(
       { _id: recordId },
-      PlantStatus.REJECTED,
-    );
-  }
-
-  async getPlantRequests() {
-    return this.plantService.getPlantRequests(
-      { status: PlantStatus.PENDING },
-      { signer: 1, nonce: 1 },
-      {},
+      PlantStatus.REJECTED
     );
   }
 
@@ -99,7 +91,7 @@ export class PlantVerificationService {
     });
     if (!assignedPlantData)
       throw new NotFoundException(
-        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
       );
 
     if (assignedPlantData.status != PlantStatus.PENDING)
@@ -107,14 +99,7 @@ export class PlantVerificationService {
 
     return await this.plantService.editAssignedTreeDataStatus(
       { _id: recordId },
-      PlantStatus.REJECTED,
-    );
-  }
-  async getAssignedTreeRequests() {
-    return this.plantService.getAssignedTreeRequests(
-      { status: PlantStatus.PENDING },
-      { signer: 1, nonce: 1 },
-      {},
+      PlantStatus.REJECTED
     );
   }
 
@@ -129,19 +114,12 @@ export class PlantVerificationService {
 
     return await this.plantService.editUpdateTreeDataStatus(
       { _id: recordId },
-      PlantStatus.REJECTED,
-    );
-  }
-  async getUpdateRequests() {
-    return this.plantService.getUpdateTreeRequests(
-      { status: PlantStatus.PENDING },
-      { signer: 1, nonce: 1 },
-      {},
+      PlantStatus.REJECTED
     );
   }
 
   async saveLastState(
-    lastBlockNumber: number,
+    lastBlockNumber: number
   ): Promise<EditResult | CreateResult> {
     let lastState = await this.lastStateRepository.findOne({}, { _id: 1 });
     let result;
@@ -155,7 +133,7 @@ export class PlantVerificationService {
     } else {
       result = await this.lastStateRepository.updateOne(
         { _id: lastState._id },
-        { lastBlockNumber },
+        { lastBlockNumber }
       );
 
       result = { acknowledged: result.acknowledged };
@@ -167,7 +145,7 @@ export class PlantVerificationService {
   async loadLastState(): Promise<number> {
     let result = await this.lastStateRepository.findOne(
       {},
-      { lastBlockNumber: 1, _id: 0 },
+      { lastBlockNumber: 1, _id: 0 }
     );
 
     return result ? result.lastBlockNumber : 1;

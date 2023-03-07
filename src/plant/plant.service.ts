@@ -1,9 +1,11 @@
 import {
-  CreateAssignedTreePlantDto,
-  TreePlantDto,
-  EditTreeAssignPlantDto,
-  CreateUpdateTreeDto,
-  EditUpdateTreeDto,
+  CreateAssignedRequestDto,
+  PlantRequestDto,
+  EditAssignedRequestDto,
+  CreateUpdateRequestDto,
+  EditUpdateRequestDto,
+  PlantRequestStatusEditResultDto,
+  PlantRequestResultDto,
 } from "./dtos";
 import {
   ForbiddenException,
@@ -27,7 +29,13 @@ import {
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
-import { CreateResult, DeleteResult, EditResult } from "./dtos";
+import {
+  DeleteRequestResult,
+  AssignedRequestStatusEditResultDto,
+  UpdateRequestStatusEditResultDto,
+} from "./dtos";
+
+import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 
 @Injectable()
 export class PlantService {
@@ -39,7 +47,7 @@ export class PlantService {
     private web3Service: Web3Service
   ) {}
 
-  async plant(dto: TreePlantDto, user: JwtUserDto): Promise<CreateResult> {
+  async plant(dto: PlantRequestDto, user: JwtUserDto): Promise<TreePlant> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -81,10 +89,11 @@ export class PlantService {
     await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
-    return { recordId: createdData._id };
+
+    return createdData;
   }
 
-  async deletePlant(recordId: string, user: JwtUserDto): Promise<DeleteResult> {
+  async deletePlant(recordId: string, user: JwtUserDto) {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -101,7 +110,7 @@ export class PlantService {
     if (plantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.treePlantRepository.softDeleteOne(
+    await this.treePlantRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -109,21 +118,16 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async editPlant(
     recordId: string,
-    dto: TreePlantDto,
+    dto: PlantRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
-    const plantData = await this.treePlantRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { signer: 1, status: 1, _id: 0 }
-    );
+  ): Promise<TreePlant> {
+    const plantData = await this.treePlantRepository.findOne({
+      _id: recordId,
+    });
 
     if (!plantData)
       throw new NotFoundException(PlantErrorMessage.PLANT_DATA_NOT_EXIST);
@@ -153,46 +157,60 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const result = await this.treePlantRepository.updateOne(
+    await this.userService.updateUserById(user.userId, {
+      plantingNonce: userData.plantingNonce + 1,
+    });
+
+    await this.treePlantRepository.updateOne(
       { _id: recordId },
-      { ...dto, nonce: 1 }
+      { ...dto, nonce: userData.plantingNonce }
     );
 
-    await this.userService.updateUserById(user.userId, {
-      plantingNonce: 1 + 1,
+    Object.assign(plantData, dto, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return plantData;
+  }
+
+  async editPlantDataStatus(
+    filter,
+    status: number
+  ): Promise<PlantRequestStatusEditResultDto> {
+    const result = await this.treePlantRepository.updateOne(filter, { status });
+
+    return { acknowledged: result.acknowledged };
+  }
+
+  async editAssignedTreeDataStatus(
+    filter,
+    status: number
+  ): Promise<AssignedRequestStatusEditResultDto> {
+    const result = await this.assignedTreePlantRepository.updateOne(filter, {
+      status,
     });
 
     return { acknowledged: result.acknowledged };
   }
 
-  async editPlantDataStatus(filter, status: number): Promise<boolean> {
-    const result = await this.treePlantRepository.updateOne(filter, { status });
-
-    return result.acknowledged;
-  }
-
-  async editAssignedTreeDataStatus(filter, status: number): Promise<boolean> {
-    const result = await this.assignedTreePlantRepository.updateOne(filter, {
-      status,
-    });
-
-    return result.acknowledged;
-  }
-
-  async editUpdateTreeDataStatus(filter, status: number): Promise<boolean> {
+  async editUpdateTreeDataStatus(
+    filter,
+    status: number
+  ): Promise<UpdateRequestStatusEditResultDto> {
     const result = await this.updateTreeRepository.updateOne(filter, {
       status,
     });
 
-    return result.acknowledged;
+    return { acknowledged: result.acknowledged };
   }
 
   //---------------------------  Assigned Tree ----------------------------------------------------
 
   async plantAssignedTree(
-    dto: CreateAssignedTreePlantDto,
+    dto: CreateAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<CreateResult> {
+  ): Promise<AssignedTreePlant> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -265,20 +283,17 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { recordId: assignedPlant._id };
+    return assignedPlant;
   }
 
   async editAssignedTree(
     recordId: string,
-    data: EditTreeAssignPlantDto,
+    data: EditAssignedRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
-    const assignedPlantData = await this.assignedTreePlantRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
-    );
+  ): Promise<AssignedTreePlant> {
+    const assignedPlantData = await this.assignedTreePlantRepository.findOne({
+      _id: recordId,
+    });
 
     if (!assignedPlantData)
       throw new NotFoundException(PlantErrorMessage.INVALID_RECORD_ID);
@@ -312,7 +327,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    const result = await this.assignedTreePlantRepository.updateOne(
+    await this.assignedTreePlantRepository.updateOne(
       {
         _id: recordId,
       },
@@ -322,13 +337,15 @@ export class PlantService {
       }
     );
 
-    return { acknowledged: result.acknowledged };
+    Object.assign(assignedPlantData, data, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return assignedPlantData;
   }
 
-  async deleteAssignedTree(
-    recordId: string,
-    user: JwtUserDto
-  ): Promise<EditResult> {
+  async deleteAssignedTree(recordId: string, user: JwtUserDto) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -345,7 +362,7 @@ export class PlantService {
     if (assignedPlantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.assignedTreePlantRepository.softDeleteOne(
+    await this.assignedTreePlantRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -353,14 +370,12 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async updateTree(
-    dto: CreateUpdateTreeDto,
+    dto: CreateUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<CreateResult> {
+  ): Promise<UpdateTree> {
     let userData = await this.userService.findUserByWallet(user.walletAddress, {
       plantingNonce: 1,
       _id: 0,
@@ -411,13 +426,10 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { recordId: createdData._id };
+    return createdData;
   }
 
-  async deleteUpdateTree(
-    recordId: string,
-    user: JwtUserDto
-  ): Promise<EditResult> {
+  async deleteUpdateTree(recordId: string, user: JwtUserDto) {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -434,7 +446,7 @@ export class PlantService {
     if (updateData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.updateTreeRepository.softDeleteOne(
+    await this.updateTreeRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -442,21 +454,16 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async editUpdateTree(
     recordId: string,
-    dto: EditUpdateTreeDto,
+    dto: EditUpdateRequestDto,
     user: JwtUserDto
-  ): Promise<EditResult> {
-    const updateData = await this.updateTreeRepository.findOne(
-      {
-        _id: recordId,
-      },
-      { status: 1, signer: 1, treeId: 1, _id: 0 }
-    );
+  ): Promise<UpdateTree> {
+    const updateData = await this.updateTreeRepository.findOne({
+      _id: recordId,
+    });
 
     if (!updateData)
       throw new NotFoundException(PlantErrorMessage.UPDATE_DATA_NOT_EXIST);
@@ -494,7 +501,12 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
-    return { acknowledged: result.acknowledged };
+    Object.assign(updateData, dto, {
+      nonce: userData.plantingNonce,
+      updatedAt: new Date(),
+    });
+
+    return updateData;
   }
 
   async getPlantData(filter) {
@@ -509,11 +521,15 @@ export class PlantService {
     return await this.updateTreeRepository.findOne(filter);
   }
 
-  async getPlantRequests(filter, sortOption, projection) {
+  async getPlantRequests(filter, sortOption, projection): Promise<TreePlant[]> {
     return await this.treePlantRepository.sort(filter, sortOption, projection);
   }
 
-  async getAssignedTreeRequests(filter, sortOption, projection) {
+  async getAssignedTreeRequests(
+    filter,
+    sortOption,
+    projection
+  ): Promise<AssignedTreePlant[]> {
     return await this.assignedTreePlantRepository.sort(
       filter,
       sortOption,
@@ -521,7 +537,11 @@ export class PlantService {
     );
   }
 
-  async getUpdateTreeRequests(filter, sortOption, projection) {
+  async getUpdateTreeRequests(
+    filter,
+    sortOption,
+    projection
+  ): Promise<UpdateTree[]> {
     return await this.updateTreeRepository.sort(filter, sortOption, projection);
   }
 
