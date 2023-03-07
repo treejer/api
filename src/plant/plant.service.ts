@@ -5,6 +5,7 @@ import {
   CreateUpdateRequestDto,
   EditUpdateRequestDto,
   PlantRequestStatusEditResultDto,
+  PlantRequestResultDto,
 } from "./dtos";
 import {
   ForbiddenException,
@@ -92,10 +93,7 @@ export class PlantService {
     return createdData;
   }
 
-  async deletePlant(
-    recordId: string,
-    user: JwtUserDto
-  ): Promise<DeleteRequestResult> {
+  async deletePlant(recordId: string, user: JwtUserDto) {
     const plantData = await this.treePlantRepository.findOne(
       {
         _id: recordId,
@@ -112,7 +110,7 @@ export class PlantService {
     if (plantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.treePlantRepository.softDeleteOne(
+    await this.treePlantRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -120,8 +118,6 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async editPlant(
@@ -349,10 +345,7 @@ export class PlantService {
     return assignedPlantData;
   }
 
-  async deleteAssignedTree(
-    recordId: string,
-    user: JwtUserDto
-  ): Promise<DeleteRequestResult> {
+  async deleteAssignedTree(recordId: string, user: JwtUserDto) {
     const assignedPlantData = await this.assignedTreePlantRepository.findOne(
       {
         _id: recordId,
@@ -369,7 +362,7 @@ export class PlantService {
     if (assignedPlantData.status !== PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.assignedTreePlantRepository.softDeleteOne(
+    await this.assignedTreePlantRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -377,8 +370,6 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async updateTree(
@@ -438,10 +429,7 @@ export class PlantService {
     return createdData;
   }
 
-  async deleteUpdateTree(
-    recordId: string,
-    user: JwtUserDto
-  ): Promise<DeleteRequestResult> {
+  async deleteUpdateTree(recordId: string, user: JwtUserDto) {
     const updateData = await this.updateTreeRepository.findOne(
       {
         _id: recordId,
@@ -458,7 +446,7 @@ export class PlantService {
     if (updateData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    const result = await this.updateTreeRepository.softDeleteOne(
+    await this.updateTreeRepository.softDeleteOne(
       {
         _id: recordId,
       },
@@ -466,8 +454,6 @@ export class PlantService {
         status: PlantStatus.DELETE,
       }
     );
-
-    return { acknowledged: result.acknowledged };
   }
 
   async editUpdateTree(

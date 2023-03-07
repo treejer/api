@@ -276,12 +276,16 @@ describe("App e2e", () => {
       }
     );
 
-    expect(updateResult.recordId).toBeInstanceOf(Types.ObjectId);
+    expect(updateResult).toMatchObject({
+      signature: sign,
+      treeId: treeId1,
+      treeSpecs,
+    });
 
     let updatedData = await mongoConnection.db
       .collection(CollectionNames.UPDATE_TREES)
       .findOne({
-        _id: updateResult.recordId,
+        _id: updateResult._id,
       });
 
     expect(updatedData).toMatchObject({
@@ -445,15 +449,13 @@ describe("App e2e", () => {
     });
 
     //delete seccussful
-    const deleteResult = await plantService.deleteUpdateTree(
+    await plantService.deleteUpdateTree(
       insertedPendingUpdateData.insertedId.toString(),
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
       }
     );
-
-    expect(deleteResult.acknowledged).toBe(true);
 
     const updateDataAfterDelete = await mongoConnection.db
       .collection(CollectionNames.UPDATE_TREES)
@@ -660,7 +662,13 @@ describe("App e2e", () => {
         _id: insertedPendingUpdateData.insertedId,
       });
 
-    expect(editPlantResult.acknowledged).toBe(true);
+    expect(editPlantResult).toMatchObject({
+      signature: sign2,
+      treeSpecs: treeSpecs2,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
 
     expect(plantedDataAfterEdit).toMatchObject({
       signature: sign2,
@@ -671,7 +679,7 @@ describe("App e2e", () => {
     });
   });
 
-  it.only("plant", async () => {
+  it("plant", async () => {
     let account1 = await web3.eth.accounts.create();
     let account2 = await web3.eth.accounts.create();
 
@@ -811,12 +819,17 @@ describe("App e2e", () => {
       }
     );
 
-    expect(plantResult.recordId).toBeInstanceOf(Types.ObjectId);
+    expect(plantResult).toMatchObject({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+    });
 
     let plantedData = await mongoConnection.db
       .collection(CollectionNames.TREE_PLANT)
       .findOne({
-        _id: plantResult.recordId,
+        _id: plantResult._id,
       });
 
     expect(plantedData).toMatchObject({
@@ -967,15 +980,13 @@ describe("App e2e", () => {
     });
 
     //delete seccussful
-    const deleteResult = await plantService.deletePlant(
+    await plantService.deletePlant(
       insertedPendingPlantData.insertedId.toString(),
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
       }
     );
-
-    expect(deleteResult.acknowledged).toBe(true);
 
     const plantDataAfterDelete = await mongoConnection.db
       .collection(CollectionNames.TREE_PLANT)
@@ -1200,7 +1211,15 @@ describe("App e2e", () => {
         _id: insertedPendingPlantData.insertedId,
       });
 
-    expect(editPlantResult.acknowledged).toBe(true);
+    expect(editPlantResult).toMatchObject({
+      birthDate: birthDate2,
+      countryCode: countryCode2,
+      signature: sign2,
+      treeSpecs: treeSpecs2,
+      signer: account1.address,
+      nonce,
+      status: PlantStatus.PENDING,
+    });
 
     expect(plantedDataAfterEdit).toMatchObject({
       birthDate: birthDate2,
@@ -1278,7 +1297,7 @@ describe("App e2e", () => {
       })
     );
 
-    let recordId = await plantService.plantAssignedTree(
+    let plantAssignedTreeResult = await plantService.plantAssignedTree(
       { treeId, treeSpecs, birthDate, countryCode, signature: sign },
       {
         userId: createdUser.insertedId.toString(),
@@ -1297,7 +1316,7 @@ describe("App e2e", () => {
     let plantedData = await mongoConnection.db
       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
       .findOne({
-        _id: recordId.recordId,
+        _id: plantAssignedTreeResult._id,
       });
 
     expect(userAfterPlant.plantingNonce).toBe(2);
@@ -1850,7 +1869,7 @@ describe("App e2e", () => {
       1
     );
 
-    let recordId = await plantService.plantAssignedTree(
+    let plantAssignedTreeResult = await plantService.plantAssignedTree(
       {
         treeId,
         treeSpecs,
@@ -1864,10 +1883,20 @@ describe("App e2e", () => {
       }
     );
 
+    expect(plantAssignedTreeResult).toMatchObject({
+      signer: getCheckedSumAddress(account.address),
+      nonce,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
+
     let plantedData = await mongoConnection.db
       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
       .findOne({
-        _id: recordId.recordId,
+        _id: plantAssignedTreeResult._id,
       });
 
     expect(plantedData).toMatchObject({
@@ -1954,12 +1983,12 @@ describe("App e2e", () => {
       },
     });
 
-    await plantService.deleteAssignedTree(recordId.recordId, {
+    await plantService.deleteAssignedTree(plantAssignedTreeResult._id, {
       userId: createdUser.insertedId.toString(),
       walletAddress: account.address,
     });
 
-    let recordId2 = await plantService.plantAssignedTree(
+    let plantAssignedTreeResult2 = await plantService.plantAssignedTree(
       {
         treeId,
         treeSpecs,
@@ -1973,7 +2002,13 @@ describe("App e2e", () => {
       }
     );
 
-    expect(recordId2.recordId).toBeInstanceOf(Types.ObjectId);
+    expect(plantAssignedTreeResult2).toMatchObject({
+      treeId,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign3,
+    });
   });
 
   it("delete plant assigned tree (planterType == 1)", async () => {
@@ -2177,7 +2212,7 @@ describe("App e2e", () => {
       1
     );
 
-    let recordId = await plantService.plantAssignedTree(
+    let plantAssignedTreeResult = await plantService.plantAssignedTree(
       {
         treeId,
         treeSpecs,
@@ -2244,7 +2279,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.editAssignedTree(
-        recordId.recordId,
+        plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs2,
           birthDate,
@@ -2279,7 +2314,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.editAssignedTree(
-        recordId.recordId,
+        plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs2,
           birthDate,
@@ -2298,8 +2333,8 @@ describe("App e2e", () => {
       },
     });
 
-    await plantService.editAssignedTree(
-      recordId.recordId,
+    const editAssignedTreeResult = await plantService.editAssignedTree(
+      plantAssignedTreeResult._id,
       {
         treeSpecs: treeSpecs2,
         birthDate,
@@ -2312,10 +2347,20 @@ describe("App e2e", () => {
       }
     );
 
+    expect(editAssignedTreeResult).toMatchObject({
+      signer: getCheckedSumAddress(account.address),
+      nonce: nonce2,
+      treeSpecs: treeSpecs2,
+      birthDate,
+      countryCode: countryCode2,
+      signature: sign2,
+      status: PlantStatus.PENDING,
+    });
+
     let plantedData = await mongoConnection.db
       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
       .findOne({
-        _id: recordId.recordId,
+        _id: plantAssignedTreeResult._id,
       });
 
     expect(plantedData).toMatchObject({
@@ -2350,8 +2395,8 @@ describe("App e2e", () => {
       1
     );
 
-    await plantService.editAssignedTree(
-      recordId.recordId,
+    const editAssignedTreeResult2 = await plantService.editAssignedTree(
+      plantAssignedTreeResult._id,
       {
         treeSpecs: treeSpecs,
         birthDate: birthDate2,
@@ -2364,10 +2409,20 @@ describe("App e2e", () => {
       }
     );
 
+    expect(editAssignedTreeResult2).toMatchObject({
+      signer: getCheckedSumAddress(account.address),
+      nonce: 12,
+      treeSpecs: treeSpecs,
+      birthDate: birthDate2,
+      countryCode: countryCode,
+      signature: sign5,
+      status: PlantStatus.PENDING,
+    });
+
     let plantedData2 = await mongoConnection.db
       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
       .findOne({
-        _id: recordId.recordId,
+        _id: plantAssignedTreeResult._id,
       });
 
     expect(plantedData2).toMatchObject({
@@ -2388,14 +2443,14 @@ describe("App e2e", () => {
 
     expect(userAfterPlant2.plantingNonce).toBe(13);
 
-    await plantService.deleteAssignedTree(recordId.recordId, {
+    await plantService.deleteAssignedTree(plantAssignedTreeResult._id, {
       userId: createdUser.insertedId.toString(),
       walletAddress: account.address,
     });
 
     await expect(
       plantService.editAssignedTree(
-        recordId.recordId,
+        plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs,
           birthDate: birthDate2,

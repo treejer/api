@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import {
   AuthErrorMessages,
   CollectionNames,
+  PlantStatus,
   Role,
 } from "./../../common/constants";
 
@@ -88,7 +89,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -204,13 +205,15 @@ describe("App e2e", () => {
 
     expect(res.status).toEqual(201);
 
-    expect(res.body).toHaveProperty("recordId");
+    expect(res.body).toMatchObject({
+      treeId,
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+    });
 
     //----------------------------------------------
-
-    jest
-      .spyOn(plantService, "plantAssignedTree")
-      .mockReturnValue(Promise.resolve({ recordId: "124" }));
 
     res = await request(httpServer)
       .post("/assigned_requests")
@@ -256,7 +259,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -365,7 +368,7 @@ describe("App e2e", () => {
       1
     );
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     res = await request(httpServer)
       .patch(`/assigned_requests/${recordId}`)
@@ -379,7 +382,12 @@ describe("App e2e", () => {
 
     expect(res.status).toEqual(200);
 
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.body).toMatchObject({
+      treeSpecs: treeSpecs2,
+      birthDate,
+      countryCode: countryCode2,
+      signature: sign2,
+    });
 
     res = await request(httpServer)
       .patch(`/assigned_requests/${recordId}`)
@@ -422,7 +430,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -519,7 +527,7 @@ describe("App e2e", () => {
         signature: sign,
       });
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     res = await request(httpServer)
       .delete(`/assigned_requests/${recordId}`)
@@ -546,7 +554,7 @@ describe("App e2e", () => {
     let signResult = account1.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -641,13 +649,13 @@ describe("App e2e", () => {
 
     expect(res.status).toEqual(201);
 
-    expect(res.body).toHaveProperty("recordId");
+    expect(res.body).toMatchObject({
+      treeId: treeId1,
+      treeSpecs,
+      signature: sign,
+    });
 
     //----------------------------------------------
-
-    jest
-      .spyOn(plantService, "plantAssignedTree")
-      .mockReturnValue(Promise.resolve({ recordId: "124" }));
 
     res = await request(httpServer)
       .post("/update_requests")
@@ -684,7 +692,7 @@ describe("App e2e", () => {
     let signResult = account1.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -764,7 +772,7 @@ describe("App e2e", () => {
         signature: sign,
       });
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     //----------------------------------------------
     const sign2 = await getEIP712Sign(
@@ -787,7 +795,7 @@ describe("App e2e", () => {
 
     expect(res.status).toEqual(200);
 
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.body).toMatchObject({ signature: sign2, treeSpecs: treeSpecs2 });
 
     res = await request(httpServer)
       .patch(`/update_requests/${recordId}`)
@@ -822,7 +830,7 @@ describe("App e2e", () => {
     let signResult = account1.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -892,7 +900,7 @@ describe("App e2e", () => {
         signature: sign,
       });
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     //----------------------------------------------
 
@@ -923,7 +931,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -1020,11 +1028,14 @@ describe("App e2e", () => {
       });
 
     expect(res.status).toEqual(201);
-    expect(res.body).toHaveProperty("recordId");
 
-    jest
-      .spyOn(plantService, "plant")
-      .mockReturnValue(Promise.resolve({ recordId: "124" }));
+    expect(res.body).toMatchObject({
+      treeSpecs,
+      birthDate,
+      countryCode,
+      signature: sign,
+      status: PlantStatus.PENDING,
+    });
 
     res = await request(httpServer)
       .post("/plant_requests")
@@ -1063,7 +1074,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -1127,7 +1138,7 @@ describe("App e2e", () => {
         signature: sign,
       });
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     res = await request(httpServer)
       .delete(`/plant_requests/${recordId}`)
@@ -1160,7 +1171,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -1253,7 +1264,7 @@ describe("App e2e", () => {
       2
     );
 
-    let recordId = res.body.recordId;
+    let recordId = res.body._id;
 
     res = await request(httpServer)
       .patch(`/plant_requests/${recordId}`)
@@ -1267,7 +1278,12 @@ describe("App e2e", () => {
 
     expect(res.status).toEqual(200);
 
-    expect(res.body.acknowledged).toEqual(true);
+    expect(res.body).toMatchObject({
+      treeSpecs: treeSpecs2,
+      birthDate,
+      countryCode: countryCode2,
+      signature: sign2,
+    });
 
     res = await request(httpServer)
       .patch(`/plant_requests/${recordId}`)
