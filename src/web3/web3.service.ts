@@ -13,17 +13,19 @@ const TreeFactory = require("./../../abi/TreeFactory.json");
 export class Web3Service {
   private web3Instance;
   constructor(private config: ConfigService) {
+    console.log("vvvvvvvvvvvvvvvvv", config.get<string>("NODE_ENV"));
+
     this.web3Instance = new Web3(
       config.get<string>("NODE_ENV") === "test"
         ? config.get<string>("WEB3_PROVIDER_TEST")
-        : config.get<string>("WEB3_PROVIDER"),
+        : config.get<string>("WEB3_PROVIDER")
     );
 
     this.web3Instance.eth.net
       .isListening()
       .then(() => console.log("web3Instance : is connected"))
       .catch((e) =>
-        console.error("web3Instance : Something went wrong : " + e),
+        console.error("web3Instance : Something went wrong : " + e)
       );
   }
 
@@ -32,7 +34,7 @@ export class Web3Service {
     try {
       const instance = new this.web3Instance.eth.Contract(
         PlanterV2.abi,
-        this.config.get<string>("CONTRACT_PLANTER_ADDRESS"),
+        this.config.get<string>("CONTRACT_PLANTER_ADDRESS")
       );
 
       planter = await instance.methods.planters(planterAddress).call();
@@ -51,7 +53,7 @@ export class Web3Service {
     try {
       const instance = new this.web3Instance.eth.Contract(
         PlanterV2.abi,
-        this.config.get<string>("CONTRACT_PLANTER_ADDRESS"),
+        this.config.get<string>("CONTRACT_PLANTER_ADDRESS")
       );
 
       org = await instance.methods.memberOf(planterAddress).call();
@@ -69,7 +71,7 @@ export class Web3Service {
     try {
       const instance = new this.web3Instance.eth.Contract(
         TreeFactory.abi,
-        this.config.get<string>("CONTRACT_TREE_FACTORY_ADDRESS"),
+        this.config.get<string>("CONTRACT_TREE_FACTORY_ADDRESS")
       );
 
       tree = await instance.methods.trees(treeId).call();
@@ -92,7 +94,7 @@ export class Web3Service {
         ? url
         : this.config.get<string>("NODE_ENV") === "test"
         ? this.config.get<string>("WEB3S_PROVIDER_TEST")
-        : this.config.get<string>("WEB3S_PROVIDER"),
+        : this.config.get<string>("WEB3S_PROVIDER")
     );
 
     web3SInstance.eth.net

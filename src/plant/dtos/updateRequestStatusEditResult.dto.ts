@@ -1,8 +1,12 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsBoolean } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
 export class UpdateRequestStatusEditResultDto {
   @ApiResponseProperty()
-  @IsBoolean()
-  acknowledged: boolean;
+  @IsString()
+  _id: string;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  status: number;
 }

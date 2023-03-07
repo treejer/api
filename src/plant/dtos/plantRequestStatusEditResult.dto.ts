@@ -1,8 +1,12 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsBoolean } from "class-validator";
+import { IsBoolean, IsNumber, IsString } from "class-validator";
 
 export class PlantRequestStatusEditResultDto {
   @ApiResponseProperty()
-  @IsBoolean()
-  acknowledged: boolean;
+  @IsString()
+  _id: string;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  status: number;
 }

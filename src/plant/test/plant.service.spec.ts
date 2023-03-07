@@ -2469,4 +2469,526 @@ describe("App e2e", () => {
       },
     });
   });
+
+  it("get plant requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedNonces = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.TREE_PLANT)
+        .insertOne({
+          birthDate,
+          countryCode,
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          updatedAt: new Date(),
+        });
+    }
+
+    let result = await plantService.getPlantRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 }
+    );
+
+    expect(result.length).toBe(7);
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
+
+    let result2 = await plantService.getPlantRequests({}, {});
+
+    expect(result2.length).toBe(10);
+
+    for (let index = 0; index < result2.length; index++) {
+      if (deletedNonces.includes(index + 1)) {
+        expect(result2[index].status).toBe(PlantStatus.DELETE);
+      } else {
+        expect(result2[index].status).toBe(PlantStatus.PENDING);
+      }
+    }
+  });
+
+  it("get assigned plant requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedNonces = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+        .insertOne({
+          birthDate,
+          countryCode,
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          treeId: i + 1,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+    }
+
+    let result = await plantService.getAssignedTreeRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 }
+    );
+
+    expect(result.length).toBe(7);
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
+    let result2 = await plantService.getAssignedTreeRequests({}, {});
+    expect(result2.length).toBe(10);
+
+    for (let index = 0; index < result2.length; index++) {
+      if (deletedNonces.includes(index + 1)) {
+        expect(result2[index].status).toBe(PlantStatus.DELETE);
+      } else {
+        expect(result2[index].status).toBe(PlantStatus.PENDING);
+      }
+    }
+  });
+
+  it("get update requests", async () => {
+    let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
+    let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
+    let account = await web3.eth.accounts.create();
+
+    let account1Nonces = [1, 3, 5, 9];
+    let account2Nonces = [4, 8, 10];
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const deletedNonces = [2, 6, 7];
+
+    for (let i = 0; i < 10; i++) {
+      await mongoConnection.db
+        .collection(CollectionNames.UPDATE_TREES)
+        .insertOne({
+          signature: sign,
+          treeSpecs,
+          signer:
+            i % 2 == 0
+              ? getCheckedSumAddress(account1)
+              : getCheckedSumAddress(account2),
+          nonce: i + 1,
+          status: deletedNonces.includes(i + 1)
+            ? PlantStatus.DELETE
+            : PlantStatus.PENDING,
+          treeId: i + 1,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+    }
+
+    let result = await plantService.getUpdateTreeRequests(
+      { status: PlantStatus.PENDING },
+      { signer: 1, nonce: 1 }
+    );
+
+    expect(result.length).toBe(7);
+
+    for (let index = 0; index < result.length; index++) {
+      if (index < account1Nonces.length) {
+        expect(result[index].signer).toBe(account1);
+        expect(result[index].nonce).toBe(account1Nonces[index]);
+      } else {
+        expect(result[index].signer).toBe(account2);
+        expect(result[index].nonce).toBe(
+          account2Nonces[index - account1Nonces.length]
+        );
+      }
+
+      expect(result[index].status).toBe(PlantStatus.PENDING);
+    }
+
+    let result2 = await plantService.getUpdateTreeRequests({}, {});
+    expect(result2.length).toBe(10);
+
+    for (let index = 0; index < result2.length; index++) {
+      if (deletedNonces.includes(index + 1)) {
+        expect(result2[index].status).toBe(PlantStatus.DELETE);
+      } else {
+        expect(result2[index].status).toBe(PlantStatus.PENDING);
+      }
+    }
+  });
+
+  it("getPlantData and editPlantDataStatus", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    let createdData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account.address),
+        nonce: 1,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const plantData = await plantService.getPlantData({
+      _id: createdData.insertedId.toString(),
+    });
+
+    expect(plantData).toMatchObject({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.PENDING,
+    });
+
+    await plantService.editPlantDataStatus(
+      { _id: createdData.insertedId.toString() },
+      PlantStatus.REJECTED
+    );
+
+    const plantDataAfterReject = await plantService.getPlantData({
+      _id: createdData.insertedId.toString(),
+    });
+
+    expect(plantDataAfterReject).toMatchObject({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.REJECTED,
+    });
+  });
+  it("getAssignedTreeData and editAssignedTreeDataStatus", async () => {
+    let account = await web3.eth.accounts.create();
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const createdData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account.address),
+        nonce: 1,
+        status: PlantStatus.PENDING,
+        treeId: 1,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    const assignedPlantData = await plantService.getAssignedTreeData({
+      _id: createdData.insertedId.toString(),
+    });
+
+    expect(assignedPlantData).toMatchObject({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.PENDING,
+      treeId: 1,
+    });
+
+    await plantService.editAssignedTreeDataStatus(
+      { _id: createdData.insertedId.toString() },
+      PlantStatus.REJECTED
+    );
+
+    const assignedPlantDataAfterReject = await plantService.getAssignedTreeData(
+      {
+        _id: createdData.insertedId.toString(),
+      }
+    );
+
+    expect(assignedPlantDataAfterReject).toMatchObject({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      treeId: 1,
+      status: PlantStatus.REJECTED,
+    });
+  });
+  it("getUpdateTreeData and editUpdateTreeDataStatus", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const createdData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account.address),
+        nonce: 1,
+        status: PlantStatus.PENDING,
+        treeId: 1,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    const updatePlantData = await plantService.getUpdateTreeData({
+      _id: createdData.insertedId.toString(),
+    });
+
+    expect(updatePlantData).toMatchObject({
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.PENDING,
+      treeId: 1,
+    });
+
+    await plantService.editUpdateTreeDataStatus(
+      { _id: createdData.insertedId.toString() },
+      PlantStatus.REJECTED
+    );
+
+    const updatePlantDataAfterReject = await plantService.getUpdateTreeData({
+      _id: createdData.insertedId.toString(),
+    });
+
+    expect(updatePlantDataAfterReject).toMatchObject({
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.REJECTED,
+      treeId: 1,
+    });
+  });
+
+  it("getPendingListCount", async () => {
+    let account = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    await mongoConnection.db.collection(CollectionNames.TREE_PLANT).insertOne({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.PENDING,
+      updatedAt: new Date(),
+    });
+
+    await mongoConnection.db.collection(CollectionNames.TREE_PLANT).insertOne({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.REJECTED,
+      updatedAt: new Date(),
+    });
+
+    expect(
+      await plantService.getPendingListCount({
+        signer: getCheckedSumAddress(account.address),
+      })
+    ).toBe(1);
+
+    await mongoConnection.db.collection(CollectionNames.TREE_PLANT).insertOne({
+      birthDate,
+      countryCode,
+      signature: sign,
+      treeSpecs,
+      signer: getCheckedSumAddress(account.address),
+      nonce: 1,
+      status: PlantStatus.PENDING,
+      updatedAt: new Date(),
+    });
+    expect(
+      await plantService.getPendingListCount({
+        signer: getCheckedSumAddress(account.address),
+      })
+    ).toBe(2);
+
+    await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account.address),
+        nonce: 1,
+        status: PlantStatus.PENDING,
+        treeId: 1,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    expect(
+      await plantService.getPendingListCount({
+        signer: getCheckedSumAddress(account.address),
+      })
+    ).toBe(3);
+  });
 });

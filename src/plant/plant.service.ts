@@ -4,8 +4,6 @@ import {
   EditAssignedRequestDto,
   CreateUpdateRequestDto,
   EditUpdateRequestDto,
-  PlantRequestStatusEditResultDto,
-  PlantRequestResultDto,
 } from "./dtos";
 import {
   ForbiddenException,
@@ -29,11 +27,6 @@ import {
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
-import {
-  DeleteRequestResult,
-  AssignedRequestStatusEditResultDto,
-  UpdateRequestStatusEditResultDto,
-} from "./dtos";
 
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 
@@ -72,9 +65,8 @@ export class PlantService {
     if (planterData.status != 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
-    let count = await this.pendingListCount({
+    let count = await this.getPendingListCount({
       signer,
-      status: PlantStatus.PENDING,
     });
 
     if (planterData.plantedCount + count >= planterData.supplyCap)
@@ -174,37 +166,6 @@ export class PlantService {
     return plantData;
   }
 
-  async editPlantDataStatus(
-    filter,
-    status: number
-  ): Promise<PlantRequestStatusEditResultDto> {
-    const result = await this.treePlantRepository.updateOne(filter, { status });
-
-    return { acknowledged: result.acknowledged };
-  }
-
-  async editAssignedTreeDataStatus(
-    filter,
-    status: number
-  ): Promise<AssignedRequestStatusEditResultDto> {
-    const result = await this.assignedTreePlantRepository.updateOne(filter, {
-      status,
-    });
-
-    return { acknowledged: result.acknowledged };
-  }
-
-  async editUpdateTreeDataStatus(
-    filter,
-    status: number
-  ): Promise<UpdateRequestStatusEditResultDto> {
-    const result = await this.updateTreeRepository.updateOne(filter, {
-      status,
-    });
-
-    return { acknowledged: result.acknowledged };
-  }
-
   //---------------------------  Assigned Tree ----------------------------------------------------
 
   async plantAssignedTree(
@@ -265,9 +226,8 @@ export class PlantService {
         throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
     }
 
-    let pendingPlantsCount: number = await this.pendingListCount({
+    let pendingPlantsCount: number = await this.getPendingListCount({
       signer: signer,
-      status: PlantStatus.PENDING,
     });
 
     if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
@@ -509,26 +469,46 @@ export class PlantService {
     return updateData;
   }
 
-  async getPlantData(filter) {
+  async editPlantDataStatus(filter, status: number) {
+    await this.treePlantRepository.updateOne(filter, { status });
+  }
+
+  async editAssignedTreeDataStatus(filter, status: number) {
+    await this.assignedTreePlantRepository.updateOne(filter, {
+      status,
+    });
+  }
+
+  async editUpdateTreeDataStatus(filter, status: number) {
+    await this.updateTreeRepository.updateOne(filter, {
+      status,
+    });
+  }
+
+  async getPlantData(filter): Promise<TreePlant> {
     return await this.treePlantRepository.findOne(filter);
   }
 
-  async getAssignedTreeData(filter) {
+  async getAssignedTreeData(filter): Promise<AssignedTreePlant> {
     return await this.assignedTreePlantRepository.findOne(filter);
   }
 
-  async getUpdateTreeData(filter) {
+  async getUpdateTreeData(filter): Promise<UpdateTree> {
     return await this.updateTreeRepository.findOne(filter);
   }
 
-  async getPlantRequests(filter, sortOption, projection): Promise<TreePlant[]> {
+  async getPlantRequests(
+    filter,
+    sortOption,
+    projection?
+  ): Promise<TreePlant[]> {
     return await this.treePlantRepository.sort(filter, sortOption, projection);
   }
 
   async getAssignedTreeRequests(
     filter,
     sortOption,
-    projection
+    projection?
   ): Promise<AssignedTreePlant[]> {
     return await this.assignedTreePlantRepository.sort(
       filter,
@@ -540,15 +520,21 @@ export class PlantService {
   async getUpdateTreeRequests(
     filter,
     sortOption,
-    projection
+    projection?
   ): Promise<UpdateTree[]> {
     return await this.updateTreeRepository.sort(filter, sortOption, projection);
   }
 
-  async pendingListCount(filter): Promise<number> {
+  async getPendingListCount(filter): Promise<number> {
     return (
-      (await this.assignedTreePlantRepository.count(filter)) +
-      (await this.treePlantRepository.count(filter))
+      (await this.assignedTreePlantRepository.count({
+        ...filter,
+        status: PlantStatus.PENDING,
+      })) +
+      (await this.treePlantRepository.count({
+        ...filter,
+        status: PlantStatus.PENDING,
+      }))
     );
   }
 }

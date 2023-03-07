@@ -8,7 +8,11 @@ import { PlantErrorMessage, PlantStatus } from "src/common/constants";
 import { PlantService } from "src/plant/plant.service";
 import { LastStateRepository } from "./plantVerification.repository";
 import { EditResult, CreateResult } from "./interfaces";
-import { Types } from "mongoose";
+import {
+  AssignedRequestStatusEditResultDto,
+  PlantRequestStatusEditResultDto,
+  UpdateRequestStatusEditResultDto,
+} from "src/plant/dtos";
 
 @Injectable()
 export class PlantVerificationService {
@@ -18,8 +22,6 @@ export class PlantVerificationService {
   ) {}
 
   async verifyPlant(signer: string, nonce: number) {
-    console.log("verifyPlant treeId", signer, nonce);
-
     const plantData = await this.plantService.getPlantData({
       signer,
       nonce,
@@ -68,7 +70,9 @@ export class PlantVerificationService {
     );
   }
 
-  async rejectPlant(recordId: string) {
+  async rejectPlant(
+    recordId: string
+  ): Promise<PlantRequestStatusEditResultDto> {
     const plantData = await this.plantService.getPlantData({
       _id: recordId,
     });
@@ -79,13 +83,17 @@ export class PlantVerificationService {
     if (plantData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    return await this.plantService.editPlantDataStatus(
+    await this.plantService.editPlantDataStatus(
       { _id: recordId },
       PlantStatus.REJECTED
     );
+
+    return { _id: recordId, status: PlantStatus.REJECTED };
   }
 
-  async rejectAssignedTree(recordId: string) {
+  async rejectAssignedTree(
+    recordId: string
+  ): Promise<AssignedRequestStatusEditResultDto> {
     const assignedPlantData = await this.plantService.getAssignedTreeData({
       _id: recordId,
     });
@@ -97,13 +105,17 @@ export class PlantVerificationService {
     if (assignedPlantData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    return await this.plantService.editAssignedTreeDataStatus(
+    await this.plantService.editAssignedTreeDataStatus(
       { _id: recordId },
       PlantStatus.REJECTED
     );
+
+    return { _id: recordId, status: PlantStatus.REJECTED };
   }
 
-  async rejectUpdate(recordId: string) {
+  async rejectUpdate(
+    recordId: string
+  ): Promise<UpdateRequestStatusEditResultDto> {
     const updateData = await this.plantService.getUpdateTreeData({
       _id: recordId,
     });
@@ -112,10 +124,12 @@ export class PlantVerificationService {
     if (updateData.status != PlantStatus.PENDING)
       throw new ConflictException(PlantErrorMessage.INVLID_STATUS);
 
-    return await this.plantService.editUpdateTreeDataStatus(
+    await this.plantService.editUpdateTreeDataStatus(
       { _id: recordId },
       PlantStatus.REJECTED
     );
+
+    return { _id: recordId, status: PlantStatus.REJECTED };
   }
 
   async saveLastState(
