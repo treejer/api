@@ -80,6 +80,283 @@ describe("App e2e", () => {
     }
   });
 
+  it("verify plant", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const nonce2: number = 2;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    const insertedPendingPlantData = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+      });
+
+    const plantDataBeforeVerify = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({ _id: insertedPendingPlantData.insertedId });
+
+    expect(plantDataBeforeVerify.status).toBe(PlantStatus.PENDING);
+
+    await expect(
+      plantVerificationService.verifyPlant(
+        getCheckedSumAddress(account1.address),
+        nonce2
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+      },
+    });
+
+    await expect(
+      plantVerificationService.verifyPlant(
+        getCheckedSumAddress(account2.address),
+        nonce
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+      },
+    });
+
+    let verifyResult = await plantVerificationService.verifyPlant(
+      getCheckedSumAddress(account1.address),
+      nonce
+    );
+
+    expect(verifyResult.status).toBe(PlantStatus.VERIFIED);
+
+    const plantDataAfterVerify = await mongoConnection.db
+      .collection(CollectionNames.TREE_PLANT)
+      .findOne({ _id: insertedPendingPlantData.insertedId });
+
+    expect(plantDataAfterVerify.status).toBe(PlantStatus.VERIFIED);
+
+    await expect(
+      plantVerificationService.verifyPlant(
+        getCheckedSumAddress(account1.address),
+        nonce
+      )
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+      },
+    });
+  });
+  it("verify assigned tree", async () => {
+    let account1 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+    const treeId: number = 1;
+    const treeId2: number = 2;
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        treeId,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.REJECTED,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    await expect(
+      plantVerificationService.verifyAssignedTree(treeId)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+      },
+    });
+
+    const insertedPendingAssinedTreeData = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .insertOne({
+        birthDate,
+        countryCode,
+        treeId,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    const assignedTreeDataBeforeVerify = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({ _id: insertedPendingAssinedTreeData.insertedId });
+
+    expect(assignedTreeDataBeforeVerify.status).toBe(PlantStatus.PENDING);
+
+    await expect(
+      plantVerificationService.verifyAssignedTree(treeId2)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+      },
+    });
+
+    let verifyResult = await plantVerificationService.verifyAssignedTree(
+      treeId
+    );
+
+    expect(verifyResult.status).toBe(PlantStatus.VERIFIED);
+
+    const assignedTreeDataAfterVerify = await mongoConnection.db
+      .collection(CollectionNames.ASSIGNED_TREE_PLANT)
+      .findOne({ _id: insertedPendingAssinedTreeData.insertedId });
+
+    expect(assignedTreeDataAfterVerify.status).toBe(PlantStatus.VERIFIED);
+
+    await expect(
+      plantVerificationService.verifyAssignedTree(treeId)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+      },
+    });
+  });
+
+  it("verify update tree", async () => {
+    let account1 = await web3.eth.accounts.create();
+
+    const nonce: number = 1;
+    const treeSpecs: string = "ipfs";
+    const birthDate: number = 1;
+    const countryCode: number = 1;
+    const treeId: number = 1;
+    const treeId2: number = 2;
+
+    const sign = await getEIP712Sign(
+      account1,
+      {
+        nonce: nonce,
+        treeSpecs: treeSpecs,
+        birthDate: birthDate,
+        countryCode: countryCode,
+      },
+      2
+    );
+
+    await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        treeId,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.REJECTED,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    await expect(
+      plantVerificationService.verifyUpdate(treeId)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+      },
+    });
+
+    const insertedPendingUpdateData = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .insertOne({
+        treeId,
+        signature: sign,
+        treeSpecs,
+        signer: getCheckedSumAddress(account1.address),
+        nonce,
+        status: PlantStatus.PENDING,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+      });
+
+    const updateDataBeforeVerify = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({ _id: insertedPendingUpdateData.insertedId });
+
+    expect(updateDataBeforeVerify.status).toBe(PlantStatus.PENDING);
+
+    await expect(
+      plantVerificationService.verifyUpdate(treeId2)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+      },
+    });
+
+    let verifyResult = await plantVerificationService.verifyUpdate(treeId);
+
+    expect(verifyResult.status).toBe(PlantStatus.VERIFIED);
+
+    const updateDataAfterVerify = await mongoConnection.db
+      .collection(CollectionNames.UPDATE_TREES)
+      .findOne({ _id: insertedPendingUpdateData.insertedId });
+
+    expect(updateDataAfterVerify.status).toBe(PlantStatus.VERIFIED);
+
+    await expect(
+      plantVerificationService.verifyUpdate(treeId)
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 404,
+        message: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+      },
+    });
+  });
+
   it("reject plant", async () => {
     let account1 = await web3.eth.accounts.create();
 
