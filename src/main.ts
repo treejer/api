@@ -17,14 +17,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useStaticAssets(join(__dirname, "..", "public"));
-  app.setBaseViewsDir(join(__dirname, "..", "views"));
-  app.setViewEngine("hbs");
-
   const bugsnagService = app.get(BugsnagService);
   const configService = app.get(ConfigService);
 
   app.useGlobalFilters(
-    new ErrorFilter(bugsnagService.getBugsnag(), configService),
+    new ErrorFilter(bugsnagService.getBugsnag(), configService)
   );
 
   const config = new DocumentBuilder()
@@ -34,8 +31,7 @@ async function bootstrap() {
     .addTag("plant")
     .setContact("Treejer", "https://treejer.com/contact", "")
     .addBearerAuth()
-    // .addServer("https://api.treejer.com")
-    .addServer("http://localhost:3333")
+    .addServer("https://nestapi.treejer.com")
     .build();
 
   const options: SwaggerDocumentOptions = {
