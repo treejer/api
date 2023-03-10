@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   Get,
+  Req,
 } from "@nestjs/common";
 
 import { PlantStatus, Role } from "src/common/constants";
@@ -121,7 +122,7 @@ export class PlantController {
   editPlant(
     @Param("id") id: string,
     @Body() dto: PlantRequestDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editPlant(id, dto, user);
   }
@@ -182,7 +183,7 @@ export class PlantController {
     return this.plantService.getPlantRequests(
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 },
-      {},
+      {}
     );
   }
 
@@ -225,7 +226,7 @@ export class PlantController {
   @Post("assigned_requests")
   plantAssignedTree(
     @Body() dto: CreateAssignedRequestDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.plantAssignedTree(dto, user);
   }
@@ -270,7 +271,7 @@ export class PlantController {
   editAssignedTree(
     @Param("id") id: string,
     @Body() dto: EditAssignedRequestDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
   }
@@ -331,7 +332,7 @@ export class PlantController {
     return this.plantService.getAssignedTreeRequests(
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 },
-      {},
+      {}
     );
   }
 
@@ -416,7 +417,7 @@ export class PlantController {
   editUpdateTree(
     @Param("id") id: string,
     @Body() body: EditUpdateRequestDto,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.plantService.editUpdateTree(id, body, user);
   }
@@ -477,7 +478,12 @@ export class PlantController {
     return this.plantService.getUpdateTreeRequests(
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 },
-      {},
+      {}
     );
+  }
+
+  @Get("test")
+  getTest(@Req() req: Request) {
+    console.log("req", req["user"][0]);
   }
 }
