@@ -9,11 +9,10 @@ import { PlantVerificationModule } from "./plantVerification/plantVerification.m
 import { SmsModule } from "./sms/sms.module";
 import { EmailModule } from "./email/email.module";
 import { AuthModule } from "./auth/auth.module";
-
+import { ServeStaticModule } from "@nestjs/serve-static";
 import { CommandModule } from "nestjs-command";
 import { BugsnagModule } from "./bugsnag/bugsnag.module";
-
-import BugsnagPluginExpress from "@bugsnag/plugin-express";
+import { join } from "path";
 
 @Module({
   imports: [
@@ -28,6 +27,9 @@ import BugsnagPluginExpress from "@bugsnag/plugin-express";
     SmsModule,
     EmailModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "views"),
+    }),
   ],
   controllers: [],
   providers: [],
