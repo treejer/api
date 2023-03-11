@@ -16,7 +16,7 @@ export class UserService {
   async updateRole(wallet: string, role: Role): Promise<UpdateRoleDto> {
     await this.userRepository.updateOne(
       { walletAddress: getCheckedSumAddress(wallet) },
-      { userRole: role },
+      { userRole: role }
     );
 
     return { wallet, role };
@@ -36,11 +36,11 @@ export class UserService {
 
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, number>,
+    projection?: Record<string, number>
   ) {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 

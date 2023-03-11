@@ -18,6 +18,14 @@ export function getSigner(
   let primaryTypeObj;
   let primaryType;
 
+  console.log("env files", {
+    name: process.env.EIP712_DOMAIN_NAME,
+    version: process.env.EIP712_VERSION,
+    chainId: Number(process.env.CHAIN_ID),
+    verifyingContract: process.env.VERIFYING_CONTRACT,
+  });
+  console.log("message", message);
+
   if (selector == 1) {
     primaryType = "plantAssignTree";
     primaryTypeObj = [
