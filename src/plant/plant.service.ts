@@ -57,6 +57,9 @@ export class PlantService {
       2
     );
 
+    console.log("signer", signer);
+    console.log("wallet", user);
+
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
@@ -188,8 +191,6 @@ export class PlantService {
       },
       1
     );
-    console.log("signer", signer);
-    console.log("wallet", user);
 
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
