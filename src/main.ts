@@ -21,7 +21,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.useGlobalFilters(
-    new ErrorFilter(bugsnagService.getBugsnag(), configService)
+    new ErrorFilter(bugsnagService.getBugsnag(), configService),
   );
 
   const config = new DocumentBuilder()
@@ -41,6 +41,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config, options);
   SwaggerModule.setup("api", app, document);
+
+  app.enableCors();
 
   await app.listen(3333);
 }
