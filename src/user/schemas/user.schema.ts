@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { IsOptional } from "class-validator";
 import { Document } from "mongoose";
 import { Role } from "src/common/constants";
 
@@ -50,6 +51,12 @@ export class User extends Document {
     ],
   })
   email;
+
+  @IsOptional()
+  @Prop({
+    type: Date,
+  })
+  emailVerifiedAt;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

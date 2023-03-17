@@ -8,6 +8,7 @@ export const AuthErrorMessages = {
   INVALID_ACCESS: "invalid access",
   INVALID_ROLE: "invalid role",
   UNAUTHORIZED: "Unauthorized",
+  INVALID_ID: "Invalid Id",
 };
 
 export const StatusErrorMessage = {
