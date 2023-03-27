@@ -5,16 +5,16 @@ export type UserMobileDocument = UserMobile & Document;
 
 @Schema()
 export class UserMobile extends Document {
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   userId;
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   number;
 
-  @Prop({ type: Date, default: new Date() })
+  @Prop({ type: Date, default: new Date(), required: true })
   verifiedAt;
 
-  @Prop({ type: Date, default: new Date() })
+  @Prop({ type: Date, default: new Date(), required: true })
   createdAt;
 }
 

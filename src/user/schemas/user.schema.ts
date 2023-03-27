@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { IsOptional } from "class-validator";
 import { Document } from "mongoose";
 import { Role } from "src/common/constants";
 
@@ -16,12 +15,6 @@ export class User extends Document {
   @Prop({ type: Number, required: true })
   plantingNonce;
 
-  @Prop({ type: String })
-  firstName;
-
-  @Prop({ type: String })
-  lastName;
-
   @Prop({ type: Date, default: Date.now, required: true })
   createdAt;
 
@@ -30,6 +23,12 @@ export class User extends Document {
 
   @Prop({ type: Date, default: Date.now, required: true })
   updatedAt;
+
+  @Prop({ type: String })
+  firstName;
+
+  @Prop({ type: String })
+  lastName;
 
   @Prop({
     type: String,
@@ -50,7 +49,6 @@ export class User extends Document {
 
   @Prop({
     type: String,
-    required: false,
     unique: true,
     immutable: true,
     sparse: true,

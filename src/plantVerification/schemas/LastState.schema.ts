@@ -5,10 +5,10 @@ export type LastStateDocument = LastState & Document;
 
 @Schema()
 export class LastState extends Document {
-  @Prop({ type: Number, default: 1 })
+  @Prop({ type: Number, required: true, default: 1 })
   lastBlockNumber;
 
-  @Prop({ type: Date, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   updatedAt;
 }
 
