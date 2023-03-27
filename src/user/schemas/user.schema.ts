@@ -7,22 +7,13 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User extends Document {
-  @Prop({
-    type: String,
-    required: false,
-    unique: true,
-    immutable: true,
-    sparse: true,
-  })
-  phoneNumber;
-
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String, unique: true, required: true })
   walletAddress;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   nonce: Number;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   plantingNonce;
 
   @Prop({ type: String })
@@ -31,13 +22,13 @@ export class User extends Document {
   @Prop({ type: String })
   lastName;
 
-  @Prop({ type: Date, default: Date.now })
+  @Prop({ type: Date, default: Date.now, required: true })
   createdAt;
 
-  @Prop({ type: Number, default: Role.USER })
+  @Prop({ type: Number, default: Role.USER, required: true })
   userRole;
 
-  @Prop({ type: Date, default: Date.now })
+  @Prop({ type: Date, default: Date.now, required: true })
   updatedAt;
 
   @Prop({
@@ -52,11 +43,45 @@ export class User extends Document {
   })
   email;
 
-  @IsOptional()
   @Prop({
     type: Date,
   })
   emailVerifiedAt;
+
+  @Prop({
+    type: String,
+    required: false,
+    unique: true,
+    immutable: true,
+    sparse: true,
+  })
+  mobile;
+
+  @Prop({
+    type: Date,
+  })
+  mobileVerifiedAt;
+
+  @Prop({
+    type: Date,
+  })
+  mobileCodeRequestedAt;
+
+  @Prop({
+    type: Number,
+    default: 0,
+  })
+  mobileCodeRequestsCountForToday;
+
+  @Prop({
+    type: Number,
+  })
+  mobileCode;
+
+  @Prop({
+    type: String,
+  })
+  mobileCountry;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

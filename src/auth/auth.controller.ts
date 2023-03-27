@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   SetMetadata,
@@ -11,17 +12,26 @@ import {
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./../user/dtos";
 import {
+  JwtUserDto,
   LoginDto,
   LoginResultDto,
   LoginWithWalletDto,
+  MobileVerifyDto,
   NonceResultDto,
+  PatchMobileNumberDto,
 } from "./dtos";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { RolesGuard } from "./strategies";
 import { HasRoles } from "./decorators";
 import { Role } from "./../common/constants";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { User } from "src/user/decorators";
 @ApiTags("auth")
 @Controller()
 export class AuthController {
@@ -108,5 +118,51 @@ export class AuthController {
   ): Promise<LoginResultDto> {
     const signature: string = dto.signature;
     return this.authService.loginWithWallet(wallet, signature);
+  }
+
+  @UseGuards(AuthGuard("jwt"))
+  @Get("user/me")
+  async getUser(@User() user: JwtUserDto) {
+    return await this.authService.getUserById(user.userId);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Post("mobile/verify")
+  async verifyMobileCode(
+    @User() user: JwtUserDto,
+    @Body() dto: MobileVerifyDto
+  ) {
+    const { verifyMobileCode } = dto;
+
+    return await this.authService.verifyMobileCode(
+      user.userId,
+      verifyMobileCode
+    );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("mobile/send")
+  async patchMobileNumber(
+    @User() user: JwtUserDto,
+    @Body() dto: PatchMobileNumberDto
+  ) {
+    const { mobileNumber, country } = dto;
+    console.log("mooo", mobileNumber);
+    console.log("country", country);
+
+    return await this.authService.patchMobileNumber(
+      user.userId,
+      mobileNumber,
+      country
+    );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Post("mobile/resend")
+  async resendMobileCode(@User() user: JwtUserDto) {
+    return await this.authService.resendMobileCode(user.userId);
   }
 }

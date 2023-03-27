@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Verification, VerificationDocument } from "./schemas";
+import { UserMobile, UserMobileDocument } from "./schemas";
 import { Model } from "mongoose";
 import { EntityRepository } from "../database/database.repository";
 @Injectable()
-export class VerificationRepository extends EntityRepository<VerificationDocument> {
+export class UserMobileRepository extends EntityRepository<UserMobileDocument> {
   constructor(
-    @InjectModel(Verification.name)
-    verificationModel: Model<VerificationDocument>
+    @InjectModel(UserMobile.name)
+    userMobileModel: Model<UserMobileDocument>
   ) {
-    super(verificationModel);
+    super(userMobileModel);
   }
 }

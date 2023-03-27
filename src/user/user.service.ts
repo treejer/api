@@ -1,5 +1,10 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { CreateUserDto, UpdateUserInfoRequest, ValidEmailDto } from "./dtos";
+import {
+  CreateUserDto,
+  UpdateUserInfoRequest,
+  ValidEmailDto,
+  UserDto,
+} from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import { AuthErrorMessages, Role } from "src/common/constants";
@@ -19,14 +24,14 @@ export class UserService {
   async updateRole(wallet: string, role: Role): Promise<UpdateRoleDto> {
     await this.userRepository.updateOne(
       { walletAddress: getCheckedSumAddress(wallet) },
-      { userRole: role },
+      { userRole: role }
     );
 
     return { wallet, role };
   }
 
-  async findUser(username: string): Promise<User> {
-    return await this.userRepository.findOne({ username });
+  async findUser(query: UserDto): Promise<User> {
+    return await this.userRepository.findOne(query);
   }
 
   async getUserList() {
@@ -39,25 +44,25 @@ export class UserService {
 
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, number>,
+    projection?: Record<string, number>
   ) {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 
   async findUserById(userId: string) {
     return await this.userRepository.findOne({ _id: userId });
   }
-  async updateUserById(userId: string, data: any) {
+  async updateUserById(userId: string, data: UserDto) {
     return this.userRepository.findOneAndUpdate({ _id: userId }, data);
   }
 
   async updateUserInfo(
     userId: string,
     userNewData: UpdateUserInfoRequest,
-    user: JwtUserDto,
+    user: JwtUserDto
   ): Promise<UpdateUserInfoRequest> {
     if (userId !== user.userId)
       throw new UnauthorizedException(AuthErrorMessages.INVALID_ID);

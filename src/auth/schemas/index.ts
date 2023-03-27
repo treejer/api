@@ -1,1 +1,1 @@
-export * from "./verification.schema";
+export * from "./userMobile.schema";

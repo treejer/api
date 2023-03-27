@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TwilioModule } from "nestjs-twilio";
-
 import { SmsService } from "./sms.service";
+
 @Module({
   controllers: [],
   providers: [SmsService],
@@ -17,5 +17,6 @@ import { SmsService } from "./sms.service";
       inject: [ConfigService],
     }),
   ],
+  exports: [SmsService],
 })
 export class SmsModule {}

@@ -16,10 +16,6 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  phoneNumber?: string;
-
-  @IsOptional()
-  @IsString()
   walletAddress?: string;
 
   @IsNumber()

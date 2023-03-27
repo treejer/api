@@ -59,7 +59,7 @@ export abstract class EntityRepository<T extends Document> {
     try {
       const entityInstance = new this.entityModel(entityData);
 
-      return entityInstance.save();
+      return await entityInstance.save();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
