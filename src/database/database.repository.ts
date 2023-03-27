@@ -6,7 +6,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async find(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>
+    projection?: Record<string, null>,
   ): Promise<T[]> {
     try {
       return await this.entityModel.find(entityFilterQuery, { ...projection });
@@ -17,7 +17,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async count(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, null>
+    projection?: Record<string, null>,
   ): Promise<number> {
     try {
       return await this.entityModel
@@ -31,7 +31,7 @@ export abstract class EntityRepository<T extends Document> {
   async sort(
     entityFilterQuery: FilterQuery<T>,
     sortFilter: any,
-    projection?: Record<string, null>
+    projection?: Record<string, null>,
   ): Promise<T[]> {
     try {
       return await this.entityModel
@@ -44,7 +44,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async findOne(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, number>
+    projection?: Record<string, number>,
   ): Promise<T | null> {
     try {
       return await this.entityModel.findOne(entityFilterQuery, {
@@ -66,7 +66,7 @@ export abstract class EntityRepository<T extends Document> {
   }
   async findOneAndUpdate(
     entityFilterQuery: FilterQuery<T>,
-    entityData: UpdateQuery<unknown>
+    entityData: UpdateQuery<unknown>,
   ): Promise<T> {
     try {
       return await this.entityModel.findOneAndUpdate(
@@ -74,7 +74,7 @@ export abstract class EntityRepository<T extends Document> {
         entityData,
         {
           new: true,
-        }
+        },
       );
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -83,13 +83,26 @@ export abstract class EntityRepository<T extends Document> {
 
   async updateOne(
     entityFilterQuery: FilterQuery<T>,
-    entityData: UpdateQuery<unknown>
+    entityData: UpdateQuery<unknown>,
+    removeDataList?: Array<string>,
   ): Promise<IUpdateOne> {
     try {
-      return await this.entityModel.updateOne(entityFilterQuery, {
-        ...entityData,
-        updatedAt: new Date(),
-      });
+      if (!removeDataList) {
+        return await this.entityModel.updateOne(entityFilterQuery, {
+          ...entityData,
+          updatedAt: new Date(),
+        });
+      } else {
+        return await this.entityModel.updateOne(entityFilterQuery, [
+          {
+            $set: {
+              ...entityData,
+              updatedAt: new Date(),
+            },
+          },
+          { $unset: removeDataList },
+        ]);
+      }
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -97,7 +110,7 @@ export abstract class EntityRepository<T extends Document> {
 
   async softDeleteOne(
     entityFilterQuery: FilterQuery<T>,
-    entityData: UpdateQuery<unknown>
+    entityData: UpdateQuery<unknown>,
   ): Promise<IUpdateOne> {
     try {
       return await this.entityModel.updateOne(entityFilterQuery, {

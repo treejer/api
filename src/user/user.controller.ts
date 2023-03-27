@@ -7,7 +7,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { UserService } from "./user.service";
 import { HasRoles } from "src/auth/decorators";
@@ -23,8 +23,22 @@ import { UpdateUserInfoRequest, ValidEmailDto } from "./dtos";
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @ApiBearerAuth()
   // @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @UseGuards(AuthGuard("jwt"))
+  @Patch("/email")
+  updateEmail(@Body() dto: ValidEmailDto, @User() user: JwtUserDto) {
+    return this.userService.updateEmail(dto, user);
+  }
+
+  @Get("/email/verify")
+  verifyEmail(@Query("token") token: string) {
+    return this.userService.verifyEmail(token);
+  }
+
+  @ApiBearerAuth()
+  // @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"))
   @Patch("/:id")
   updateUserInfo(
     @Param("id") id: string,
@@ -32,12 +46,5 @@ export class UserController {
     @User() user: JwtUserDto,
   ) {
     return this.userService.updateUserInfo(id, userNewData, user);
-  }
-
-  // @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Patch("/email")
-  updateEmail(@Body() email: ValidEmailDto, @User() user: JwtUserDto) {
-    return this.userService.updateUserEmail(email, user);
   }
 }

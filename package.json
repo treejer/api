@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "add:role":"bash ./bash/role.bash" 
+    "add:role": "bash ./bash/role.bash"
   },
   "dependencies": {
     "@bugsnag/js": "^7.20.0",
@@ -51,6 +51,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pm2": "^5.2.2",
+    "rand-token": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.6.1",

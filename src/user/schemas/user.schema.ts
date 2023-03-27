@@ -52,11 +52,20 @@ export class User extends Document {
   })
   email;
 
-  @IsOptional()
   @Prop({
     type: Date,
   })
   emailVerifiedAt;
+
+  @Prop({
+    type: String,
+  })
+  emailToken;
+
+  @Prop({
+    type: Date,
+  })
+  emailTokenRequestedAt;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

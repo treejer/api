@@ -36,3 +36,8 @@ export const PlantErrorMessage = {
   ASSIGNED_TREE_DATA_NOT_EXIST: "assigned tree data not exist",
   UPDATE_DATA_NOT_EXIST: "update data not exist",
 };
+
+export const EmailMessage = {
+  INVALID_TOKEN: "Invalid token",
+  ALREADY_VERIFIED: "Already verified",
+};
