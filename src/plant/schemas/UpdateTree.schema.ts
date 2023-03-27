@@ -6,28 +6,28 @@ export type UpdateTreeDocument = UpdateTree & Document;
 
 @Schema()
 export class UpdateTree extends Document {
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   signer;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   nonce;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   treeId;
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   treeSpecs;
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   signature;
 
-  @Prop({ type: Number, default: PlantStatus.PENDING })
+  @Prop({ type: Number, required: true, default: PlantStatus.PENDING })
   status;
 
-  @Prop({ type: Date, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   createdAt;
 
-  @Prop({ type: Date, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   updatedAt;
 }
 

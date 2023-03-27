@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -10,24 +11,29 @@ import { ConfigService } from "@nestjs/config";
 import { UserService } from "./../user/user.service";
 import { JwtService } from "@nestjs/jwt";
 
-import { Messages } from "./../common/constants";
+import { AuthErrorMessages, Messages, Numbers } from "./../common/constants";
 import {
   getRandomNonce,
   checkPublicKey,
   getCheckedSumAddress,
   recoverPublicAddressfromSignature,
+  getRandomInteger,
 } from "./../common/helpers";
-import { LoginResultDto, NonceResultDto } from "./dtos";
-
+import { CreateUserMobileDto, LoginResultDto, NonceResultDto } from "./dtos";
+import { UserMobileRepository } from "./auth.repository";
+const humanize = require("humanize-duration");
+import { SmsService } from "src/sms/sms.service";
 @Injectable()
 export class AuthService {
   constructor(
     private configService: ConfigService,
     private userService: UserService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private smsService: SmsService,
+    private userMobileRepository: UserMobileRepository
   ) {}
 
-  getMe(userId: string) {
+  getUserById(userId: string) {
     return this.userService.findUserById(userId);
   }
 
@@ -94,6 +100,149 @@ export class AuthService {
     return {
       access_token: await this.getAccessToken(user._id, checkedSumWallet),
     };
+  }
+
+  async verifyMobileCode(userId: string, verificationCode: number) {
+    const bound = new Date(Date.now() - Numbers.SMS_VERIFY_BOUND);
+    const user = await this.userService.findUserById(userId);
+
+    if (user.mobileVerifiedAt)
+      throw new ConflictException(AuthErrorMessages.MOBILE_ALREADY_VERIFIED);
+
+    if (!user.mobileCodeRequestedAt || user.mobileCodeRequestedAt < bound) {
+      throw new BadRequestException(
+        `${Numbers.SMS_VERIFY_BOUND / 60000} ${
+          AuthErrorMessages.EXPIRED_MOBILECODE_MESSAGE
+        }`
+      );
+    }
+
+    if (!user.mobileCode || user.mobileCode !== Number(verificationCode)) {
+      throw new ForbiddenException(AuthErrorMessages.INVLID_MOBILECODE);
+    }
+    await this.userService.updateUserById(userId, {
+      mobileVerifiedAt: new Date(),
+      mobileCode: undefined,
+    });
+    await this.createUserMobile({
+      number: user.mobile,
+      userId,
+      createdAt: new Date(),
+      verifiedAt: new Date(),
+    });
+  }
+
+  async patchMobileNumber(userId, mobileNumber, country) {
+    const user = await this.userService.findUserById(userId);
+    const userWithSameMobile = await this.userService.findUser({
+      mobile: mobileNumber,
+    });
+
+    if (
+      userWithSameMobile &&
+      userWithSameMobile._id !== user._id &&
+      !!userWithSameMobile.mobileVerifiedAt
+    ) {
+      throw new ConflictException(AuthErrorMessages.MOBILE_IN_USE);
+    }
+
+    if (
+      user.mobileCodeRequestedAt &&
+      user.mobileCodeRequestedAt.getTime() + Numbers.SMS_TOKEN_RESEND_BOUND >
+        Date.now()
+    ) {
+      throw new BadRequestException(
+        `Please wait until time limit ends: ${humanize(
+          Math.ceil(
+            Date.now() -
+              user.mobileCodeRequestedAt.getTime() -
+              Numbers.SMS_TOKEN_RESEND_BOUND
+          ),
+          { language: "en", round: true }
+        )}`
+      );
+    }
+
+    const code: number = getRandomInteger(100000, 999999);
+    console.log("code = ", code);
+
+    try {
+      // await this.smsService.sendSMS(
+      //   `${code} is your Treejer verification code. this code expires in ${
+      //     Numbers.SMS_VERIFY_BOUND / 1000 / 60
+      //   } minutes`,
+      //   mobileNumber
+      // );
+
+      await this.userService.updateUserById(user._id, {
+        mobileCode: code,
+        mobileCountry: country,
+        mobile: mobileNumber,
+        mobileCodeRequestedAt: new Date(),
+        mobileCodeRequestsCountForToday:
+          user.mobileCodeRequestsCountForToday + 1,
+      });
+
+      return "Verification code sent to your mobile number!";
+    } catch (error) {
+      console.log("errrrrrrrrrrrrrrrrrror", error);
+    }
+  }
+
+  async resendMobileCode(userId) {
+    const bound = new Date(Date.now() - Numbers.SMS_TOKEN_RESEND_BOUND);
+    const user = await this.userService.findUserById(userId);
+    if (user.mobileVerifiedAt)
+      throw new ForbiddenException(AuthErrorMessages.MOBILE_ALREADY_VERIFIED);
+
+    if (user.mobileCodeRequestedAt && user.mobileCodeRequestedAt > bound) {
+      throw new BadRequestException(
+        `Please wait until the time limit ends ${humanize(
+          Math.ceil(
+            user.mobileCodeRequestedAt.getTime() +
+              Numbers.SMS_TOKEN_RESEND_BOUND -
+              Date.now()
+          ),
+          { language: "en", round: true }
+        )}`
+      );
+    }
+
+    let codeExpired = false;
+
+    if (user.mobileCodeRequestedAt) {
+      codeExpired =
+        Date.now() - user.mobileCodeRequestedAt?.getTime() >
+        Numbers.SMS_VERIFY_BOUND;
+    }
+
+    const code: number =
+      user.mobile && user.mobileCode && !codeExpired
+        ? user.mobileCode
+        : getRandomInteger(100000, 999999);
+
+    try {
+      // await this.smsService.sendSMS(
+      //   `${code} is your Treejer verification code. this code expires in ${
+      //     Numbers.SMS_VERIFY_BOUND / 1000 / 60
+      //   } minutes`,
+      //   user.mobile
+      // );
+
+      await this.userService.updateUserById(user._id, {
+        mobileCode: code,
+        mobileCodeRequestedAt: new Date(),
+        mobileCodeRequestsCountForToday:
+          user.mobileCodeRequestsCountForToday + 1,
+      });
+
+      return "Verification code sent to your mobile number!";
+    } catch (error) {
+      console.log("error", error);
+    }
+  }
+  async createUserMobile(userMobileDto: CreateUserMobileDto) {
+    return await this.userMobileRepository.create({ ...userMobileDto });
   }
 
   async getAccessToken(userId: string, walletAddress: string) {

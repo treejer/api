@@ -6,3 +6,4 @@ export * from "./getCheckedSumAddress";
 export * from "./sleep";
 export * from "./recoverPublicAddresFromSignature";
 export * from "./generateToken";
+export * from "./getRandomInteger";

@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { IsOptional } from "class-validator";
 import { Document } from "mongoose";
 import { Role } from "src/common/constants";
 
@@ -7,23 +6,23 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User extends Document {
-  @Prop({
-    type: String,
-    required: false,
-    unique: true,
-    immutable: true,
-    sparse: true,
-  })
-  phoneNumber;
-
-  @Prop({ type: String, unique: true })
+  @Prop({ type: String, unique: true, required: true })
   walletAddress;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   nonce: Number;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
   plantingNonce;
+
+  @Prop({ type: Date, default: Date.now, required: true })
+  createdAt;
+
+  @Prop({ type: Number, default: Role.USER, required: true })
+  userRole;
+
+  @Prop({ type: Date, default: Date.now, required: true })
+  updatedAt;
 
   @Prop({ type: String })
   firstName;
@@ -31,14 +30,39 @@ export class User extends Document {
   @Prop({ type: String })
   lastName;
 
-  @Prop({ type: Date, default: Date.now })
-  createdAt;
+  @Prop({
+    type: String,
+    unique: true,
+    immutable: true,
+    sparse: true,
+  })
+  mobile;
 
-  @Prop({ type: Number, default: Role.USER })
-  userRole;
+  @Prop({
+    type: Date,
+  })
+  mobileVerifiedAt;
 
-  @Prop({ type: Date, default: Date.now })
-  updatedAt;
+  @Prop({
+    type: Date,
+  })
+  mobileCodeRequestedAt;
+
+  @Prop({
+    type: Number,
+    default: 0,
+  })
+  mobileCodeRequestsCountForToday;
+
+  @Prop({
+    type: Number,
+  })
+  mobileCode;
+
+  @Prop({
+    type: String,
+  })
+  mobileCountry;
 
   @Prop({
     type: String,

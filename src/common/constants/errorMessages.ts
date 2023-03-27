@@ -9,6 +9,12 @@ export const AuthErrorMessages = {
   INVALID_ROLE: "invalid role",
   UNAUTHORIZED: "Unauthorized",
   INVALID_ID: "Invalid Id",
+  MOBILE_ALREADY_VERIFIED: "Mobile number already verified",
+
+  INVLID_MOBILECODE: "Invalid code",
+  EXPIRED_MOBILECODE_MESSAGE:
+    "minutes to verify has expired. please request another code",
+  MOBILE_IN_USE: "This mobile number has been already registered.",
 };
 
 export const StatusErrorMessage = {

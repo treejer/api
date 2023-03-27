@@ -6,23 +6,25 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 
 import { AtStrategy, RolesGuard, RtStrategy } from "./strategies";
-import { VerificationRepository } from "./auth.repository";
-import { Verification, VerificationSchema } from "./schemas";
+import { UserMobileRepository } from "./auth.repository";
+import { UserMobile, UserMobileSchema } from "./schemas";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatabaseModule } from "./../database/database.module";
 import { UserService } from "../user/user.service";
+import { SmsModule } from "src/sms/sms.module";
 @Module({
   imports: [
     UserModule,
     JwtModule.register({}),
     MongooseModule.forFeature([
-      { name: Verification.name, schema: VerificationSchema },
+      { name: UserMobile.name, schema: UserMobileSchema },
     ]),
     DatabaseModule,
+    SmsModule,
   ],
   controllers: [AuthController],
   providers: [
-    VerificationRepository,
+    UserMobileRepository,
     AuthService,
     ConfigService,
     AtStrategy,

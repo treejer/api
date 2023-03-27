@@ -3,7 +3,12 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from "@nestjs/common";
-import { CreateUserDto, UpdateUserInfoRequest, ValidEmailDto } from "./dtos";
+import {
+  CreateUserDto,
+  UpdateUserInfoRequest,
+  ValidEmailDto,
+  UserDto,
+} from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import { AuthErrorMessages, EmailMessage, Role } from "src/common/constants";
@@ -35,8 +40,8 @@ export class UserService {
     return { wallet, role };
   }
 
-  async findUser(username: string): Promise<User> {
-    return await this.userRepository.findOne({ username });
+  async findUser(query: UserDto): Promise<User> {
+    return await this.userRepository.findOne(query);
   }
 
   async getUserList() {
@@ -60,7 +65,7 @@ export class UserService {
   async findUserById(userId: string) {
     return await this.userRepository.findOne({ _id: userId });
   }
-  async updateUserById(userId: string, data: any) {
+  async updateUserById(userId: string, data: UserDto) {
     return this.userRepository.findOneAndUpdate({ _id: userId }, data);
   }
 
