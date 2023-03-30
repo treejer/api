@@ -1,3 +1,4 @@
+import { DownloadModule } from "./download/download.module";
 // import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { Web3Module } from "./web3/web3.module";
 import { Module } from "@nestjs/common";
@@ -16,6 +17,8 @@ import { join } from "path";
 
 @Module({
   imports: [
+    DownloadModule,
+    DownloadModule,
     BugsnagModule,
     CommandModule,
     Web3Module,
