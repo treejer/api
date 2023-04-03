@@ -13,6 +13,8 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { CommandModule } from "nestjs-command";
 import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { join } from "path";
+import { EtherValuesModule } from "./etherValues/etherValues.module";
+import { TreeModule } from "./tree/tree.module";
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { join } from "path";
     PlantModule,
     SmsModule,
     EmailModule,
+    EtherValuesModule,
+    TreeModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),

@@ -75,7 +75,6 @@ export class User extends Document {
     ],
   })
   email;
-
   @Prop({
     type: Date,
   })

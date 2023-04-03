@@ -1,0 +1,262 @@
+[
+  {
+    "color": "special",
+    "name": "Special"
+  },
+  {
+    "color": "392121",
+    "name": "Old Burgundy"
+  },
+  {
+    "color": "1B3D6e",
+    "name": "Indigo Dye"
+  },
+  {
+    "color": "3f093c",
+    "name": "Russian Violet"
+  },
+  {
+    "color": "23a78f",
+    "name": "Zomp"
+  },
+  {
+    "color": "1ba0ad",
+    "name": "Viridian Green"
+  },
+  {
+    "color": "7EAC2C",
+    "name": "Green RYB"
+  },
+  {
+    "color": "3E386D",
+    "name": "Dark Slate Blue"
+  },
+  {
+    "color": "984978",
+    "name": "Magenta Haze"
+  },
+  {
+    "color": "215C74",
+    "name": "Blue Sapphire"
+  },
+  {
+    "color": "8AB41B",
+    "name": "Apple Green"
+  },
+  {
+    "color": "843BAD",
+    "name": "Dark Orchid"
+  },
+  {
+    "color": "363A15",
+    "name": "Mud Green"
+  },
+  {
+    "color": "2C5316",
+    "name": "Lincoln Green"
+  },
+  {
+    "color": "113B3D",
+    "name": "Rich Black"
+  },
+  {
+    "color": "3A4661",
+    "name": "Independence"
+  },
+  {
+    "color": "26442A",
+    "name": "British Racing Green"
+  },
+  {
+    "color": "274452",
+    "name": "Charcoal"
+  },
+  {
+    "color": "AAA5A5",
+    "name": "Quick Silver"
+  },
+  {
+    "color": "3E1564",
+    "name": "Blue Violet Color Wheel"
+  },
+  {
+    "color": "37648D",
+    "name": "Queen Blue"
+  },
+  {
+    "color": "8982B5",
+    "name": "Purple Mountain Majesty"
+  },
+  {
+    "color": "2A6B53",
+    "name": "Bottle Green"
+  },
+  {
+    "color": "7FA38D",
+    "name": "Morning Blue"
+  },
+  {
+    "color": "A5A378",
+    "name": "Sage"
+  },
+  {
+    "color": "3C6357",
+    "name": "Hookers Green"
+  },
+  {
+    "color": "C0B9BE",
+    "name": "Lavender Gray"
+  },
+  {
+    "color": "778372",
+    "name": "Xanadu"
+  },
+  {
+    "color": "485B3C",
+    "name": "Hunter Green"
+  },
+  {
+    "color": "2A2D35",
+    "name": "Raisin Black"
+  },
+  {
+    "color": "6D6200",
+    "name": "Antique Bronze"
+  },
+  {
+    "color": "571A32",
+    "name": "Old Mauve"
+  },
+  {
+    "color": "AD7678",
+    "name": "Copper Penny"
+  },
+  {
+    "color": "E79DA0",
+    "name": "Pastel Pink"
+  },
+  {
+    "color": "635D22",
+    "name": "Antiqye Bronze"
+  },
+  {
+    "color": "E7865C",
+    "name": "Copper Crayola"
+  },
+  {
+    "color": "4C666D",
+    "name": "Deep Space Sparkle"
+  },
+  {
+    "color": "414141",
+    "name": "Onyx"
+  },
+  {
+    "color": "A1A3A4",
+    "name": "Quick Silver"
+  },
+  {
+    "color": "99876f",
+    "name": "Shadow"
+  },
+  {
+    "color": "751237",
+    "name": "Claret"
+  },
+  {
+    "color": "F07D68",
+    "name": "Salamin"
+  },
+  {
+    "color": "E78044",
+    "name": "Mango Tango"
+  },
+  {
+    "color": "7C2216",
+    "name": "Falu Red"
+  },
+  {
+    "color": "A55C2D",
+    "name": "Windsor Tan"
+  },
+  {
+    "color": "7B1800",
+    "name": "Barn Red"
+  },
+  {
+    "color": "594435",
+    "name": "Umber"
+  },
+  {
+    "color": "895E4C",
+    "name": "Coffee"
+  },
+  {
+    "color": "49350C",
+    "name": "Cafe Noir"
+  },
+  {
+    "color": "795F57",
+    "name": "Deep Taupe"
+  },
+  {
+    "color": "A52C30",
+    "name": "Auburn"
+  },
+  {
+    "color": "9B732D",
+    "name": "Bistre Brown"
+  },
+  {
+    "color": "684521",
+    "name": "Dark Brown"
+  },
+  {
+    "color": "70412e",
+    "name": "Van Dyke Brown"
+  },
+  {
+    "color": "A47A51",
+    "name": "Cafe Au Lait"
+  },
+  {
+    "color": "886929",
+    "name": "Bistre Brown"
+  },
+  {
+    "color": "A07528",
+    "name": "Bistre Brown"
+  },
+  {
+    "color": "A54444",
+    "name": "Rose Vale"
+  },
+  {
+    "color": "A86D2E",
+    "name": "Liver Dogs"
+  },
+  {
+    "color": "5b3e2b",
+    "name": "Van Dyke Brown"
+  },
+  {
+    "color": "854D37",
+    "name": "Chestnut"
+  },
+  {
+    "color": "83532F",
+    "name": "Russet"
+  },
+  {
+    "color": "773B34",
+    "name": "Bole"
+  },
+  {
+    "color": "7E2E12",
+    "name": "Kobe"
+  },
+  {
+    "color": "7C4425",
+    "name": "Russet"
+  }
+]
