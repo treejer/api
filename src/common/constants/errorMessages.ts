@@ -47,3 +47,7 @@ export const EmailMessage = {
   INVALID_TOKEN: "Invalid token",
   ALREADY_VERIFIED: "Already verified",
 };
+
+export const DownloadMessage = {
+  FILE_NOT_EXIST: "File not exist",
+};
