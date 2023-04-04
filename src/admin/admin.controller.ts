@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { AuthGuard } from "@nestjs/passport";
 import { Role } from "./../common/constants";
@@ -6,16 +14,20 @@ import { ApiTags } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
 import { UserVerificationByAdminDto } from "./dto";
+import { UserDto } from "src/user/dtos";
 
 @ApiTags("admin")
-@Controller()
+@Controller("admin")
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
-  @HasRoles(Role.ADMIN)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @HasRoles(Role.ADMIN)
+  // @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Get("users")
-  async getUsers() {}
+  async getUsers(@Query("filters") filters: string) {
+    if (!filters || filters.length === 0) filters = "{}";
+    return this.adminService.getUsers(JSON.parse(decodeURIComponent(filters)));
+  }
 
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)

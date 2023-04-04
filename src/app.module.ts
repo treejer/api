@@ -16,6 +16,7 @@ import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { join } from "path";
 import { EtherValuesModule } from "./etherValues/etherValues.module";
 import { TreeModule } from "./tree/tree.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TreeModule } from "./tree/tree.module";
     EmailModule,
     EtherValuesModule,
     TreeModule,
+    AdminModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),

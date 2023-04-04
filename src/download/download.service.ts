@@ -20,6 +20,14 @@ import { DownloadMessage } from "src/common/constants";
 export class DownloadService {
   constructor(private fileRepository: FileRepository) {}
 
+  async findFileByUserId(userId: string) {
+    return await this.fileRepository.findOne({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async downloadFile(filename: string, response: Response, user: JwtUserDto) {
     let file = join(process.cwd(), "43.jpg");
 
