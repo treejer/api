@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDate,
   IsEmail,
   IsNumber,
@@ -63,4 +64,8 @@ export class UserDto {
   @IsOptional()
   @IsString()
   mobileCountry?;
+
+  @IsOptional()
+  @IsBoolean()
+  isVerified?;
 }
