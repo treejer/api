@@ -24,6 +24,9 @@ export class User extends Document {
   @Prop({ type: Date, default: Date.now, required: true })
   updatedAt;
 
+  @Prop({ type: Boolean, default: false, required: true })
+  isVerified;
+
   @Prop({ type: String })
   firstName;
 
@@ -75,7 +78,6 @@ export class User extends Document {
     ],
   })
   email;
-
   @Prop({
     type: Date,
   })

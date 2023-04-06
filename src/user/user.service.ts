@@ -24,7 +24,7 @@ export class UserService {
   constructor(
     private userRepository: UserRepository,
     private emailService: EmailService,
-    private config: ConfigService,
+    private config: ConfigService
   ) {}
 
   async create(user: CreateUserDto) {
@@ -34,7 +34,7 @@ export class UserService {
   async updateRole(wallet: string, role: Role): Promise<UpdateRoleDto> {
     await this.userRepository.updateOne(
       { walletAddress: getCheckedSumAddress(wallet) },
-      { userRole: role },
+      { userRole: role }
     );
 
     return { wallet, role };
@@ -44,8 +44,8 @@ export class UserService {
     return await this.userRepository.findOne(query);
   }
 
-  async getUserList() {
-    return await this.userRepository.find({});
+  async getUserList(filter = {}) {
+    return await this.userRepository.find(filter);
   }
 
   async getSortedUserByNonce() {
@@ -54,11 +54,11 @@ export class UserService {
 
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, number>,
+    projection?: Record<string, number>
   ) {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 
@@ -75,7 +75,7 @@ export class UserService {
   async updateUserInfo(
     userId: string,
     userNewData: UpdateUserInfoRequest,
-    user: JwtUserDto,
+    user: JwtUserDto
   ): Promise<UpdateUserInfoRequest> {
     if (userId !== user.userId)
       throw new UnauthorizedException(AuthErrorMessages.INVALID_ID);
@@ -87,7 +87,7 @@ export class UserService {
 
   async updateEmail(
     { email }: ValidEmailDto,
-    user: JwtUserDto,
+    user: JwtUserDto
   ): Promise<ValidEmailDto> {
     let emailToken: string = generateToken();
 
@@ -95,15 +95,13 @@ export class UserService {
       email,
       "Treejer - Verify your emtail",
       "Verify your email by opening this link : \n" +
-        `${this.config.get<string>(
-          "APP_URL",
-        )}/email/verify?token=${emailToken}`,
+        `${this.config.get<string>("APP_URL")}/email/verify?token=${emailToken}`
     );
 
     await this.userRepository.updateOne(
       { _id: user.userId },
       { emailToken, email, emailTokenRequestedAt: new Date() },
-      ["emailVerifiedAt"],
+      ["emailVerifiedAt"]
     );
 
     return { email };
@@ -112,27 +110,27 @@ export class UserService {
   async verifyEmail(token: string) {
     const user = await this.userRepository.findOne(
       { emailToken: token },
-      { _id: 1, emailTokenRequestedAt: 1 },
+      { _id: 1, emailTokenRequestedAt: 1 }
     );
 
     if (!user) throw new BadRequestException(EmailMessage.INVALID_TOKEN);
 
     let bound = new Date(
-      Date.now() - this.config.get<number>("EMAIL_VERIFY_BOUND"),
+      Date.now() - this.config.get<number>("EMAIL_VERIFY_BOUND")
     );
 
     if (!user.emailTokenRequestedAt || user.emailTokenRequestedAt < bound) {
       throw new BadRequestException(
         `${
           this.config.get<number>("EMAIL_VERIFY_BOUND") / 60000
-        } minutes to verify has expired. please request another email`,
+        } minutes to verify has expired. please request another email`
       );
     }
 
     await this.userRepository.updateOne(
       { _id: user._id },
       { emailVerifiedAt: new Date() },
-      ["emailToken", "emailVerifiedAt"],
+      ["emailToken", "emailVerifiedAt"]
     );
 
     return "Email verified";

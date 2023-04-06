@@ -24,6 +24,14 @@ export class DownloadService {
     private configService: ConfigService,
   ) {}
 
+  async findFileByUserId(userId: string) {
+    return await this.fileRepository.findOne({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async downloadFile(filename: string, response: Response, user: JwtUserDto) {
     let findUser = await this.userService.findUserById(user.userId, {
       _id: 1,

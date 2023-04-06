@@ -13,5 +13,6 @@ import { UserModule } from "src/user/user.module";
   ],
   controllers: [DownloadController],
   providers: [DownloadService, FileRepository],
+  exports: [DownloadService],
 })
 export class DownloadModule {}

@@ -43,7 +43,7 @@ export class UserController {
   updateUserInfo(
     @Param("id") id: string,
     @Body() userNewData: UpdateUserInfoRequest,
-    @User() user: JwtUserDto,
+    @User() user: JwtUserDto
   ) {
     return this.userService.updateUserInfo(id, userNewData, user);
   }
