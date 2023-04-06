@@ -1,6 +1,14 @@
-import { Controller, Get, Param, Res, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 import { readFileSync } from "fs";
 import path, { join, resolve } from "path";
@@ -17,15 +25,34 @@ import { User } from "src/user/decorators";
 export class DownloadController {
   constructor(private downloadService: DownloadService) {}
 
-  @HasRoles(Role.ADMIN)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @UseGuards(AuthGuard("jwt"))
   @Get("files/:filename")
   async downloadFile(
     @Param("filename") filename: string,
     @Res() response: Response,
     @User() user: JwtUserDto,
   ) {
-    // console.log("sssss", path.resolve("users", "admin", "readme.md"));
     return this.downloadService.downloadFile(filename, response, user);
+  }
+
+  @Post("uploads")
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+        },
+      },
+    },
+  })
+  async uploadFile(@Req() req) {
+    let obj = await this.downloadService.uploadFile(req);
+
+    console.log("objjjjjjjjjjjjjjjjjjj", obj);
+
+    return obj;
   }
 }

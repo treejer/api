@@ -12,6 +12,8 @@ import { ConfigService } from "@nestjs/config";
 export class ErrorFilter implements ExceptionFilter {
   constructor(private bugsnag, private configService: ConfigService) {}
   catch(error: Error, host: ArgumentsHost) {
+    console.log("error", error);
+
     let ctx = host.switchToHttp();
     let response = ctx.getResponse();
     let request = ctx.getRequest();

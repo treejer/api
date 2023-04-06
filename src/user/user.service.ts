@@ -62,8 +62,11 @@ export class UserService {
     );
   }
 
-  async findUserById(userId: string) {
-    return await this.userRepository.findOne({ _id: userId });
+  async findUserById(userId: string, projection?: Record<string, number>) {
+    return await this.userRepository.findOne(
+      { _id: userId },
+      { ...projection },
+    );
   }
   async updateUserById(userId: string, data: UserDto) {
     return this.userRepository.findOneAndUpdate({ _id: userId }, data);
