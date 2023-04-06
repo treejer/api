@@ -23,3 +23,17 @@ export enum EventName {
   TREE_UPDATE = "TreeUpdatedVerified",
   TREE_PLANT = "TreeVerified",
 }
+
+export enum ApplicationTypes {
+  ORGANIZATIONAL_PLANTER = 1,
+  PLANTER,
+}
+
+export enum ApplicationStatuses {
+  PENDING = 1,
+  ACCEPTED,
+  REJECTED,
+}
+export enum FileModules {
+  idcard = 1,
+}

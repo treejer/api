@@ -17,6 +17,7 @@ import { join } from "path";
 import { EtherValuesModule } from "./etherValues/etherValues.module";
 import { TreeModule } from "./tree/tree.module";
 import { AdminModule } from "./admin/admin.module";
+import { ApplicationModule } from "./application/application.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AdminModule } from "./admin/admin.module";
     EtherValuesModule,
     TreeModule,
     AdminModule,
+    ApplicationModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),

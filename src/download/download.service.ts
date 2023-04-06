@@ -23,7 +23,7 @@ export class DownloadService {
   constructor(
     private fileRepository: FileRepository,
     private userService: UserService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
   async findFileByUserId(userId: string) {
@@ -53,7 +53,7 @@ export class DownloadService {
     let path = join(
       process.cwd(),
       this.configService.get<string>("STORAGE_DIRECTORY"),
-      file.filename,
+      file.filename
     );
 
     response.download(path);
@@ -66,7 +66,7 @@ export class DownloadService {
 
     let dir = join(
       process.cwd(),
-      this.configService.get<string>("STORAGE_DIRECTORY"),
+      this.configService.get<string>("STORAGE_DIRECTORY")
     );
 
     if (!fs.existsSync(dir)) {
@@ -112,7 +112,9 @@ export class DownloadService {
   }
 
   async create(file: CreateFileDto) {
-    await this.fileRepository.create({ ...file });
+    const createdData = await this.fileRepository.create({ ...file });
+
+    return createdData;
   }
 
   async updateFileById(fileId: string, data) {

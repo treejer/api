@@ -92,6 +92,11 @@ export class User extends Document {
     type: Date,
   })
   emailTokenRequestedAt;
+
+  @Prop({
+    type: String,
+  })
+  idCard;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

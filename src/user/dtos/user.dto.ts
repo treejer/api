@@ -68,4 +68,8 @@ export class UserDto {
   @IsOptional()
   @IsBoolean()
   isVerified?;
+
+  @IsOptional()
+  @IsString()
+  idCard?;
 }
