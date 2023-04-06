@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -12,11 +13,12 @@ import { FileObject } from "./interfaces";
 import { UserService } from "src/user/user.service";
 import { AuthErrorMessages, DownloadMessage, Role } from "src/common/constants";
 import { ConfigService } from "@nestjs/config";
-import { File } from "./schemas";
 import { CreateFileDto } from "./dtos";
 
 const busboy = require("busboy");
 const fs = require("fs");
+
+var mime = require("mime-types");
 
 @Injectable()
 export class DownloadService {
@@ -62,7 +64,13 @@ export class DownloadService {
   }
 
   async uploadFile(@Req() req) {
-    const bb = busboy({ headers: req.headers });
+    const bb = busboy({
+      headers: req.headers,
+      limits: {
+        files: 1,
+        fileSize: 4e4,
+      },
+    });
 
     let dir = join(
       process.cwd(),
@@ -81,32 +89,55 @@ export class DownloadService {
       filename: "",
     };
 
-    await new Promise((resolve, reject) => {
-      bb.on("file", (name, file, info) => {
-        returnObj.originalname = info.filename;
-        returnObj.encoding = info.encoding;
-        returnObj.mimetype = info.mimeType;
+    try {
+      await new Promise((resolve, reject) => {
+        bb.on("file", (name, file, info) => {
+          returnObj.originalname = info.filename;
+          returnObj.encoding = info.encoding;
+          returnObj.mimetype = info.mimeType;
 
-        file.on("data", (data) => {
-          returnObj.size = data.length;
+          let ext = mime.extension(info.mimeType);
+
+          if (!["jpg", "png", "jpeg"].includes(ext)) {
+            reject("File type is not correct");
+            return;
+          }
+
+          file.on("data", async (data) => {
+            returnObj.size = data.length;
+          });
+
+          let random = `${Date.now()}-${info.filename}`;
+
+          const saveTo = join(dir, random);
+
+          returnObj.filename = random;
+
+          file.pipe(fs.createWriteStream(saveTo));
         });
 
-        let random = `${Date.now()}-${info.filename}`;
+        bb.on("close", () => {
+          if (returnObj.size == 4e4) {
+            fs.unlink(join(dir, returnObj.filename), (e) => {
+              if (e) {
+                console.log("e", e);
+              }
+            });
 
-        const saveTo = join(dir, random);
+            reject("File size is not correct");
 
-        returnObj.filename = random;
+            return;
+          }
 
-        file.pipe(fs.createWriteStream(saveTo));
+          resolve("");
+          console.log("Done parsing form!");
+        });
+
+        req.pipe(bb);
       });
-
-      bb.on("close", () => {
-        resolve("");
-        console.log("Done parsing form!");
-      });
-
-      req.pipe(bb);
-    });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
 
     return returnObj;
   }
