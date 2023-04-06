@@ -12,6 +12,7 @@ import { FileObject } from "./interfaces";
 import { UserService } from "src/user/user.service";
 import { AuthErrorMessages, DownloadMessage, Role } from "src/common/constants";
 import { ConfigService } from "@nestjs/config";
+import { File } from "./schemas";
 
 const busboy = require("busboy");
 const fs = require("fs");
@@ -109,5 +110,13 @@ export class DownloadService {
     });
 
     return returnObj;
+  }
+
+  async create(file: FileObject) {
+    await this.fileRepository.create({ ...file });
+  }
+
+  async updateFileById(fileId: string, data) {
+    return this.fileRepository.updateOne({ _id: fileId }, data);
   }
 }

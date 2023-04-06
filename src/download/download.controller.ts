@@ -10,13 +10,7 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
-import { readFileSync } from "fs";
-import path, { join, resolve } from "path";
 import { DownloadService } from "./download.service";
-import { Role } from "src/common/constants";
-import { HasRoles } from "src/auth/decorators";
-import { RolesGuard } from "src/auth/strategies";
-import { FileRepository } from "./download.repository";
 import { JwtUserDto } from "src/auth/dtos";
 import { User } from "src/user/decorators";
 
