@@ -13,6 +13,7 @@ import { UserService } from "src/user/user.service";
 import { AuthErrorMessages, DownloadMessage, Role } from "src/common/constants";
 import { ConfigService } from "@nestjs/config";
 import { File } from "./schemas";
+import { CreateFileDto } from "./dtos";
 
 const busboy = require("busboy");
 const fs = require("fs");
@@ -74,7 +75,6 @@ export class DownloadService {
 
     let returnObj: FileObject = {
       originalname: "",
-      fieldname: "",
       encoding: "",
       mimetype: "",
       size: 0,
@@ -83,7 +83,6 @@ export class DownloadService {
 
     await new Promise((resolve, reject) => {
       bb.on("file", (name, file, info) => {
-        returnObj.fieldname = name;
         returnObj.originalname = info.filename;
         returnObj.encoding = info.encoding;
         returnObj.mimetype = info.mimeType;
@@ -112,7 +111,7 @@ export class DownloadService {
     return returnObj;
   }
 
-  async create(file: FileObject) {
+  async create(file: CreateFileDto) {
     await this.fileRepository.create({ ...file });
   }
 
