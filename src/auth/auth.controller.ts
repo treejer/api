@@ -143,8 +143,6 @@ export class AuthController {
     @Body() dto: PatchMobileNumberDto
   ) {
     const { mobileNumber, country } = dto;
-    console.log("mooo", mobileNumber);
-    console.log("country", country);
 
     return await this.authService.patchMobileNumber(
       user.userId,

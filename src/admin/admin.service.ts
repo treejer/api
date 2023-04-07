@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 
 import { ApplicationService } from "src/application/application.service";
+import { Application } from "src/application/schemas";
 import { AdminErrorMessage, AuthErrorMessages } from "src/common/constants";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
@@ -50,18 +51,22 @@ export class AdminService {
     });
   }
 
-  async getUserByWallet(wallet) {
+  async getUserByWallet(wallet: string) {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
     if (!checkPublicKey(checkedSumWallet))
       throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
     const user = await this.userService.findUserByWallet(checkedSumWallet);
+
     if (!user) return new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
+
     const file = await this.downloadService.findFileByUserId(user._id);
+
     const application = await this.applicationService.getApplicationByUserId(
       user._id
     );
+
     return JSON.stringify({
       user,
       application,
@@ -69,11 +74,11 @@ export class AdminService {
     });
   }
 
-  async getApplications(filters) {
+  async getApplications(filters): Promise<Application[]> {
     return await this.applicationService.getApplicationList(filters);
   }
 
-  async verifyUser(userId) {
+  async verifyUser(userId: string) {
     const application = await this.applicationService.getApplicationByUserId(
       userId
     );
@@ -82,13 +87,16 @@ export class AdminService {
       return new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
 
     const user = await this.userService.findUserById(userId);
+
     if (user.isVerified) {
       return new BadRequestException(AdminErrorMessage.ALREADY_VERIFIED);
     }
+
     try {
       await this.userService.updateUserById(user._id, {
         isVerified: true,
       });
+
       if (user.mobile) {
         await this.smsSerice.sendSMS(
           `Your account is now verified by admins. \nTreejer`,
@@ -101,7 +109,7 @@ export class AdminService {
     }
   }
 
-  async rejectUser(userId) {
+  async rejectUser(userId: string) {
     const application = await this.applicationService.getApplicationByUserId(
       userId
     );

@@ -13,7 +13,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Role } from "./../common/constants";
-import { ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
 
@@ -34,9 +34,10 @@ export class ApplicationController {
   constructor(private applicationservice: ApplicationService) {}
 
   // @HasRoles(Role.ADMIN)
-  // @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @UseGuards(AuthGuard("jwt"))
   @Post()
   @ApiConsumes("multipart/form-data")
+  // @ApiBearerAuth()
   @ApiBody({
     schema: {
       type: "object",
@@ -56,19 +57,11 @@ export class ApplicationController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor("file"))
-  // @UseInterceptors(FileExtender)
-  async update(
-    @UploadedFile() file,
-    @Body() body,
-    @UploadData() updateData: ApplocationUpdateDto
-  ) {
-    console.log("uploadData", body);
-    console.log("file", file);
-    // return this.applicationservice.updateUser(
-    //   "6421af57b3501e8c65b93a44",
-    //   updateData,
-    //   file
-    // );
+  async update(@Req() req, @User() user: JwtUserDto) {
+    return this.applicationservice.updateUser(
+      "6421af57b3501e8c65b93a44",
+      //user.userId,
+      req
+    );
   }
 }

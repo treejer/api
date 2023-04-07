@@ -19,7 +19,9 @@ export class ApplicationService {
     private downloadService: DownloadService
   ) {}
 
-  async updateUser(userId, updateData, req) {
+  async updateUser(userId, req) {
+    const { field, file } = await this.downloadService.uploadFile(req);
+
     if (
       await this.applicationRepository.findOne({
         $or: [
@@ -32,11 +34,9 @@ export class ApplicationService {
         ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
       );
     }
+    const { encoding, filename, mimetype, originalname, size } = file;
 
-    const { encoding, filename, mimetype, originalname, size } =
-      await this.downloadService.uploadFile(req);
-
-    const file = await this.downloadService.create({
+    const fileOne = await this.downloadService.create({
       userId: userId,
       module: FileModules.idcard,
       encoding,
@@ -47,6 +47,7 @@ export class ApplicationService {
     });
 
     // @ts-ignore
+
     const {
       firstName,
       lastName,
@@ -55,7 +56,7 @@ export class ApplicationService {
       referrer,
       longitude,
       latitude,
-    } = updateData;
+    } = field;
 
     if (
       !Object.values(ApplicationTypes).includes(
@@ -78,10 +79,10 @@ export class ApplicationService {
     await this.userServie.updateUserById(userId, {
       firstName,
       lastName,
-      idCard: file._id,
+      idCard: fileOne._id,
     });
 
-    await this.downloadService.updateFileById(file._id, {
+    await this.downloadService.updateFileById(fileOne._id, {
       targetId: applicationOne._id,
     });
 

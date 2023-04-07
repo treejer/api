@@ -9,7 +9,7 @@ import { Response } from "express";
 import { join } from "path";
 import { FileRepository } from "./download.repository";
 import { JwtUserDto } from "src/auth/dtos";
-import { FileObject } from "./interfaces";
+import { FieldObject, FileObject } from "./interfaces";
 import { UserService } from "src/user/user.service";
 import { AuthErrorMessages, DownloadMessage, Role } from "src/common/constants";
 import { ConfigService } from "@nestjs/config";
@@ -25,7 +25,7 @@ export class DownloadService {
   constructor(
     private fileRepository: FileRepository,
     private userService: UserService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
   async findFileByUserId(userId: string) {
@@ -55,7 +55,7 @@ export class DownloadService {
     let path = join(
       process.cwd(),
       this.configService.get<string>("STORAGE_DIRECTORY"),
-      file.filename,
+      file.filename
     );
 
     response.download(path);
@@ -74,7 +74,7 @@ export class DownloadService {
 
     let dir = join(
       process.cwd(),
-      this.configService.get<string>("STORAGE_DIRECTORY"),
+      this.configService.get<string>("STORAGE_DIRECTORY")
     );
 
     if (!fs.existsSync(dir)) {
@@ -89,7 +89,15 @@ export class DownloadService {
       filename: "",
     };
 
-    let field = {};
+    let field: FieldObject = {
+      firstName: "",
+      lastName: "",
+      latitude: 0,
+      longitude: 0,
+      type: 0,
+      organizationAddress: "",
+      referrer: "",
+    };
 
     try {
       await new Promise((resolve, reject) => {

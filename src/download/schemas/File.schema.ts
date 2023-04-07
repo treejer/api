@@ -56,6 +56,7 @@ export class File extends Document {
   @Prop({
     type: Date,
     required: true,
+    default: Date.now,
   })
   createdAt: Date;
 }

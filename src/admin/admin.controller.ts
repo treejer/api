@@ -14,15 +14,14 @@ import { ApiTags } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
 import { UserVerificationByAdminDto } from "./dto";
-import { UserDto } from "src/user/dtos";
 
 @ApiTags("admin")
 @Controller("admin")
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
-  // @HasRoles(Role.ADMIN)
-  // @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Get("users")
   async getUsers(@Query("filters") filters: string) {
     if (!filters || filters.length === 0) filters = "{}";
@@ -53,8 +52,8 @@ export class AdminController {
     );
   }
 
-  // @HasRoles(Role.ADMIN)
-  // @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Patch("verify")
   async verifyUser(@Body() dto: UserVerificationByAdminDto) {
     await this.adminService.verifyUser(dto.userId);
