@@ -120,12 +120,6 @@ export class AuthController {
     return this.authService.loginWithWallet(wallet, signature);
   }
 
-  @UseGuards(AuthGuard("jwt"))
-  @Get("user/me")
-  async getUser(@User() user: JwtUserDto) {
-    return await this.authService.getUserById(user.userId);
-  }
-
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("mobile/verify")

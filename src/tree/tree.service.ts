@@ -4,9 +4,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
+
 import axios from "axios";
+
 import { generateTreeAttributes } from "src/common/helpers";
-import { treeTemplate } from "./../common/constants";
+import { treeTemplate, TreeErrorMessage } from "./../common/constants";
 
 const fs = require("fs");
 
@@ -26,12 +28,14 @@ export class TreeService {
     try {
       hexTreeId = "0x" + parseInt(treeId).toString(16);
     } catch (err) {
-      return new BadRequestException("Invalid input");
+      return new BadRequestException(TreeErrorMessage.INVALID_INPUT);
     }
 
     const THE_GRAPH_URL = process.env.THE_GRAPH_URL;
     if (!THE_GRAPH_URL) {
-      return new InternalServerErrorException("GRAPH SOURCE URL NOT SET");
+      return new InternalServerErrorException(
+        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
+      );
     }
 
     const postBody = JSON.stringify({
@@ -44,7 +48,7 @@ export class TreeService {
     try {
       const tree = res.data.data.tree;
       if (!tree) {
-        return new NotFoundException("Tree not found error");
+        return new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
       }
       const symbol = res.data.data.symbol;
       if (symbol) {
@@ -139,7 +143,7 @@ export class TreeService {
       return tree;
     } catch (err) {
       console.log("err = ", err);
-      return new NotFoundException("Tree not Found");
+      return new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
     }
   }
 }

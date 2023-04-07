@@ -4,8 +4,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { filter } from "rxjs";
+
 import { ApplicationService } from "src/application/application.service";
+import { AdminErrorMessage, AuthErrorMessages } from "src/common/constants";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
 import { SmsService } from "src/sms/sms.service";
@@ -36,7 +37,7 @@ export class AdminService {
 
   async getUserById(userId: string) {
     const user = await this.userService.findUserById(userId);
-    if (!user) return new NotFoundException("User not found!");
+    if (!user) return new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
     const file = await this.downloadService.findFileByUserId(userId);
     const application = await this.applicationService.getApplicationByUserId(
       userId
@@ -53,10 +54,10 @@ export class AdminService {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
     if (!checkPublicKey(checkedSumWallet))
-      throw new BadRequestException("invalid wallet");
+      throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
     const user = await this.userService.findUserByWallet(checkedSumWallet);
-    if (!user) return new NotFoundException("User not found!");
+    if (!user) return new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
     const file = await this.downloadService.findFileByUserId(user._id);
     const application = await this.applicationService.getApplicationByUserId(
       user._id
@@ -78,13 +79,11 @@ export class AdminService {
     );
 
     if (!application)
-      return new NotFoundException(
-        "Application is not submitted for this user"
-      );
+      return new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
 
     const user = await this.userService.findUserById(userId);
     if (user.isVerified) {
-      return new BadRequestException("Already Verified");
+      return new BadRequestException(AdminErrorMessage.ALREADY_VERIFIED);
     }
     try {
       await this.userService.updateUserById(user._id, {
@@ -107,9 +106,7 @@ export class AdminService {
       userId
     );
     if (!application)
-      return new NotFoundException(
-        "Application is not submitted for this user"
-      );
+      return new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
     await this.userService.updateUserById(userId, { isVerified: false });
     return "Updated Successfully";
   }

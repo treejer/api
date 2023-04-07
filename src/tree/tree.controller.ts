@@ -3,7 +3,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { TreeService } from "./tree.service";
 
 @ApiTags("trees")
-@Controller()
+@Controller("trees")
 export class TreeController {
   constructor(private treeService: TreeService) {}
 

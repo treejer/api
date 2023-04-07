@@ -33,15 +33,11 @@ export class AuthService {
     private userMobileRepository: UserMobileRepository
   ) {}
 
-  getUserById(userId: string) {
-    return this.userService.findUserById(userId);
-  }
-
   async getNonce(wallet: string): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
     if (!checkPublicKey(checkedSumWallet))
-      throw new BadRequestException("invalid wallet");
+      throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
     let user = await this.userService.findUserByWallet(checkedSumWallet);
 
@@ -73,14 +69,14 @@ export class AuthService {
     const checkedSumWallet = getCheckedSumAddress(walletAddress);
 
     if (!checkPublicKey(checkedSumWallet))
-      throw new BadRequestException("invalid wallet");
+      throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
     const user = await this.userService.findUserByWallet(checkedSumWallet, {
       _id: 1,
       nonce: 1,
     });
 
-    if (!user) throw new NotFoundException("user not exist");
+    if (!user) throw new NotFoundException(AuthErrorMessages.USER_NOT_EXIST);
 
     const message = Messages.SIGN_MESSAGE + user.nonce.toString();
 
@@ -91,7 +87,7 @@ export class AuthService {
     );
 
     if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
-      throw new ForbiddenException("invalid credentials");
+      throw new ForbiddenException(AuthErrorMessages.INVALID_CREDENTIALS);
 
     const nonce: number = getRandomNonce();
 
@@ -152,7 +148,7 @@ export class AuthService {
         Date.now()
     ) {
       throw new BadRequestException(
-        `Please wait until time limit ends: ${humanize(
+        `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
           Math.ceil(
             Date.now() -
               user.mobileCodeRequestedAt.getTime() -
@@ -164,15 +160,14 @@ export class AuthService {
     }
 
     const code: number = getRandomInteger(100000, 999999);
-    console.log("code = ", code);
 
     try {
-      // await this.smsService.sendSMS(
-      //   `${code} is your Treejer verification code. this code expires in ${
-      //     Numbers.SMS_VERIFY_BOUND / 1000 / 60
-      //   } minutes`,
-      //   mobileNumber
-      // );
+      await this.smsService.sendSMS(
+        `${code} is your Treejer verification code. this code expires in ${
+          Numbers.SMS_VERIFY_BOUND / 1000 / 60
+        } minutes`,
+        mobileNumber
+      );
 
       await this.userService.updateUserById(user._id, {
         mobileCode: code,
@@ -185,7 +180,7 @@ export class AuthService {
 
       return "Verification code sent to your mobile number!";
     } catch (error) {
-      console.log("errrrrrrrrrrrrrrrrrror", error);
+      console.log("error", error);
     }
   }
 
@@ -197,7 +192,7 @@ export class AuthService {
 
     if (user.mobileCodeRequestedAt && user.mobileCodeRequestedAt > bound) {
       throw new BadRequestException(
-        `Please wait until the time limit ends ${humanize(
+        `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
           Math.ceil(
             user.mobileCodeRequestedAt.getTime() +
               Numbers.SMS_TOKEN_RESEND_BOUND -
@@ -222,12 +217,12 @@ export class AuthService {
         : getRandomInteger(100000, 999999);
 
     try {
-      // await this.smsService.sendSMS(
-      //   `${code} is your Treejer verification code. this code expires in ${
-      //     Numbers.SMS_VERIFY_BOUND / 1000 / 60
-      //   } minutes`,
-      //   user.mobile
-      // );
+      await this.smsService.sendSMS(
+        `${code} is your Treejer verification code. this code expires in ${
+          Numbers.SMS_VERIFY_BOUND / 1000 / 60
+        } minutes`,
+        user.mobile
+      );
 
       await this.userService.updateUserById(user._id, {
         mobileCode: code,

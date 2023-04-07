@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { ApplicationRepository } from "./application.repository";
 import {
+  ApplicationErrorMessage,
   ApplicationStatuses,
   ApplicationTypes,
   FileModules,
 } from "src/common/constants";
-import { Application } from "./schemas";
+
 import { UserService } from "src/user/user.service";
 import { EmailService } from "src/email/email.service";
 import { DownloadService } from "src/download/download.service";
@@ -27,7 +28,9 @@ export class ApplicationService {
         ],
       })
     ) {
-      return new BadRequestException("Application already submitted");
+      return new BadRequestException(
+        ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
+      );
     }
 
     const { encoding, filename, mimetype, originalname, size } =
@@ -59,7 +62,7 @@ export class ApplicationService {
         Number(type) as ApplicationTypes
       )
     ) {
-      return new BadRequestException("Invalid parameters");
+      return new BadRequestException(ApplicationErrorMessage.INVALID_PARAMS);
     }
 
     const applicationOne = await this.applicationRepository.create({

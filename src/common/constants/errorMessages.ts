@@ -10,7 +10,7 @@ export const AuthErrorMessages = {
   UNAUTHORIZED: "Unauthorized",
   INVALID_ID: "Invalid Id",
   MOBILE_ALREADY_VERIFIED: "Mobile number already verified",
-
+  WAIT_TIME_LIMIT: "Please wait until the time limit ends:",
   INVLID_MOBILECODE: "Invalid code",
   EXPIRED_MOBILECODE_MESSAGE:
     "minutes to verify has expired. please request another code",
@@ -50,4 +50,26 @@ export const EmailMessage = {
 
 export const DownloadMessage = {
   FILE_NOT_EXIST: "File not exist",
+};
+
+export const TreeErrorMessage = {
+  INVALID_INPUT: "Invalid input",
+  GRAPH_SOURCE_URL_NOT_SET: "GRAPH SOURCE URL NOT SET",
+  TREE_NOT_FOUND: "Tree not Found",
+};
+
+export const UserErrorMessage = {
+  RESEND_EMAIL_MESSAGE:
+    "minutes to verify has expired. please request another email",
+};
+
+export const ApplicationErrorMessage = {
+  APPLICATION_ALREADY_SUBMITTED: "Application already submitted",
+  INVALID_PARAMS: "Invalid parameters",
+};
+
+export const AdminErrorMessage = {
+  USER_NOT_FOUND: "User not found!",
+  APPLICATION_NOT_SUBMITTED: "Application is not submitted for this user",
+  ALREADY_VERIFIED: "Already Verified",
 };

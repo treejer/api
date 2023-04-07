@@ -11,7 +11,12 @@ import {
 } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
-import { AuthErrorMessages, EmailMessage, Role } from "src/common/constants";
+import {
+  AuthErrorMessages,
+  EmailMessage,
+  Role,
+  UserErrorMessage,
+} from "src/common/constants";
 import { UpdateRoleDto } from "./dtos/updateRole.dto";
 import { generateToken, getCheckedSumAddress } from "src/common/helpers";
 
@@ -65,7 +70,7 @@ export class UserService {
   async findUserById(userId: string, projection?: Record<string, number>) {
     return await this.userRepository.findOne(
       { _id: userId },
-      { ...projection },
+      { ...projection }
     );
   }
   async updateUserById(userId: string, data: UserDto) {
@@ -121,9 +126,9 @@ export class UserService {
 
     if (!user.emailTokenRequestedAt || user.emailTokenRequestedAt < bound) {
       throw new BadRequestException(
-        `${
-          this.config.get<number>("EMAIL_VERIFY_BOUND") / 60000
-        } minutes to verify has expired. please request another email`
+        `${this.config.get<number>("EMAIL_VERIFY_BOUND") / 60000} ${
+          UserErrorMessage.RESEND_EMAIL_MESSAGE
+        }`
       );
     }
 
