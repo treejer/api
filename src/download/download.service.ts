@@ -89,6 +89,8 @@ export class DownloadService {
       filename: "",
     };
 
+    let field = {};
+
     try {
       await new Promise((resolve, reject) => {
         bb.on("file", (name, file, info) => {
@@ -133,13 +135,17 @@ export class DownloadService {
           console.log("Done parsing form!");
         });
 
+        bb.on("field", (name, val, info) => {
+          field[name] = val;
+        });
+
         req.pipe(bb);
       });
     } catch (error) {
       throw new BadRequestException(error);
     }
 
-    return returnObj;
+    return { file: returnObj, field };
   }
 
   async create(file: CreateFileDto) {
