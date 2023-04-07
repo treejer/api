@@ -15,11 +15,9 @@ export const UploadData = createParamDecorator(
         let form = new multiparty.Form();
 
         form.parse(request, function (err, fields, files) {
-          if (err) reject(err);
-
           if (fields)
             Object.keys(fields).forEach(function (name) {
-              fields[name] = name;
+              fields[name] = fields[name].toString();
             });
           resolve(fields);
         });
