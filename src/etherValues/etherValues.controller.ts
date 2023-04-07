@@ -16,7 +16,7 @@ export class EtherValuesController {
   constructor(private etherValuesService: EtherValuesService) {}
 
   @Get("/prices")
-  editAssignedTree() {
+  getEtherPrice() {
     return this.etherValuesService.getEtherPrice();
   }
 }

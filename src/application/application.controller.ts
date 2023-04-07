@@ -55,8 +55,12 @@ export class ApplicationController {
       },
     },
   })
-  async update(@Req() req, @UploadData() uploadData: ApplocationUpdateDto) {
-    console.log("uploadData", uploadData);
-    return "Success";
+  async update(@Req() req, @UploadData() updateData: ApplocationUpdateDto) {
+    console.log("uploadData", updateData);
+    return this.applicationservice.updateUser(
+      "6421af57b3501e8c65b93a44",
+      updateData,
+      req
+    );
   }
 }

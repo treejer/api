@@ -21,8 +21,8 @@ const crownColor = JSON.parse(
 export class TreeService {
   public constructor() {}
 
-  async getTree(treeId) {
-    let hexTreeId;
+  async getTree(treeId): Promise<any> {
+    let hexTreeId: string;
     try {
       hexTreeId = "0x" + parseInt(treeId).toString(16);
     } catch (err) {
