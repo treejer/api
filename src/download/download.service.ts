@@ -25,7 +25,7 @@ export class DownloadService {
   constructor(
     private fileRepository: FileRepository,
     private userService: UserService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async findFileByUserId(userId: string) {
@@ -55,7 +55,7 @@ export class DownloadService {
     let path = join(
       process.cwd(),
       this.configService.get<string>("STORAGE_DIRECTORY"),
-      file.filename
+      file.filename,
     );
 
     response.download(path);
@@ -68,13 +68,13 @@ export class DownloadService {
       headers: req.headers,
       limits: {
         files: 1,
-        fileSize: 4e4,
+        fileSize: 1e7,
       },
     });
 
     let dir = join(
       process.cwd(),
-      this.configService.get<string>("STORAGE_DIRECTORY")
+      this.configService.get<string>("STORAGE_DIRECTORY"),
     );
 
     if (!fs.existsSync(dir)) {
@@ -117,7 +117,7 @@ export class DownloadService {
         });
 
         bb.on("close", () => {
-          if (returnObj.size == 4e4) {
+          if (returnObj.size == 1e7) {
             fs.unlink(join(dir, returnObj.filename), (e) => {
               if (e) {
                 console.log("e", e);

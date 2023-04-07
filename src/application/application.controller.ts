@@ -23,6 +23,9 @@ import { User } from "src/user/decorators";
 import { ApplicationService } from "./application.service";
 import { FileExtender } from "./ccc";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { UploadData } from "src/download/decorators";
+
+import { ApplocationUpdateDto } from "./dtos";
 
 @ApiTags("application")
 @Controller("application")
@@ -52,10 +55,8 @@ export class ApplicationController {
       },
     },
   })
-  @UseInterceptors(FileExtender)
-  async update(@Body() dto, @Req() req, @User() user: JwtUserDto) {
-    console.log("dtooooo", req);
-
-    // return await this.applicationservice.updateUser(user.userId, dto, req);
+  async update(@Req() req, @UploadData() uploadData: ApplocationUpdateDto) {
+    console.log("uploadData", uploadData);
+    return "Success";
   }
 }
