@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
@@ -55,12 +56,19 @@ export class ApplicationController {
       },
     },
   })
-  async update(@Req() req, @UploadData() updateData: ApplocationUpdateDto) {
-    console.log("uploadData", updateData);
-    return this.applicationservice.updateUser(
-      "6421af57b3501e8c65b93a44",
-      updateData,
-      req
-    );
+  @UseInterceptors(FileInterceptor("file"))
+  // @UseInterceptors(FileExtender)
+  async update(
+    @UploadedFile() file,
+    @Body() body,
+    @UploadData() updateData: ApplocationUpdateDto
+  ) {
+    console.log("uploadData", body);
+    console.log("file", file);
+    // return this.applicationservice.updateUser(
+    //   "6421af57b3501e8c65b93a44",
+    //   updateData,
+    //   file
+    // );
   }
 }

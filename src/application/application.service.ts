@@ -90,4 +90,22 @@ export class ApplicationService {
     );
     return "All done!";
   }
+
+  async getApplicationList(filters = {}) {
+    return await this.applicationRepository.find(filters);
+  }
+
+  async getApplicationById(_id: string, projection?: Record<string, number>) {
+    return await this.applicationRepository.findOne({ _id }, { ...projection });
+  }
+
+  async getApplicationByUserId(
+    userId: string,
+    projection?: Record<string, number>
+  ) {
+    return await this.applicationRepository.findOne(
+      { userId },
+      { ...projection }
+    );
+  }
 }

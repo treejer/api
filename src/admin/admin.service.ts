@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { filter } from "rxjs";
+import { ApplicationService } from "src/application/application.service";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
 import { SmsService } from "src/sms/sms.service";
@@ -15,6 +16,7 @@ export class AdminService {
   constructor(
     private userService: UserService,
     private downloadService: DownloadService,
+    private applicationService: ApplicationService,
     private smsSerice: SmsService
   ) {}
 
@@ -24,7 +26,7 @@ export class AdminService {
       const data = users.map((el) => ({
         user: el,
         file: this.downloadService.findFileByUserId(el._id),
-        // application:await this.applicationService.findApplicationByUserId(el._id)
+        application: this.applicationService.getApplicationByUserId(el._id),
       }));
       return JSON.stringify(data);
     } catch (error) {
@@ -36,13 +38,13 @@ export class AdminService {
     const user = await this.userService.findUserById(userId);
     if (!user) return new NotFoundException("User not found!");
     const file = await this.downloadService.findFileByUserId(userId);
-    // const application = await this.applicationRespository.findOne({
-    // where: { userId },
-    // });
+    const application = await this.applicationService.getApplicationByUserId(
+      userId
+    );
 
     return JSON.stringify({
       user,
-      //application,
+      application,
       file,
     });
   }
@@ -56,27 +58,29 @@ export class AdminService {
     const user = await this.userService.findUserByWallet(checkedSumWallet);
     if (!user) return new NotFoundException("User not found!");
     const file = await this.downloadService.findFileByUserId(user._id);
-    // const application = await this.applicationRespository.findOne({
-    //   where: { userId: user._id },
-    // });
+    const application = await this.applicationService.getApplicationByUserId(
+      user._id
+    );
     return JSON.stringify({
       user,
-      //application,
+      application,
       file,
     });
   }
 
-  async getApplications(filter) {
-    return [];
+  async getApplications(filters) {
+    return await this.applicationService.getApplicationList(filters);
   }
 
   async verifyUser(userId) {
-    // const application = await this.applicationRespository.findOne({
-    //   where: {userId},
-    // });
+    const application = await this.applicationService.getApplicationByUserId(
+      userId
+    );
 
-    // if (!application)
-    //   return new NotFoundError('Application is not submitted for this user');
+    if (!application)
+      return new NotFoundException(
+        "Application is not submitted for this user"
+      );
 
     const user = await this.userService.findUserById(userId);
     if (user.isVerified) {
@@ -99,11 +103,13 @@ export class AdminService {
   }
 
   async rejectUser(userId) {
-    // const application = await this.applicationRespository.findOne({
-    //   where: {userId},
-    // });
-    // if (!application)
-    //   return new NotFoundError('Application is not submitted for this user');
+    const application = await this.applicationService.getApplicationByUserId(
+      userId
+    );
+    if (!application)
+      return new NotFoundException(
+        "Application is not submitted for this user"
+      );
     await this.userService.updateUserById(userId, { isVerified: false });
     return "Updated Successfully";
   }
