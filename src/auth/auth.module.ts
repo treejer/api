@@ -10,7 +10,6 @@ import { UserMobileRepository } from "./auth.repository";
 import { UserMobile, UserMobileSchema } from "./schemas";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatabaseModule } from "./../database/database.module";
-import { UserService } from "../user/user.service";
 import { SmsModule } from "src/sms/sms.module";
 @Module({
   imports: [

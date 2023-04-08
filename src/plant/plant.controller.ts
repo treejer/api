@@ -8,7 +8,6 @@ import {
   UseGuards,
   HttpCode,
   Get,
-  Req,
 } from "@nestjs/common";
 
 import { PlantStatus, Role } from "src/common/constants";

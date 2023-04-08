@@ -1,6 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtModule } from "@nestjs/jwt";
+import { Module } from "@nestjs/common";
 import { ApplicationModule } from "src/application/application.module";
 import { DownloadModule } from "src/download/download.module";
 import { SmsModule } from "src/sms/sms.module";

@@ -21,6 +21,7 @@ export class ApplicationService {
 
   async updateUser(userId, req) {
     const { field, file } = await this.downloadService.uploadFile(req);
+
     let user = await this.userServie.findUserById(userId);
 
     if (user.isVerified) {
@@ -28,6 +29,7 @@ export class ApplicationService {
         ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
       );
     }
+
     const { encoding, filename, mimetype, originalname, size } = file;
 
     const fileOne = await this.downloadService.create({

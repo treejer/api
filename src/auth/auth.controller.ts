@@ -5,15 +5,12 @@ import {
   Param,
   Patch,
   Post,
-  Req,
-  SetMetadata,
   UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { CreateUserDto } from "./../user/dtos";
+
 import {
   JwtUserDto,
-  LoginDto,
   LoginResultDto,
   LoginWithWalletDto,
   MobileVerifyDto,
@@ -21,10 +18,6 @@ import {
   PatchMobileNumberDto,
 } from "./dtos";
 import { AuthGuard } from "@nestjs/passport";
-import { Request } from "express";
-import { RolesGuard } from "./strategies";
-import { HasRoles } from "./decorators";
-import { Role } from "./../common/constants";
 import {
   ApiBearerAuth,
   ApiOperation,
