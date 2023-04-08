@@ -14,6 +14,9 @@ import { UserService } from "src/user/user.service";
 import { AuthErrorMessages, DownloadMessage, Role } from "src/common/constants";
 import { ConfigService } from "@nestjs/config";
 import { CreateFileDto } from "./dtos";
+import { Validator, validateOrReject } from "class-validator";
+import { FieldObjectDto } from "./dtos/filedObject.dto";
+import { plainToClass } from "class-transformer";
 
 const busboy = require("busboy");
 const fs = require("fs");
@@ -25,7 +28,7 @@ export class DownloadService {
   constructor(
     private fileRepository: FileRepository,
     private userService: UserService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async findFileByUserId(userId: string) {
@@ -55,7 +58,7 @@ export class DownloadService {
     let path = join(
       process.cwd(),
       this.configService.get<string>("STORAGE_DIRECTORY"),
-      file.filename
+      file.filename,
     );
 
     response.download(path);
@@ -74,7 +77,7 @@ export class DownloadService {
 
     let dir = join(
       process.cwd(),
-      this.configService.get<string>("STORAGE_DIRECTORY")
+      this.configService.get<string>("STORAGE_DIRECTORY"),
     );
 
     if (!fs.existsSync(dir)) {
@@ -89,29 +92,18 @@ export class DownloadService {
       filename: "",
     };
 
-    let field: FieldObject = {
-      firstName: "",
-      lastName: "",
-      latitude: 0,
-      longitude: 0,
-      type: 0,
-      organizationAddress: "",
-      referrer: "",
-    };
+    let field = new FieldObjectDto();
 
     try {
+      let ext;
+
       await new Promise((resolve, reject) => {
         bb.on("file", (name, file, info) => {
           returnObj.originalname = info.filename;
           returnObj.encoding = info.encoding;
           returnObj.mimetype = info.mimeType;
 
-          let ext = mime.extension(info.mimeType);
-
-          if (!["jpg", "png", "jpeg"].includes(ext)) {
-            reject("File type is not correct");
-            return;
-          }
+          ext = mime.extension(info.mimeType);
 
           file.on("data", async (data) => {
             returnObj.size = data.length;
@@ -126,7 +118,18 @@ export class DownloadService {
           file.pipe(fs.createWriteStream(saveTo));
         });
 
-        bb.on("close", () => {
+        bb.on("close", async () => {
+          if (!["jpg", "png", "jpeg"].includes(ext)) {
+            fs.unlink(join(dir, returnObj.filename), (e) => {
+              if (e) {
+                console.log("e", e);
+              }
+            });
+
+            reject("File type is not correct");
+            return;
+          }
+
           if (returnObj.size == 1e7) {
             fs.unlink(join(dir, returnObj.filename), (e) => {
               if (e) {
@@ -136,6 +139,21 @@ export class DownloadService {
 
             reject("File size is not correct");
 
+            return;
+          }
+          try {
+            field = plainToClass(FieldObjectDto, field);
+
+            await validateOrReject(field);
+          } catch (errors) {
+            let errorsMessage = [];
+            errors.map((error) => {
+              Object.keys(error.constraints).forEach(function (key, index) {
+                errorsMessage.push(error.constraints[key]);
+              });
+            });
+
+            reject(errorsMessage);
             return;
           }
 
