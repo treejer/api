@@ -22,7 +22,7 @@ import { AdminService } from "src/admin/admin.service";
 import { JwtUserDto } from "src/auth/dtos";
 import { User } from "src/user/decorators";
 import { ApplicationService } from "./application.service";
-import { FileExtender } from "./ccc";
+
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UploadData } from "src/download/decorators";
 
@@ -33,11 +33,10 @@ import { ApplocationUpdateDto } from "./dtos";
 export class ApplicationController {
   constructor(private applicationservice: ApplicationService) {}
 
-  // @HasRoles(Role.ADMIN)
-  // @UseGuards(AuthGuard("jwt"))
+  @UseGuards(AuthGuard("jwt"))
   @Post()
   @ApiConsumes("multipart/form-data")
-  // @ApiBearerAuth()
+  @ApiBearerAuth()
   @ApiBody({
     schema: {
       type: "object",
@@ -58,10 +57,6 @@ export class ApplicationController {
     },
   })
   async update(@Req() req, @User() user: JwtUserDto) {
-    return this.applicationservice.updateUser(
-      "6421af57b3501e8c65b93a44",
-      //user.userId,
-      req
-    );
+    return this.applicationservice.updateUser(user.userId, req);
   }
 }

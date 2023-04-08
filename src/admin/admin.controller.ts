@@ -56,7 +56,7 @@ export class AdminController {
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Patch("verify")
   async verifyUser(@Body() dto: UserVerificationByAdminDto) {
-    await this.adminService.verifyUser(dto.userId);
+    return await this.adminService.verifyUser(dto.userId);
   }
 
   @HasRoles(Role.ADMIN)

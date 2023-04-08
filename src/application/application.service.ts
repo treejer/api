@@ -21,15 +21,9 @@ export class ApplicationService {
 
   async updateUser(userId, req) {
     const { field, file } = await this.downloadService.uploadFile(req);
+    let user = await this.userServie.findUserById(userId);
 
-    if (
-      await this.applicationRepository.findOne({
-        $or: [
-          { userId: userId, status: ApplicationStatuses.ACCEPTED },
-          { userId: userId, status: ApplicationStatuses.REJECTED },
-        ],
-      })
-    ) {
+    if (user.isVerified) {
       return new BadRequestException(
         ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
       );

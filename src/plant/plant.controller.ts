@@ -481,9 +481,4 @@ export class PlantController {
       {}
     );
   }
-
-  @Get("test")
-  getTest(@Req() req: Request) {
-    console.log("req", req["user"][0]);
-  }
 }

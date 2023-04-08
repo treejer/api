@@ -13,8 +13,6 @@ const TreeFactory = require("./../../abi/TreeFactory.json");
 export class Web3Service {
   private web3Instance;
   constructor(private config: ConfigService) {
-    console.log("vvvvvvvvvvvvvvvvv", config.get<string>("NODE_ENV"));
-
     this.web3Instance = new Web3(
       config.get<string>("NODE_ENV") === "test"
         ? config.get<string>("WEB3_PROVIDER_TEST")
