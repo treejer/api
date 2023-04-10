@@ -51,7 +51,7 @@ export class DownloadService {
       throw new NotFoundException(DownloadMessage.FILE_NOT_EXIST);
     }
 
-    if (findUser.userRole !== Role.ADMIN && file.userId !== findUser._id) {
+    if (!(findUser.userRole == Role.ADMIN || file.userId == findUser._id)) {
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
     }
 
