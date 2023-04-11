@@ -59,6 +59,7 @@ export class AuthController {
     return this.authService.getNonce(wallet);
   }
 
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiOperation({ summary: "login with wallet" })
   @ApiResponse({
     status: 200,
@@ -72,7 +73,7 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          examples: ["Invalid Input", "Invalid Wallet"],
+          example: ["Invalid Input", "Invalid Wallet"],
         },
       },
     },
@@ -113,7 +114,64 @@ export class AuthController {
     return this.authService.loginWithWallet(wallet, signature);
   }
 
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
+  @ApiOperation({ summary: "verify mobile number" })
+  @ApiResponse({
+    status: 200,
+    description: "mobile number successfully verified.",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Response for Invalid input",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: "Invalid Input",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Response for unauthorized users",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Unauthorized" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid mobile code.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "invalid code" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for verified mobile numbers.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: "Mobile number already verified.",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server errror.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
   @UseGuards(AuthGuard("jwt"))
   @Post("mobile/verify")
   async verifyMobileCode(
@@ -128,6 +186,56 @@ export class AuthController {
     );
   }
 
+  //------------------------------------------ ************************ ------------------------------------------//
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "send verification code" })
+  @ApiResponse({
+    status: 200,
+    description: "verification code successfully sent.",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Response for Invalid input or wait limit not reached",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: ["Invalid Input", "Please wait until the time limit ends"],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Response for unauthorized users",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Unauthorized" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for in used mobile numbers.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: "This mobile number has been already registered.",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server errror.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Patch("mobile/send")
@@ -144,6 +252,55 @@ export class AuthController {
     );
   }
 
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "resend verification code" })
+  @ApiResponse({
+    status: 200,
+    description: "verification code successfully resent.",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Response for wait limit not reached",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: "Please wait until the time limit ends",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Response for unauthorized users",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Unauthorized" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for verified mobile numbers.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: "Mobile number already verified",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Response for Internal server errror.",
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: "Internal server error" },
+      },
+    },
+  })
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("mobile/resend")
