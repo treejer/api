@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -32,13 +33,13 @@ export class AdminService {
       }));
       return JSON.stringify(data);
     } catch (error) {
-      return new BadRequestException(error.toString());
+      throw new BadRequestException(error.toString());
     }
   }
 
   async getUserById(userId: string) {
     const user = await this.userService.findUserById(userId);
-    if (!user) return new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
+    if (!user) throw new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
     const file = await this.downloadService.findFileByUserId(userId);
     const application = await this.applicationService.getApplicationByUserId(
       userId
@@ -59,7 +60,7 @@ export class AdminService {
 
     const user = await this.userService.findUserByWallet(checkedSumWallet);
 
-    if (!user) return new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
+    if (!user) throw new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
 
     const file = await this.downloadService.findFileByUserId(user._id);
 
@@ -84,12 +85,12 @@ export class AdminService {
     );
 
     if (!application)
-      return new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
+      throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
 
     const user = await this.userService.findUserById(userId);
 
     if (user.isVerified) {
-      return new BadRequestException(AdminErrorMessage.ALREADY_VERIFIED);
+      throw new ConflictException(AdminErrorMessage.ALREADY_VERIFIED);
     }
 
     try {
@@ -105,7 +106,7 @@ export class AdminService {
       }
       return "Updated Successfully";
     } catch (err) {
-      return new InternalServerErrorException(err.toString());
+      throw new InternalServerErrorException(err.toString());
     }
   }
 
@@ -114,7 +115,7 @@ export class AdminService {
       userId
     );
     if (!application)
-      return new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
+      throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
     await this.userService.updateUserById(userId, { isVerified: false });
     return "Updated Successfully";
   }

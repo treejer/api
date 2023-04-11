@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from "@nestjs/common";
 import { ApplicationRepository } from "./application.repository";
 import {
   ApplicationErrorMessage,
@@ -25,7 +29,7 @@ export class ApplicationService {
     let user = await this.userServie.findUserById(userId);
 
     if (user.isVerified) {
-      return new BadRequestException(
+      throw new ConflictException(
         ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
       );
     }
@@ -59,7 +63,7 @@ export class ApplicationService {
         Number(type) as ApplicationTypes
       )
     ) {
-      return new BadRequestException(ApplicationErrorMessage.INVALID_PARAMS);
+      throw new BadRequestException(ApplicationErrorMessage.INVALID_PARAMS);
     }
 
     const applicationOne = await this.applicationRepository.create({

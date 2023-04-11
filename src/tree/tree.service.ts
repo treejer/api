@@ -28,12 +28,12 @@ export class TreeService {
     try {
       hexTreeId = "0x" + parseInt(treeId).toString(16);
     } catch (err) {
-      return new BadRequestException(TreeErrorMessage.INVALID_INPUT);
+      throw new BadRequestException(TreeErrorMessage.INVALID_INPUT);
     }
 
     const THE_GRAPH_URL = process.env.THE_GRAPH_URL;
     if (!THE_GRAPH_URL) {
-      return new InternalServerErrorException(
+      throw new InternalServerErrorException(
         TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
       );
     }
@@ -48,7 +48,7 @@ export class TreeService {
     try {
       const tree = res.data.data.tree;
       if (!tree) {
-        return new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
+        throw new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
       }
       const symbol = res.data.data.symbol;
       if (symbol) {
@@ -142,8 +142,7 @@ export class TreeService {
 
       return tree;
     } catch (err) {
-      console.log("err = ", err);
-      return new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
+      throw new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
     }
   }
 }
