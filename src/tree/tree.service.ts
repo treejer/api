@@ -9,32 +9,35 @@ import axios from "axios";
 
 import { generateTreeAttributes } from "src/common/helpers";
 import { treeTemplate, TreeErrorMessage } from "./../common/constants";
+import { ConfigService } from "@nestjs/config";
 
 const fs = require("fs");
 
 const crownColor = JSON.parse(
   fs
     .readFileSync(
-      `${process.cwd()}/public/resources/attributeMapping/crownColor.json`
+      `${process.cwd()}/public/resources/attributeMapping/crownColor.json`,
     )
-    .toString()
+    .toString(),
 );
 @Injectable()
 export class TreeService {
-  public constructor() {}
+  public constructor(private configService: ConfigService) {}
 
   async getTree(treeId: string): Promise<any> {
     let hexTreeId: string;
+
     try {
       hexTreeId = "0x" + parseInt(treeId).toString(16);
     } catch (err) {
       throw new BadRequestException(TreeErrorMessage.INVALID_INPUT);
     }
 
-    const THE_GRAPH_URL = process.env.THE_GRAPH_URL;
-    if (!THE_GRAPH_URL) {
+    const theGraphUrl = this.configService.get<string>("THE_GRAPH_URL");
+
+    if (!theGraphUrl) {
       throw new InternalServerErrorException(
-        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
+        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET,
       );
     }
 
@@ -43,7 +46,7 @@ export class TreeService {
       variables: null,
     });
 
-    const res = await axios.post(THE_GRAPH_URL, postBody);
+    const res = await axios.post(theGraphUrl, postBody);
 
     try {
       const tree = res.data.data.tree;
@@ -69,12 +72,13 @@ export class TreeService {
         let specs = tree.treeSpecsEntity;
         tree.image = specs.imageFs
           ? specs.imageFs
-          : process.env.DEFAULT_IMAGE_URL;
+          : this.configService.get<string>("DEFAULT_IMAGE_URL");
       } else {
-        tree.image = process.env.DEFAULT_IMAGE_URL;
+        tree.image = this.configService.get<string>("DEFAULT_IMAGE_URL");
       }
 
-      tree.external_url = process.env.TREEJER_WEB_URL + "/tree/" + treeId;
+      tree.external_url =
+        this.configService.get<string>("TREEJER_WEB_URL") + "/tree/" + treeId;
 
       if (tree.id < 10001) {
         if (tree.id > 0) {
