@@ -1,40 +1,82 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import axios from "axios";
 import { EtherValuesRepository } from "./etherValues.repository";
+import { ConfigService } from "@nestjs/config";
+import { EtherValues } from "./schema";
+import { BugsnagService } from "src/bugsnag/bugsnag.service";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class EtherValuesService {
-  constructor(private etherValuesRepository: EtherValuesRepository) {}
+  constructor(
+    private etherValuesRepository: EtherValuesRepository,
+    private configService: ConfigService,
+    private bugsnag: BugsnagService,
+    private emailService: EmailService,
+  ) {}
 
   async getEtherPrice() {
-    const ETHER_VALUE_VALID_UNTIL = parseInt(
-      process.env.ETHER_VALUE_VALID_UNTIL ?? "300000"
+    const etherValueValidUntil = Number(
+      this.configService.get<number>("ETHER_VALUE_VALID_UNTIL"),
     );
 
     const ethValue = await this.etherValuesRepository.findOne({});
+
     if (
       !ethValue ||
-      ethValue.storedAt < new Date(Date.now() - ETHER_VALUE_VALID_UNTIL)
+      ethValue.storedAt < new Date(Date.now() - etherValueValidUntil)
     ) {
-      const ETHER_API_URL = process.env.ETH_PRICE_API_URL;
-      const ETHER_API_KEY = process.env.ETH_PRICE_API_KEY;
-      const requestUrl = `${ETHER_API_URL}${ETHER_API_KEY}`;
-      const data = await new Promise((resolve, reject) => {
-        axios
-          .get(requestUrl, { timeout: 3000 })
-          .then((res) => {
-            resolve(res.data);
-          })
-          .catch((err) => {
-            resolve(ethValue);
-          });
-      });
+      const etherApiUrl = this.configService.get<string>("ETH_PRICE_API_URL");
 
-      // @ts-ignore.data as EtherPrice;
-      const etherPirce: EtherPrice = data;
+      const etherApiKey = this.configService.get<string>("ETH_PRICE_API_KEY");
+
+      const requestUrl = `${etherApiUrl}${etherApiKey}`;
+
+      let etherPirce;
+
+      try {
+        etherPirce = await new Promise((resolve, reject) => {
+          axios
+            .get(requestUrl, { timeout: 3000 })
+            .then((res) => {
+              resolve({ ...res.data, errorCount: 0 });
+            })
+            .catch((err) => {
+              if (!ethValue) {
+                reject("internal server error (api not work)");
+                return;
+              }
+              ethValue.errorCount += 1;
+
+              if (ethValue.errorCount == 3) {
+                this.bugsnag.notify(err.response);
+
+                this.emailService.notifyAdmin(
+                  "Error:Treejer nestapi",
+                  `<h3>etherValues Module : errorCount reach 3</h3><b>can't update ether price(You can see more about error on bugsnag)</b>`,
+                );
+
+                ethValue.errorCount = 0;
+              }
+
+              resolve({
+                status: ethValue.status,
+                message: ethValue.message,
+                result: ethValue.result,
+                errorCount: ethValue.errorCount,
+              });
+            });
+        });
+      } catch (error) {
+        throw new InternalServerErrorException(error);
+      }
+
       etherPirce.storedAt = new Date();
+
       await this.etherValuesRepository.deleteMany({});
-      await this.etherValuesRepository.create(etherPirce);
+
+      await this.etherValuesRepository.create({ ...etherPirce });
+
       return etherPirce;
     } else {
       return ethValue;

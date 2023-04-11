@@ -17,6 +17,9 @@ export class EtherValues extends Document {
 
   @Prop({ type: Date, required: true, default: Date.now })
   storedAt;
+
+  @Prop({ type: Number, required: true })
+  errorCount;
 }
 
 export const EtherValuesSchema = SchemaFactory.createForClass(EtherValues);

@@ -26,4 +26,8 @@ export class BugsnagService {
   getBugsnag() {
     return this.bugsnag;
   }
+
+  notify(e) {
+    if (this.bugsnag) this.bugsnag.notify(e);
+  }
 }

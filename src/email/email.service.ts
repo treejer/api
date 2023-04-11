@@ -8,7 +8,7 @@ import { getAdminMailList } from "src/common/helpers";
 export class EmailService {
   public constructor(
     private configService: ConfigService,
-    private readonly mailerService: MailerService
+    private readonly mailerService: MailerService,
   ) {}
 
   async sendEmail(reciever: ValidEmailDto, subject: string, htmlBody: string) {
@@ -25,11 +25,11 @@ export class EmailService {
       });
   }
 
-  async notifyAdmin(event: string, text: string): Promise<void> {
+  async notifyAdmin(event: string, htmlBody: string): Promise<void> {
     let adminMailList = await getAdminMailList();
     for (const mail of adminMailList) {
       //@ts-ignore
-      await this.sendEmail(mail, event, text);
+      await this.sendEmail(mail, event, htmlBody);
     }
   }
 }

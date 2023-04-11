@@ -6,5 +6,6 @@ import { Module } from "@nestjs/common";
   imports: [],
   controllers: [],
   providers: [BugsnagService, ConfigService],
+  exports: [BugsnagService],
 })
 export class BugsnagModule {}
