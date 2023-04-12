@@ -1,5 +1,6 @@
 import { Controller, Get, Param } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { SwaggerErrors, TreeErrorMessage } from "src/common/constants";
 import { TreeService } from "./tree.service";
 
 @ApiTags("trees")
@@ -17,16 +18,22 @@ export class TreeController {
     description: "tree not found",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Tree not Found" },
+        schema: {
+          format: "text/plain",
+          example: TreeErrorMessage.TREE_NOT_FOUND,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

@@ -12,6 +12,11 @@ import { Response } from "express";
 import { DownloadService } from "./download.service";
 import { JwtUserDto } from "src/auth/dtos";
 import { User } from "src/user/decorators";
+import {
+  AuthErrorMessages,
+  DownloadMessage,
+  SwaggerErrors,
+} from "src/common/constants";
 
 @Controller()
 @ApiTags("download")
@@ -26,12 +31,12 @@ export class DownloadController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input ",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Invalid Input",
+          example: SwaggerErrors.INVALID_INPUT,
         },
       },
     },
@@ -41,25 +46,34 @@ export class DownloadController {
     description: "Response for invalid access.",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "invalid access" },
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_ACCESS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "Response for not found file.",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "File not exist" },
+        schema: {
+          format: "text/plain",
+          example: DownloadMessage.FILE_NOT_EXIST,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

@@ -10,7 +10,13 @@ import {
   Get,
 } from "@nestjs/common";
 
-import { PlantStatus, Role } from "src/common/constants";
+import {
+  AuthErrorMessages,
+  PlantErrorMessage,
+  PlantStatus,
+  Role,
+  SwaggerErrors,
+} from "src/common/constants";
 import { User } from "src/user/decorators";
 import { JwtUserDto } from "src/auth/dtos";
 import { HasRoles } from "src/auth/decorators";
@@ -49,28 +55,47 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access or supply error.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_SIGNER,
+            PlantErrorMessage.INVALID_PLANTER,
+            PlantErrorMessage.SUPPLY_ERROR,
+          ],
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -80,7 +105,7 @@ export class PlantController {
   plant(@Body() dto: PlantRequestDto, @User() user: JwtUserDto) {
     return this.plantService.plant(dto, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "edit plant request" })
   @ApiResponse({
@@ -90,28 +115,70 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access or invalid signer.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_ACCESS,
+            AuthErrorMessages.INVALID_SIGNER,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "plant request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -125,7 +192,7 @@ export class PlantController {
   ) {
     return this.plantService.editPlant(id, dto, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "delete plant request." })
   @ApiResponse({
@@ -134,19 +201,58 @@ export class PlantController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_ACCESS,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "plant request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.PLANT_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -157,7 +263,7 @@ export class PlantController {
   deletePlant(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.plantService.deletePlant(id, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "get plant requests." })
   @ApiResponse({
@@ -167,11 +273,23 @@ export class PlantController {
     type: PlantRequestResultDto,
   })
   @ApiResponse({
-    status: 500,
-    description: "Response for Internal server error.",
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -185,7 +303,7 @@ export class PlantController {
       {}
     );
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "create assigned request." })
   @ApiResponse({
@@ -195,28 +313,61 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access/status or supply error.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_SIGNER,
+            PlantErrorMessage.INVALID_TREE_STATUS,
+            PlantErrorMessage.INVALID_PLANTER_STATUS,
+            PlantErrorMessage.INVALID_PLANTER,
+            PlantErrorMessage.SUPPLY_ERROR,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for pending planted trees.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.PENDING_ASSIGNED_PLANT,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -229,7 +380,7 @@ export class PlantController {
   ) {
     return this.plantService.plantAssignedTree(dto, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "edit assigned request" })
   @ApiResponse({
@@ -239,28 +390,70 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access or invalid signer.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_ACCESS,
+            AuthErrorMessages.INVALID_SIGNER,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "assigned tree request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -274,7 +467,7 @@ export class PlantController {
   ) {
     return this.plantService.editAssignedTree(id, dto, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "delete assigned request." })
   @ApiResponse({
@@ -283,19 +476,58 @@ export class PlantController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_ACCESS,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "assigned plant request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -306,7 +538,7 @@ export class PlantController {
   deleteAssignedTree(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.plantService.deleteAssignedTree(id, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "get assigned requests." })
   @ApiResponse({
@@ -316,11 +548,23 @@ export class PlantController {
     type: AssignedRequestResultDto,
   })
   @ApiResponse({
-    status: 500,
-    description: "Response for Internal server error.",
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -334,7 +578,7 @@ export class PlantController {
       {}
     );
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "create update request." })
   @ApiResponse({
@@ -344,28 +588,60 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access/status or early update.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_SIGNER,
+            PlantErrorMessage.INVALID_TREE_STATUS,
+            PlantErrorMessage.INVALID_PLANTER,
+            PlantErrorMessage.EARLY_UPDATE,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for pending update.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.PENDING_UPDATE,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -375,7 +651,7 @@ export class PlantController {
   updateTree(@Body() body: CreateUpdateRequestDto, @User() user: JwtUserDto) {
     return this.plantService.updateTree(body, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "edit update request" })
   @ApiResponse({
@@ -385,28 +661,70 @@ export class PlantController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access or invalid signer.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.INVALID_ACCESS,
+            AuthErrorMessages.INVALID_SIGNER,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "update request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -420,7 +738,7 @@ export class PlantController {
   ) {
     return this.plantService.editUpdateTree(id, body, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "delete update request." })
   @ApiResponse({
@@ -429,19 +747,58 @@ export class PlantController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for invalid access",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_ACCESS,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: "update request not exist",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.UPDATE_DATA_NOT_EXIST,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: PlantErrorMessage.INVLID_STATUS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -452,7 +809,7 @@ export class PlantController {
   deleteUpdateTree(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.plantService.deleteUpdateTree(id, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "get update requests." })
   @ApiResponse({
@@ -462,11 +819,23 @@ export class PlantController {
     type: UpdateRequestResultDto,
   })
   @ApiResponse({
-    status: 500,
-    description: "Response for Internal server error.",
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

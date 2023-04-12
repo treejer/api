@@ -18,7 +18,7 @@ import { UserService } from "./user.service";
 import { HasRoles } from "src/auth/decorators";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/auth/strategies";
-import { Role } from "src/common/constants";
+import { AuthErrorMessages, Role, SwaggerErrors } from "src/common/constants";
 import { User } from "./decorators";
 import { JwtUserDto } from "src/auth/dtos";
 import { UpdateUserInfoRequest, ValidEmailDto } from "./dtos";
@@ -36,28 +36,31 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -66,7 +69,7 @@ export class UserController {
   updateEmail(@Body() dto: ValidEmailDto, @User() user: JwtUserDto) {
     return this.userService.updateEmail(dto, user);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiOperation({ summary: "verify email." })
   @ApiResponse({
     status: 200,
@@ -74,19 +77,22 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -94,7 +100,7 @@ export class UserController {
   verifyEmail(@Query("token") token: string) {
     return this.userService.verifyEmail(token);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "update user info." })
   @ApiResponse({
@@ -103,28 +109,34 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: {
+          format: "text/plain",
+          example: [SwaggerErrors.UNAUTHORIZED, AuthErrorMessages.INVALID_ID],
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

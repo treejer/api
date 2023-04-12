@@ -33,7 +33,7 @@ export class AdminService {
       }));
       return JSON.stringify(data);
     } catch (error) {
-      throw new BadRequestException(error.toString());
+      throw new InternalServerErrorException(error.toString());
     }
   }
 

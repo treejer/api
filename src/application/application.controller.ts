@@ -10,6 +10,7 @@ import {
 } from "@nestjs/swagger";
 
 import { JwtUserDto } from "src/auth/dtos";
+import { ApplicationErrorMessage, SwaggerErrors } from "src/common/constants";
 import { User } from "src/user/decorators";
 import { ApplicationService } from "./application.service";
 
@@ -25,19 +26,19 @@ export class ApplicationController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -48,17 +49,20 @@ export class ApplicationController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Application already submitted",
+          example: ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED,
         },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

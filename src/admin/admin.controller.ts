@@ -9,7 +9,7 @@ import {
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { AuthGuard } from "@nestjs/passport";
-import { Role } from "./../common/constants";
+import { AdminErrorMessage, Role, SwaggerErrors } from "./../common/constants";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -33,19 +33,22 @@ export class AdminController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -66,28 +69,34 @@ export class AdminController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "user not found",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "User not found!" },
+        schema: {
+          format: "text/plain",
+          example: AdminErrorMessage.USER_NOT_FOUND,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -106,37 +115,43 @@ export class AdminController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Input" },
+        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "user not found",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "User not found!" },
+        schema: {
+          format: "text/plain",
+          example: AdminErrorMessage.USER_NOT_FOUND,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -156,19 +171,22 @@ export class AdminController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -192,21 +210,21 @@ export class AdminController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "application not submitted for this user",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Application not submitted for this user",
+          example: AdminErrorMessage.APPLICATION_NOT_SUBMITTED,
         },
       },
     },
@@ -216,16 +234,22 @@ export class AdminController {
     description: "Response for verified users.",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Already Verified" },
+        schema: {
+          format: "text/plain",
+          example: AdminErrorMessage.ALREADY_VERIFIED,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -245,31 +269,34 @@ export class AdminController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "application not submitted for this user",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Application not submitted for this user",
+          example: AdminErrorMessage.APPLICATION_NOT_SUBMITTED,
         },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
