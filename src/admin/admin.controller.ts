@@ -9,7 +9,12 @@ import {
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { AuthGuard } from "@nestjs/passport";
-import { AdminErrorMessage, Role, SwaggerErrors } from "./../common/constants";
+import {
+  AdminErrorMessage,
+  AdminServiceMessage,
+  Role,
+  SwaggerErrors,
+} from "./../common/constants";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -18,7 +23,8 @@ import {
 } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
-import { UserVerificationByAdminDto } from "./dto";
+import { GetUserResultDto, UserVerificationByAdminDto } from "./dto";
+import { ApplicationResultDto } from "src/application/dtos";
 
 @ApiTags("admin")
 @Controller("admin")
@@ -30,6 +36,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "get user data successfully.",
+    type: [GetUserResultDto],
   })
   @ApiResponse({
     status: 401,
@@ -66,6 +73,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "get user data successfully.",
+    type: GetUserResultDto,
   })
   @ApiResponse({
     status: 401,
@@ -112,6 +120,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "get user data successfully.",
+    type: GetUserResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -168,6 +177,7 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "get application data successfully.",
+    type: [ApplicationResultDto],
   })
   @ApiResponse({
     status: 401,
@@ -207,6 +217,11 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "user verified successfully.",
+    content: {
+      "text/plain": {
+        example: AdminServiceMessage.VERIFY_MESSAGE,
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -266,6 +281,11 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: "user rejected successfully.",
+    content: {
+      "text/plain": {
+        example: AdminServiceMessage.REJECT_MESSAGE,
+      },
+    },
   })
   @ApiResponse({
     status: 401,

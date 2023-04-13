@@ -8,7 +8,11 @@ import {
 
 import { ApplicationService } from "src/application/application.service";
 import { Application } from "src/application/schemas";
-import { AdminErrorMessage, AuthErrorMessages } from "src/common/constants";
+import {
+  AdminErrorMessage,
+  AdminServiceMessage,
+  AuthErrorMessages,
+} from "src/common/constants";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
 import { SmsService } from "src/sms/sms.service";
@@ -104,7 +108,7 @@ export class AdminService {
           user.mobile
         );
       }
-      return "Updated Successfully";
+      return AdminServiceMessage.VERIFY_MESSAGE;
     } catch (err) {
       throw new InternalServerErrorException(err.toString());
     }
@@ -117,6 +121,6 @@ export class AdminService {
     if (!application)
       throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
     await this.userService.updateUserById(userId, { isVerified: false });
-    return "Updated Successfully";
+    return AdminServiceMessage.REJECT_MESSAGE;
   }
 }
