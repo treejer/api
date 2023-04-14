@@ -16,6 +16,7 @@ import {
   MobileVerifyDto,
   NonceResultDto,
   PatchMobileNumberDto,
+  SendVerificationCodeResultDto,
 } from "./dtos";
 import { AuthGuard } from "@nestjs/passport";
 import {
@@ -25,7 +26,11 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { User } from "src/user/decorators";
-import { AuthErrorMessages, SwaggerErrors } from "src/common/constants";
+import {
+  AuthErrorMessages,
+  AuthServiceMessage,
+  SwaggerErrors,
+} from "src/common/constants";
 @ApiTags("auth")
 @Controller()
 export class AuthController {
@@ -139,6 +144,11 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: "mobile number successfully verified.",
+    content: {
+      "text/plain": {
+        example: AuthServiceMessage.MOBILE_VERIFIED,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -218,6 +228,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: "verification code successfully sent.",
+    type: SendVerificationCodeResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -289,6 +300,11 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: "verification code successfully resent.",
+    content: {
+      "text/plain": {
+        example: AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
