@@ -30,7 +30,7 @@ export const SignatureError = {
 
 export const PlantErrorMessage = {
   INVALID_PLANTER: "invalid planter",
-  INVALID_RECORD_ID: "invalid record id",
+
   INVALID_PLANTER_STATUS: "invalid planter status",
   SUPPLY_ERROR: "supply error",
   INVALID_TREE_STATUS: "invalid tree status",
@@ -39,7 +39,7 @@ export const PlantErrorMessage = {
   PENDING_ASSIGNED_PLANT: "you have already planted this tree",
   VERIFIED_ASSIGNED_PLANT: "plant is verified",
   INVLID_STATUS: "invalid status",
-  INVALID_TREE_ID: "invalid treeId",
+
   PLANT_DATA_NOT_EXIST: "plant data not exist",
   ASSIGNED_TREE_DATA_NOT_EXIST: "assigned tree data not exist",
   UPDATE_DATA_NOT_EXIST: "update data not exist",

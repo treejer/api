@@ -25,6 +25,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { User } from "src/user/decorators";
+import { AuthErrorMessages, SwaggerErrors } from "src/common/constants";
 @ApiTags("auth")
 @Controller()
 export class AuthController {
@@ -41,16 +42,22 @@ export class AuthController {
     description: "Response for invalid wallet address",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Invalid Wallet" },
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_WALLET,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -73,7 +80,10 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: ["Invalid Input", "Invalid Wallet"],
+          example: [
+            SwaggerErrors.INVALID_INPUT,
+            AuthErrorMessages.INVALID_WALLET,
+          ],
         },
       },
     },
@@ -83,25 +93,34 @@ export class AuthController {
     description: "Response for invalid message signer.",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "invalid credentials" },
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVALID_CREDENTIALS,
+        },
       },
     },
   })
   @ApiResponse({
     status: 404,
-    description: "Response for not found user.",
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "User Not Found" },
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.USER_NOT_EXIST,
+        },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -123,22 +142,22 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description: "Response for Invalid input",
+    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Invalid Input",
+          example: SwaggerErrors.INVALID_INPUT,
         },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -147,7 +166,10 @@ export class AuthController {
     description: "Response for invalid mobile code.",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "invalid code" },
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.INVLID_MOBILECODE,
+        },
       },
     },
   })
@@ -158,17 +180,20 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Mobile number already verified.",
+          example: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
         },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -201,17 +226,20 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: ["Invalid Input", "Please wait until the time limit ends"],
+          example: [
+            SwaggerErrors.INVALID_INPUT,
+            "Please wait until the time limit ends",
+          ],
         },
       },
     },
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -222,17 +250,20 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "This mobile number has been already registered.",
+          example: AuthErrorMessages.MOBILE_IN_USE,
         },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -273,10 +304,10 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -287,17 +318,20 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: "Mobile number already verified",
+          example: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
         },
       },
     },
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server errror.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

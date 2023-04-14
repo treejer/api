@@ -8,7 +8,7 @@ import {
 } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
-import { PlantErrorMessage, Role } from "src/common/constants";
+import { PlantErrorMessage, Role, SwaggerErrors } from "src/common/constants";
 import {
   AssignedRequestStatusEditResultDto,
   PlantRequestStatusEditResultDto,
@@ -31,10 +31,10 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -64,10 +64,13 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -77,7 +80,7 @@ export class PlantVerificationController {
   rejectPlant(@Param("id") id: string) {
     return this.plantVerificationService.rejectPlant(id);
   }
-
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "reject assigned request" })
   @ApiResponse({
@@ -87,10 +90,10 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -120,10 +123,13 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })
@@ -133,6 +139,9 @@ export class PlantVerificationController {
   rejectAssignedTree(@Param("id") id: string) {
     return this.plantVerificationService.rejectAssignedTree(id);
   }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+
   @ApiBearerAuth()
   @ApiOperation({ summary: "reject update request" })
   @ApiResponse({
@@ -142,10 +151,10 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 401,
-    description: "Response for unauthorized users",
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Unauthorized" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })
@@ -175,10 +184,10 @@ export class PlantVerificationController {
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal server error" },
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
       },
     },
   })

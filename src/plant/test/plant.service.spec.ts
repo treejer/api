@@ -2259,7 +2259,7 @@ describe("App e2e", () => {
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,
-        message: PlantErrorMessage.INVALID_RECORD_ID,
+        message: PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST,
       },
     });
 

@@ -1,5 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { SwaggerErrors } from "src/common/constants";
+import { GetEthDataResultDto } from "./dto";
 import { EtherValuesService } from "./etherValues.service";
 
 @Controller("ether")
@@ -11,13 +13,17 @@ export class EtherValuesController {
   @ApiResponse({
     status: 200,
     description: "get ether value data successfully.",
+    type: GetEthDataResultDto,
   })
   @ApiResponse({
     status: 500,
-    description: "Response for Internal server error.",
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: "Internal Server Error" },
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
       },
     },
   })

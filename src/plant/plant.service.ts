@@ -256,7 +256,9 @@ export class PlantService {
     });
 
     if (!assignedPlantData)
-      throw new NotFoundException(PlantErrorMessage.INVALID_RECORD_ID);
+      throw new NotFoundException(
+        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
+      );
 
     if (assignedPlantData.signer != user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
@@ -314,7 +316,9 @@ export class PlantService {
     );
 
     if (!assignedPlantData)
-      throw new NotFoundException(PlantErrorMessage.INVALID_TREE_ID);
+      throw new NotFoundException(
+        PlantErrorMessage.ASSIGNED_TREE_DATA_NOT_EXIST
+      );
 
     if (assignedPlantData.signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
