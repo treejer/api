@@ -18,10 +18,21 @@ import { UserService } from "./user.service";
 import { HasRoles } from "src/auth/decorators";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/auth/strategies";
-import { AuthErrorMessages, Role, SwaggerErrors } from "src/common/constants";
+import {
+  AuthErrorMessages,
+  Role,
+  SwaggerErrors,
+  UserErrorMessage,
+  UserServiceMessage,
+} from "src/common/constants";
 import { User } from "./decorators";
 import { JwtUserDto } from "src/auth/dtos";
-import { UpdateUserInfoRequest, ValidEmailDto } from "./dtos";
+import {
+  UpdateEmailResultDto,
+  UpdateUserInfoRequest,
+  UpdateUserInfoResultDto,
+  ValidEmailDto,
+} from "./dtos";
 
 @ApiTags("user")
 @Controller("users")
@@ -33,6 +44,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: "email successfully updated.",
+    type: UpdateEmailResultDto,
   })
   @ApiResponse({
     status: 400,
@@ -74,6 +86,11 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: "email successfully verified.",
+    content: {
+      "text/plain": {
+        example: UserServiceMessage.EMAIL_VERIFIED,
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -106,6 +123,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: "user info successfully updated.",
+    type: UpdateUserInfoResultDto,
   })
   @ApiResponse({
     status: 400,

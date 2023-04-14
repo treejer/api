@@ -16,6 +16,7 @@ import {
   EmailMessage,
   Role,
   UserErrorMessage,
+  UserServiceMessage,
 } from "src/common/constants";
 import { UpdateRoleDto } from "./dtos/updateRole.dto";
 import { generateToken, getCheckedSumAddress } from "src/common/helpers";
@@ -138,6 +139,6 @@ export class UserService {
       ["emailToken", "emailVerifiedAt"]
     );
 
-    return "Email verified";
+    return UserServiceMessage.EMAIL_VERIFIED;
   }
 }
