@@ -67,15 +67,25 @@ export abstract class EntityRepository<T extends Document> {
   async findOneAndUpdate(
     entityFilterQuery: FilterQuery<T>,
     entityData: UpdateQuery<unknown>,
+    removeDataList?: Array<string>,
   ): Promise<T> {
     try {
-      return await this.entityModel.findOneAndUpdate(
-        entityFilterQuery,
-        entityData,
-        {
-          new: true,
-        },
-      );
+      if (!removeDataList) {
+        return await this.entityModel.findOneAndUpdate(entityFilterQuery, {
+          ...entityData,
+          updatedAt: new Date(),
+        });
+      } else {
+        return await this.entityModel.findOneAndUpdate(entityFilterQuery, [
+          {
+            $set: {
+              ...entityData,
+              updatedAt: new Date(),
+            },
+          },
+          { $unset: removeDataList },
+        ]);
+      }
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

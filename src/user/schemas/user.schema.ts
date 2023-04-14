@@ -35,9 +35,6 @@ export class User extends Document {
 
   @Prop({
     type: String,
-    unique: true,
-    immutable: true,
-    sparse: true,
   })
   mobile;
 

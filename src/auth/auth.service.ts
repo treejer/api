@@ -30,7 +30,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private smsService: SmsService,
-    private userMobileRepository: UserMobileRepository
+    private userMobileRepository: UserMobileRepository,
   ) {}
 
   async getNonce(wallet: string): Promise<NonceResultDto> {
@@ -64,7 +64,7 @@ export class AuthService {
 
   async loginWithWallet(
     walletAddress: string,
-    signature: string
+    signature: string,
   ): Promise<LoginResultDto> {
     const checkedSumWallet = getCheckedSumAddress(walletAddress);
 
@@ -83,7 +83,7 @@ export class AuthService {
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
     const recoveredAddress: string = recoverPublicAddressfromSignature(
       signature,
-      msg
+      msg,
     );
 
     if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
@@ -98,47 +98,22 @@ export class AuthService {
     };
   }
 
-  async verifyMobileCode(userId: string, verificationCode: number) {
-    const bound = new Date(Date.now() - Numbers.SMS_VERIFY_BOUND);
+  async patchMobileNumber(
+    userId: string,
+    mobileNumber: string,
+    country: string,
+  ) {
     const user = await this.userService.findUserById(userId);
 
-    if (user.mobileVerifiedAt)
-      throw new ConflictException(AuthErrorMessages.MOBILE_ALREADY_VERIFIED);
+    const userWithSameMobile = await this.userService.findUser(
+      {
+        mobile: mobileNumber,
+        mobileVerifiedAt: { $exists: true },
+      },
+      { _id: 1 },
+    );
 
-    if (!user.mobileCodeRequestedAt || user.mobileCodeRequestedAt < bound) {
-      throw new BadRequestException(
-        `${Numbers.SMS_VERIFY_BOUND / 60000} ${
-          AuthErrorMessages.EXPIRED_MOBILECODE_MESSAGE
-        }`
-      );
-    }
-
-    if (!user.mobileCode || user.mobileCode !== Number(verificationCode)) {
-      throw new ForbiddenException(AuthErrorMessages.INVLID_MOBILECODE);
-    }
-    await this.userService.updateUserById(userId, {
-      mobileVerifiedAt: new Date(),
-      mobileCode: undefined,
-    });
-    await this.createUserMobile({
-      number: user.mobile,
-      userId,
-      createdAt: new Date(),
-      verifiedAt: new Date(),
-    });
-  }
-
-  async patchMobileNumber(userId, mobileNumber, country) {
-    const user = await this.userService.findUserById(userId);
-    const userWithSameMobile = await this.userService.findUser({
-      mobile: mobileNumber,
-    });
-
-    if (
-      userWithSameMobile &&
-      userWithSameMobile._id !== user._id &&
-      !!userWithSameMobile.mobileVerifiedAt
-    ) {
+    if (userWithSameMobile) {
       throw new ConflictException(AuthErrorMessages.MOBILE_IN_USE);
     }
 
@@ -152,10 +127,10 @@ export class AuthService {
           Math.ceil(
             Date.now() -
               user.mobileCodeRequestedAt.getTime() -
-              Numbers.SMS_TOKEN_RESEND_BOUND
+              Numbers.SMS_TOKEN_RESEND_BOUND,
           ),
-          { language: "en", round: true }
-        )}`
+          { language: "en", round: true },
+        )}`,
       );
     }
 
@@ -166,29 +141,76 @@ export class AuthService {
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        mobileNumber
+        mobileNumber,
       );
 
-      await this.userService.updateUserById(user._id, {
-        mobileCode: code,
-        mobileCountry: country,
-        mobile: mobileNumber,
-        mobileCodeRequestedAt: new Date(),
-        mobileCodeRequestsCountForToday:
-          user.mobileCodeRequestsCountForToday + 1,
-      });
+      await this.userService.updateUserById(
+        user._id,
+        {
+          mobileCode: code,
+          mobileCountry: country,
+          mobile: mobileNumber,
+          mobileCodeRequestedAt: new Date(),
+          mobileCodeRequestsCountForToday:
+            user.mobileCodeRequestsCountForToday + 1,
+        },
+        ["mobileVerifiedAt"],
+      );
 
       return "Verification code sent to your mobile number!";
     } catch (error) {
-      console.log("error", error);
+      if (error && error.code === 21211) {
+        throw new BadRequestException(AuthErrorMessages.PHONE_NUMBER_WRONG);
+      }
+      throw new InternalServerErrorException();
     }
   }
 
-  async resendMobileCode(userId) {
+  async verifyMobileCode(userId: string, verificationCode: number) {
+    const bound = new Date(Date.now() - Numbers.SMS_VERIFY_BOUND);
+    const user = await this.userService.findUserById(userId);
+
+    if (user.mobileVerifiedAt)
+      throw new ConflictException(AuthErrorMessages.MOBILE_ALREADY_VERIFIED);
+
+    if (!user.mobileCodeRequestedAt || user.mobileCodeRequestedAt < bound) {
+      throw new BadRequestException(
+        `${Numbers.SMS_VERIFY_BOUND / 60000} ${
+          AuthErrorMessages.EXPIRED_MOBILECODE_MESSAGE
+        }`,
+      );
+    }
+
+    if (!user.mobileCode || user.mobileCode !== Number(verificationCode)) {
+      throw new ForbiddenException(AuthErrorMessages.INVLID_MOBILECODE);
+    }
+    await this.userService.updateUserById(
+      userId,
+      {
+        mobileVerifiedAt: new Date(),
+      },
+      ["mobileCode", "mobileCodeRequestedAt"],
+    );
+    await this.createUserMobile({
+      number: user.mobile,
+      userId,
+      createdAt: new Date(),
+      verifiedAt: new Date(),
+    });
+
+    return "mobile verified successfully!";
+  }
+
+  async resendMobileCode(userId: string) {
     const bound = new Date(Date.now() - Numbers.SMS_TOKEN_RESEND_BOUND);
     const user = await this.userService.findUserById(userId);
+
     if (user.mobileVerifiedAt)
       throw new ForbiddenException(AuthErrorMessages.MOBILE_ALREADY_VERIFIED);
+
+    if (!user.mobileCodeRequestedAt) {
+      throw new BadRequestException(AuthErrorMessages.MOBILE_NUMBER_NOT_FOUND);
+    }
 
     if (user.mobileCodeRequestedAt && user.mobileCodeRequestedAt > bound) {
       throw new BadRequestException(
@@ -196,32 +218,21 @@ export class AuthService {
           Math.ceil(
             user.mobileCodeRequestedAt.getTime() +
               Numbers.SMS_TOKEN_RESEND_BOUND -
-              Date.now()
+              Date.now(),
           ),
-          { language: "en", round: true }
-        )}`
+          { language: "en", round: true },
+        )}`,
       );
     }
 
-    let codeExpired = false;
-
-    if (user.mobileCodeRequestedAt) {
-      codeExpired =
-        Date.now() - user.mobileCodeRequestedAt?.getTime() >
-        Numbers.SMS_VERIFY_BOUND;
-    }
-
-    const code: number =
-      user.mobile && user.mobileCode && !codeExpired
-        ? user.mobileCode
-        : getRandomInteger(100000, 999999);
+    const code: number = getRandomInteger(100000, 999999);
 
     try {
       await this.smsService.sendSMS(
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        user.mobile
+        user.mobile,
       );
 
       await this.userService.updateUserById(user._id, {
@@ -233,9 +244,10 @@ export class AuthService {
 
       return "Verification code sent to your mobile number!";
     } catch (error) {
-      console.log("error", error);
+      throw new InternalServerErrorException();
     }
   }
+
   async createUserMobile(userMobileDto: CreateUserMobileDto) {
     return await this.userMobileRepository.create({ ...userMobileDto });
   }
