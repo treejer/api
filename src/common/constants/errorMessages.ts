@@ -15,6 +15,8 @@ export const AuthErrorMessages = {
   EXPIRED_MOBILECODE_MESSAGE:
     "minutes to verify has expired. please request another code",
   MOBILE_IN_USE: "This mobile number has been already registered.",
+  PHONE_NUMBER_WRONG: "Phone number is wrong",
+  MOBILE_NUMBER_NOT_FOUND: "Mobile number not found",
 };
 
 export const StatusErrorMessage = {

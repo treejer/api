@@ -10,6 +10,7 @@ export enum CollectionNames {
   TREE_PLANT = "treeplants",
   ASSIGNED_TREE_PLANT = "assignedtreeplants",
   LAST_STATE = "laststates",
+  USER_MOBILE = "usermobiles",
 }
 
 export enum Role {
