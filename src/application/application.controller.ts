@@ -13,6 +13,7 @@ import { JwtUserDto } from "src/auth/dtos";
 import { ApplicationErrorMessage, SwaggerErrors } from "src/common/constants";
 import { User } from "src/user/decorators";
 import { ApplicationService } from "./application.service";
+import { CreateApplicationResultDto } from "./dtos/create-application.dto";
 
 @ApiTags("application")
 @Controller("application")
@@ -23,6 +24,7 @@ export class ApplicationController {
   @ApiResponse({
     status: 201,
     description: "application submitted successfully.",
+    type: CreateApplicationResultDto,
   })
   @ApiResponse({
     status: 400,

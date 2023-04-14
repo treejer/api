@@ -92,7 +92,7 @@ export class ApplicationService {
         `FirstName: ${firstName} \r\n` +
         `LastName: ${lastName} \r\n`
     );
-    return "All done!";
+    return { application: applicationOne, file: fileOne };
   }
 
   async getApplicationList(filters = {}) {
