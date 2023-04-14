@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SwaggerErrors } from "src/common/constants";
+import { GetEthDataResultDto } from "./dto";
 import { EtherValuesService } from "./etherValues.service";
 
 @Controller("ether")
@@ -12,6 +13,7 @@ export class EtherValuesController {
   @ApiResponse({
     status: 200,
     description: "get ether value data successfully.",
+    type: GetEthDataResultDto,
   })
   @ApiResponse({
     status: 500,
