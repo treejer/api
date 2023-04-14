@@ -1,6 +1,8 @@
 import { Controller, Get, Param } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SwaggerErrors, TreeErrorMessage } from "src/common/constants";
+import { AttributeDto } from "./dto/attribute.dto";
+import { TreeDataResultDto } from "./dto/tree-data.dto";
 import { TreeService } from "./tree.service";
 
 @ApiTags("trees")
@@ -12,6 +14,7 @@ export class TreeController {
   @ApiResponse({
     status: 200,
     description: "get tree data successfully.",
+    type: TreeDataResultDto,
   })
   @ApiResponse({
     status: 404,
