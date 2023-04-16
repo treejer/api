@@ -6,3 +6,4 @@ export * from "./loginResult.dto";
 export * from "./createUserMobile.dto";
 export * from "./mobileVerify.dto";
 export * from "./patchMobileNumber.dto";
+export * from "./send-verification-code-result.dto";

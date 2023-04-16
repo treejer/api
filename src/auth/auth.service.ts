@@ -11,7 +11,12 @@ import { ConfigService } from "@nestjs/config";
 import { UserService } from "./../user/user.service";
 import { JwtService } from "@nestjs/jwt";
 
-import { AuthErrorMessages, Messages, Numbers } from "./../common/constants";
+import {
+  AuthErrorMessages,
+  AuthServiceMessage,
+  Messages,
+  Numbers,
+} from "./../common/constants";
 import {
   getRandomNonce,
   checkPublicKey,
@@ -30,7 +35,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private smsService: SmsService,
-    private userMobileRepository: UserMobileRepository,
+    private userMobileRepository: UserMobileRepository
   ) {}
 
   async getNonce(wallet: string): Promise<NonceResultDto> {
@@ -64,7 +69,7 @@ export class AuthService {
 
   async loginWithWallet(
     walletAddress: string,
-    signature: string,
+    signature: string
   ): Promise<LoginResultDto> {
     const checkedSumWallet = getCheckedSumAddress(walletAddress);
 
@@ -83,7 +88,7 @@ export class AuthService {
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
     const recoveredAddress: string = recoverPublicAddressfromSignature(
       signature,
-      msg,
+      msg
     );
 
     if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
@@ -101,7 +106,7 @@ export class AuthService {
   async patchMobileNumber(
     userId: string,
     mobileNumber: string,
-    country: string,
+    country: string
   ) {
     const user = await this.userService.findUserById(userId);
 
@@ -110,7 +115,7 @@ export class AuthService {
         mobile: mobileNumber,
         mobileVerifiedAt: { $exists: true },
       },
-      { _id: 1 },
+      { _id: 1 }
     );
 
     if (userWithSameMobile) {
@@ -127,10 +132,10 @@ export class AuthService {
           Math.ceil(
             Date.now() -
               user.mobileCodeRequestedAt.getTime() -
-              Numbers.SMS_TOKEN_RESEND_BOUND,
+              Numbers.SMS_TOKEN_RESEND_BOUND
           ),
-          { language: "en", round: true },
-        )}`,
+          { language: "en", round: true }
+        )}`
       );
     }
 
@@ -141,7 +146,7 @@ export class AuthService {
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        mobileNumber,
+        mobileNumber
       );
 
       await this.userService.updateUserById(
@@ -154,10 +159,14 @@ export class AuthService {
           mobileCodeRequestsCountForToday:
             user.mobileCodeRequestsCountForToday + 1,
         },
-        ["mobileVerifiedAt"],
+        ["mobileVerifiedAt"]
       );
 
-      return "Verification code sent to your mobile number!";
+      return {
+        message: AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL,
+        mobileCountry: country,
+        mobile: mobileNumber,
+      };
     } catch (error) {
       if (error && error.code === 21211) {
         throw new BadRequestException(AuthErrorMessages.PHONE_NUMBER_WRONG);
@@ -177,7 +186,7 @@ export class AuthService {
       throw new BadRequestException(
         `${Numbers.SMS_VERIFY_BOUND / 60000} ${
           AuthErrorMessages.EXPIRED_MOBILECODE_MESSAGE
-        }`,
+        }`
       );
     }
 
@@ -189,7 +198,7 @@ export class AuthService {
       {
         mobileVerifiedAt: new Date(),
       },
-      ["mobileCode", "mobileCodeRequestedAt"],
+      ["mobileCode", "mobileCodeRequestedAt"]
     );
     await this.createUserMobile({
       number: user.mobile,
@@ -198,7 +207,7 @@ export class AuthService {
       verifiedAt: new Date(),
     });
 
-    return "mobile verified successfully!";
+    return AuthServiceMessage.MOBILE_VERIFIED;
   }
 
   async resendMobileCode(userId: string) {
@@ -218,10 +227,10 @@ export class AuthService {
           Math.ceil(
             user.mobileCodeRequestedAt.getTime() +
               Numbers.SMS_TOKEN_RESEND_BOUND -
-              Date.now(),
+              Date.now()
           ),
-          { language: "en", round: true },
-        )}`,
+          { language: "en", round: true }
+        )}`
       );
     }
 
@@ -232,7 +241,7 @@ export class AuthService {
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        user.mobile,
+        user.mobile
       );
 
       await this.userService.updateUserById(user._id, {
@@ -242,7 +251,7 @@ export class AuthService {
           user.mobileCodeRequestsCountForToday + 1,
       });
 
-      return "Verification code sent to your mobile number!";
+      return AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL;
     } catch (error) {
       throw new InternalServerErrorException();
     }
