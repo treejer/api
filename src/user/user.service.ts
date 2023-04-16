@@ -2,18 +2,22 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import {
   CreateUserDto,
   UpdateUserInfoRequest,
   ValidEmailDto,
   UserDto,
+  updateEmailResultDto,
 } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import {
   AuthErrorMessages,
   EmailMessage,
+  Numbers,
   Role,
   UserErrorMessage,
 } from "src/common/constants";
@@ -23,6 +27,8 @@ import { generateToken, getCheckedSumAddress } from "src/common/helpers";
 import { JwtUserDto } from "src/auth/dtos";
 import { EmailService } from "src/email/email.service";
 import { ConfigService } from "@nestjs/config";
+
+const humanize = require("humanize-duration");
 
 @Injectable()
 export class UserService {
@@ -104,42 +110,78 @@ export class UserService {
   async updateEmail(
     { email }: ValidEmailDto,
     user: JwtUserDto,
-  ): Promise<ValidEmailDto> {
+  ): Promise<updateEmailResultDto> {
+    const userData = await this.userRepository.findOne({ _id: user.userId });
+
+    const userWithSameEmail = await this.userRepository.findOne(
+      {
+        email: email,
+        emailVerifiedAt: { $exists: true },
+      },
+      { _id: 1 },
+    );
+
+    if (userWithSameEmail) {
+      throw new ConflictException(AuthErrorMessages.EMAIL_IN_USE);
+    }
+
+    if (
+      userData.emailTokenRequestedAt &&
+      userData.emailTokenRequestedAt.getTime() +
+        Numbers.EMAIL_TOKEN_RESEND_BOUND >
+        Date.now()
+    ) {
+      throw new BadRequestException(
+        `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
+          Math.ceil(
+            Date.now() -
+              userData.emailTokenRequestedAt.getTime() -
+              Numbers.EMAIL_TOKEN_RESEND_BOUND,
+          ),
+          { language: "en", round: true },
+        )}`,
+      );
+    }
+
     let emailToken: string = generateToken();
 
-    await this.emailService.sendEmail(
-      email,
-      "Treejer - Verify your emtail",
-      "Verify your email by opening this link : \n" +
-        `${this.config.get<string>(
+    try {
+      await this.emailService.sendEmail(
+        email,
+        "Treejer - Verify your email",
+        `<b>Verify your email by opening this link :</b><b>${this.config.get<string>(
           "APP_URL",
-        )}/email/verify?token=${emailToken}`,
-    );
+        )}/email/verify?token=${emailToken}</b>`,
+      );
 
-    await this.userRepository.updateOne(
-      { _id: user.userId },
-      { emailToken, email, emailTokenRequestedAt: new Date() },
-      ["emailVerifiedAt"],
-    );
+      await this.userRepository.updateOne(
+        { _id: user.userId },
+        { emailToken, email, emailTokenRequestedAt: new Date() },
+        ["emailVerifiedAt"],
+      );
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
 
-    return { email };
+    return { email, message: "Email token sent to your mobile number!" };
   }
 
   async verifyEmail(token: string) {
     const user = await this.userRepository.findOne(
       { emailToken: token },
-      { _id: 1, emailTokenRequestedAt: 1 },
+      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1 },
     );
 
     if (!user) throw new BadRequestException(EmailMessage.INVALID_TOKEN);
 
-    let bound = new Date(
-      Date.now() - this.config.get<number>("EMAIL_VERIFY_BOUND"),
-    );
+    if (user.emailVerifiedAt)
+      throw new ConflictException(AuthErrorMessages.EMAIL_ALREADY_VERIFIED);
+
+    let bound = new Date(Date.now() - Numbers.EMAIL_VERIFY_BOUND);
 
     if (!user.emailTokenRequestedAt || user.emailTokenRequestedAt < bound) {
       throw new BadRequestException(
-        `${this.config.get<number>("EMAIL_VERIFY_BOUND") / 60000} ${
+        `${Numbers.EMAIL_VERIFY_BOUND / 60000} ${
           UserErrorMessage.RESEND_EMAIL_MESSAGE
         }`,
       );

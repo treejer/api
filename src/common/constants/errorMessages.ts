@@ -17,6 +17,8 @@ export const AuthErrorMessages = {
   MOBILE_IN_USE: "This mobile number has been already registered.",
   PHONE_NUMBER_WRONG: "Phone number is wrong",
   MOBILE_NUMBER_NOT_FOUND: "Mobile number not found",
+  EMAIL_IN_USE: "This email address has been already registered.",
+  EMAIL_ALREADY_VERIFIED: "Email address already verified",
 };
 
 export const StatusErrorMessage = {
