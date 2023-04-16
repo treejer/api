@@ -31,8 +31,8 @@ async function bootstrap() {
     .addTag("plant")
     .setContact("Treejer", "https://treejer.com/contact", "")
     .addBearerAuth()
-    .addServer("http://localhost:3333")
-    // .addServer("https://nestapi.treejer.com")
+    // .addServer("http://localhost:3333")
+    .addServer("https://nestapi.treejer.com")
     .build();
 
   const options: SwaggerDocumentOptions = {
