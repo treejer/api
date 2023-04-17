@@ -18,6 +18,7 @@ import {
   Numbers,
   EmailMessage,
   UserErrorMessage,
+  AuthServiceMessage,
 } from "../../common/constants";
 
 import { UserModule } from "../user.module";
@@ -335,5 +336,121 @@ describe("user service", () => {
     expect(userNewData.emailTokenRequestedAt).toBeUndefined();
 
     expect(userNewData.email).toEqual("mahdigorbanzadeh@yahoo.com");
+  });
+
+  it("test resendEmail", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+    let account2_1 = await web3.eth.accounts.create();
+    let account3 = await web3.eth.accounts.create();
+
+    let createdUser1 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 1036312,
+        emailVerifiedAt: new Date(),
+      });
+
+    let newDate = new Date(
+      Date.now() - (Numbers.EMAIL_TOKEN_RESEND_BOUND - 60000),
+    );
+    let createdUser2 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account2.address),
+        nonce: 1036312,
+        emailTokenRequestedAt: newDate,
+      });
+
+    let createdUser2_1 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account2_1.address),
+        nonce: 1036312,
+        email: "mahdigorbanzadeh.1378@gmail.com",
+      });
+
+    let createdUser3 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account3.address),
+        nonce: 1036312,
+        email: "mahdigorbanzadeh.1378@gmail.com",
+        emailTokenRequestedAt: new Date(
+          Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND + 60000),
+        ),
+      });
+
+    //----------- reject because of mobile verified before
+
+    await expect(
+      userService.resendEmailToken({
+        userId: createdUser1.insertedId.toString(),
+        walletAddress: getCheckedSumAddress(account1.address),
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
+      },
+    });
+
+    //----------- reject because of mobile number not found
+
+    await expect(
+      userService.resendEmailToken({
+        userId: createdUser2_1.insertedId.toString(),
+        walletAddress: getCheckedSumAddress(account2_1.address),
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 400,
+        message: AuthErrorMessages.EMAIL_ADDRESS_NOT_FOUND,
+      },
+    });
+
+    //----------- reject because of mobile request not expired
+
+    await expect(
+      userService.resendEmailToken({
+        userId: createdUser2.insertedId.toString(),
+        walletAddress: getCheckedSumAddress(account2.address),
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 400,
+        message: `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
+          Math.ceil(
+            newDate.getTime() + Numbers.EMAIL_TOKEN_RESEND_BOUND - Date.now(),
+          ),
+          { language: "en", round: true },
+        )}`,
+      },
+    });
+
+    // @ts-ignore
+    jest.spyOn(emailService, "sendEmail");
+
+    let newDate2 = new Date();
+    let res = await userService.resendEmailToken({
+      userId: createdUser3.insertedId.toString(),
+      walletAddress: getCheckedSumAddress(account3.address),
+    });
+
+    let userNewData = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser3.insertedId,
+      });
+
+    expect(res).toEqual(
+      AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL,
+    );
+    expect(userNewData.emailTokenRequestedAt.getTime()).toBeGreaterThan(
+      newDate2.getTime(),
+    );
+    expect(userNewData.updatedAt.getTime()).toBeGreaterThan(newDate2.getTime());
+    expect(userNewData.email).toEqual("mahdigorbanzadeh.1378@gmail.com");
   });
 });

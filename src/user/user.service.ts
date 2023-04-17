@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   InternalServerErrorException,
+  ForbiddenException,
 } from "@nestjs/common";
 import {
   CreateUserDto,
@@ -16,6 +17,7 @@ import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import {
   AuthErrorMessages,
+  AuthServiceMessage,
   EmailMessage,
   Numbers,
   Role,
@@ -195,5 +197,59 @@ export class UserService {
     );
 
     return UserServiceMessage.EMAIL_VERIFIED;
+  }
+
+  async resendEmailToken(user: JwtUserDto) {
+    const bound = new Date(Date.now() - Numbers.EMAIL_TOKEN_RESEND_BOUND);
+    const userData = await this.userRepository.findOne(
+      { _id: user.userId },
+      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1, email: 1 },
+    );
+
+    if (userData.emailVerifiedAt)
+      throw new ForbiddenException(AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL);
+
+    if (!userData.emailTokenRequestedAt) {
+      throw new BadRequestException(AuthErrorMessages.EMAIL_ADDRESS_NOT_FOUND);
+    }
+
+    if (
+      userData.emailTokenRequestedAt &&
+      userData.emailTokenRequestedAt > bound
+    ) {
+      throw new BadRequestException(
+        `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
+          Math.ceil(
+            userData.emailTokenRequestedAt.getTime() +
+              Numbers.SMS_TOKEN_RESEND_BOUND -
+              Date.now(),
+          ),
+          { language: "en", round: true },
+        )}`,
+      );
+    }
+
+    let emailToken: string = generateToken();
+
+    try {
+      await this.emailService.sendEmail(
+        userData.email,
+        "Treejer - Verify your email",
+        `<b>Verify your email by opening this link :</b><b>${this.config.get<string>(
+          "APP_URL",
+        )}/email/verify?token=${emailToken}</b>`,
+      );
+      await this.userRepository.updateOne(
+        { _id: user.userId },
+        {
+          emailToken,
+          email: userData.email,
+          emailTokenRequestedAt: new Date(),
+        },
+      );
+      return AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }
