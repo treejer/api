@@ -81,6 +81,14 @@ export class UserController {
   updateEmail(@Body() dto: ValidEmailDto, @User() user: JwtUserDto) {
     return this.userService.updateEmail(dto, user);
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Get("/email/resend")
+  resendEmailToken(@User() user: JwtUserDto) {
+    return this.userService.resendEmailToken(user);
+  }
+
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiOperation({ summary: "verify email." })
   @ApiResponse({
@@ -117,6 +125,7 @@ export class UserController {
   verifyEmail(@Query("token") token: string) {
     return this.userService.verifyEmail(token);
   }
+
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "update user info." })
@@ -163,7 +172,7 @@ export class UserController {
   updateUserInfo(
     @Param("id") id: string,
     @Body() userNewData: UpdateUserInfoRequest,
-    @User() user: JwtUserDto
+    @User() user: JwtUserDto,
   ) {
     return this.userService.updateUserInfo(id, userNewData, user);
   }
