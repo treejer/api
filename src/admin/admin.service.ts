@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
+import { async } from "rxjs";
 
 import { ApplicationService } from "src/application/application.service";
 import { Application } from "src/application/schemas";
@@ -24,18 +25,27 @@ export class AdminService {
     private userService: UserService,
     private downloadService: DownloadService,
     private applicationService: ApplicationService,
-    private smsSerice: SmsService
+    private smsService: SmsService
   ) {}
 
   async getUsers(filters) {
     try {
       const users = await this.userService.getUserList(filters);
-      const data = users.map((el) => ({
-        user: el,
-        file: this.downloadService.findFileByUserId(el._id),
-        application: this.applicationService.getApplicationByUserId(el._id),
-      }));
-      return JSON.stringify(data);
+      const data = await Promise.all(
+        users.map((el) => {
+          return new Promise(async (resolve, reject) => {
+            resolve({
+              user: el,
+              file: await this.downloadService.findFileByUserId(el._id),
+              application: await this.applicationService.getApplicationByUserId(
+                el._id
+              ),
+            });
+          });
+        })
+      );
+
+      return data;
     } catch (error) {
       throw new InternalServerErrorException(error.toString());
     }
@@ -49,11 +59,11 @@ export class AdminService {
       userId
     );
 
-    return JSON.stringify({
+    return {
       user,
       application,
       file,
-    });
+    };
   }
 
   async getUserByWallet(wallet: string) {
@@ -72,11 +82,11 @@ export class AdminService {
       user._id
     );
 
-    return JSON.stringify({
+    return {
       user,
       application,
       file,
-    });
+    };
   }
 
   async getApplications(filters): Promise<Application[]> {
@@ -103,7 +113,7 @@ export class AdminService {
       });
 
       if (user.mobile) {
-        await this.smsSerice.sendSMS(
+        await this.smsService.sendSMS(
           `Your account is now verified by admins. \nTreejer`,
           user.mobile
         );

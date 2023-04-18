@@ -6,7 +6,7 @@ import { TwilioService } from "nestjs-twilio";
 export class SmsService {
   public constructor(
     private configService: ConfigService,
-    private readonly twilioService: TwilioService,
+    private readonly twilioService: TwilioService
   ) {}
 
   async sendSMS(body, to) {
