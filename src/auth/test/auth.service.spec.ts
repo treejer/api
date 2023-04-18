@@ -58,7 +58,7 @@ describe("App e2e", () => {
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      })
+      }),
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -69,7 +69,7 @@ describe("App e2e", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      })
+      }),
     );
 
     await app.init();
@@ -86,7 +86,7 @@ describe("App e2e", () => {
     const collections = await mongoConnection.db.collections();
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName
+        collections[key].collectionName,
       );
       await collection.deleteMany({});
     }
@@ -124,8 +124,8 @@ describe("App e2e", () => {
       authService.patchMobileNumber(
         createdUser3.insertedId.toString(),
         "+98914",
-        "turkey"
-      )
+        "turkey",
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -139,8 +139,8 @@ describe("App e2e", () => {
       authService.patchMobileNumber(
         createdUser3.insertedId.toString(),
         "+98915",
-        "turkey"
-      )
+        "turkey",
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -158,7 +158,7 @@ describe("App e2e", () => {
     let res = await authService.patchMobileNumber(
       createdUser3.insertedId.toString(),
       "+989145667854",
-      "turkey"
+      "turkey",
     );
 
     let userNewData = await mongoConnection.db
@@ -168,16 +168,16 @@ describe("App e2e", () => {
       });
 
     expect(res.message).toEqual(
-      AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL
+      AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL,
     );
     expect(userNewData.mobileCountry).toEqual("turkey");
     expect(
-      userNewData.mobileCodeRequestedAt.getTime() > newDate.getTime()
+      userNewData.mobileCodeRequestedAt.getTime() > newDate.getTime(),
     ).toBe(true);
     expect(userNewData.mobile).toEqual("+989145667854");
     expect(userNewData.mobileCodeRequestsCountForToday).toEqual(1);
     expect(
-      userNewData.mobileCode > 100000 && userNewData.mobileCode < 999999
+      userNewData.mobileCode > 100000 && userNewData.mobileCode < 999999,
     ).toBeTruthy();
 
     //----------- fail with time limit
@@ -186,8 +186,8 @@ describe("App e2e", () => {
       authService.patchMobileNumber(
         createdUser3.insertedId.toString(),
         "+98915",
-        "turkey"
-      )
+        "turkey",
+      ),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -204,16 +204,16 @@ describe("App e2e", () => {
       {
         $set: {
           mobileCodeRequestedAt: new Date(
-            new Date().getTime() - Numbers.SMS_TOKEN_RESEND_BOUND
+            new Date().getTime() - Numbers.SMS_TOKEN_RESEND_BOUND,
           ),
         },
-      }
+      },
     );
 
     let res2 = await authService.patchMobileNumber(
       createdUser3.insertedId.toString(),
       "+989145667855",
-      "Germany"
+      "Germany",
     );
 
     let userNewData2 = await mongoConnection.db
@@ -223,16 +223,16 @@ describe("App e2e", () => {
       });
 
     expect(res2.message).toEqual(
-      AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL
+      AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL,
     );
     expect(userNewData2.mobileCountry).toEqual("Germany");
     expect(
-      userNewData2.mobileCodeRequestedAt.getTime() > newDate2.getTime()
+      userNewData2.mobileCodeRequestedAt.getTime() > newDate2.getTime(),
     ).toBe(true);
     expect(userNewData2.mobile).toEqual("+989145667855");
     expect(userNewData2.mobileCodeRequestsCountForToday).toEqual(2);
     expect(
-      userNewData2.mobileCode > 100000 && userNewData2.mobileCode < 999999
+      userNewData2.mobileCode > 100000 && userNewData2.mobileCode < 999999,
     ).toBeTruthy();
 
     expect(userNewData2.updatedAt.getTime() > newDate2.getTime()).toBe(true);
@@ -262,18 +262,18 @@ describe("App e2e", () => {
     //----------- fail with mobile used before
 
     await expect(
-      authService.verifyMobileCode(createdUser2.insertedId.toString(), 1234)
+      authService.verifyMobileCode(createdUser2.insertedId.toString(), 1234),
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
-        message: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
+        message: AuthErrorMessages.YOU_HAVE_VERIFED_MOBILE,
       },
     });
 
     //----------- fail becuse user didn't request to patchMobileNumber
 
     await expect(
-      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234)
+      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -288,16 +288,16 @@ describe("App e2e", () => {
       {
         $set: {
           mobileCodeRequestedAt: new Date(
-            Date.now() - (Numbers.SMS_VERIFY_BOUND + 60000)
+            Date.now() - (Numbers.SMS_VERIFY_BOUND + 60000),
           ),
         },
-      }
+      },
     );
 
     //----------- fail becuse user didn't request to patchMobileNumber
 
     await expect(
-      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234)
+      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -315,16 +315,16 @@ describe("App e2e", () => {
           mobile: "+980145667854",
           mobileCodeRequestsCountForToday: 1,
           mobileCodeRequestedAt: new Date(
-            Date.now() - (Numbers.SMS_VERIFY_BOUND - 60000)
+            Date.now() - (Numbers.SMS_VERIFY_BOUND - 60000),
           ),
         },
-      }
+      },
     );
 
     //----------- fail becuse invalid mobile code
 
     await expect(
-      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234)
+      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -340,13 +340,13 @@ describe("App e2e", () => {
         $set: {
           mobileCode: 12345,
         },
-      }
+      },
     );
 
     //----------- fail becuse invalid mobile code
 
     await expect(
-      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234)
+      authService.verifyMobileCode(createdUser1.insertedId.toString(), 1234),
     ).rejects.toMatchObject({
       response: {
         statusCode: 403,
@@ -358,7 +358,7 @@ describe("App e2e", () => {
 
     let res = await authService.verifyMobileCode(
       createdUser1.insertedId.toString(),
-      12345
+      12345,
     );
 
     expect(res).toEqual("mobile verified successfully!");
@@ -370,7 +370,7 @@ describe("App e2e", () => {
       });
 
     expect(userNewData.mobileVerifiedAt.getTime() > newDate.getTime()).toBe(
-      true
+      true,
     );
     expect(userNewData.updatedAt.getTime() > newDate.getTime()).toBe(true);
 
@@ -389,10 +389,10 @@ describe("App e2e", () => {
       });
 
     expect(userMobileData.createdAt.getTime() > newDate.getTime()).toEqual(
-      true
+      true,
     );
     expect(userMobileData.verifiedAt.getTime() > newDate.getTime()).toEqual(
-      true
+      true,
     );
     expect(userMobileData.number).toEqual("+980145667854");
   });
@@ -412,7 +412,7 @@ describe("App e2e", () => {
       });
 
     let newDate = new Date(
-      Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND - 60000)
+      Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND - 60000),
     );
     let createdUser2 = await mongoConnection.db
       .collection(CollectionNames.USER)
@@ -437,25 +437,25 @@ describe("App e2e", () => {
         nonce: 1036312,
         mobile: "+989145667853",
         mobileCodeRequestedAt: new Date(
-          Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND + 60000)
+          Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND + 60000),
         ),
       });
 
     //----------- reject because of mobile verified before
 
     await expect(
-      authService.resendMobileCode(createdUser1.insertedId.toString())
+      authService.resendMobileCode(createdUser1.insertedId.toString()),
     ).rejects.toMatchObject({
       response: {
-        statusCode: 403,
-        message: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
+        statusCode: 409,
+        message: AuthErrorMessages.YOU_HAVE_VERIFED_MOBILE,
       },
     });
 
     //----------- reject because of mobile number not found
 
     await expect(
-      authService.resendMobileCode(createdUser2_1.insertedId.toString())
+      authService.resendMobileCode(createdUser2_1.insertedId.toString()),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -466,15 +466,15 @@ describe("App e2e", () => {
     //----------- reject because of mobile request not expired
 
     await expect(
-      authService.resendMobileCode(createdUser2.insertedId.toString())
+      authService.resendMobileCode(createdUser2.insertedId.toString()),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
         message: `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
           Math.ceil(
-            newDate.getTime() + Numbers.SMS_TOKEN_RESEND_BOUND - Date.now()
+            newDate.getTime() + Numbers.SMS_TOKEN_RESEND_BOUND - Date.now(),
           ),
-          { language: "en", round: true }
+          { language: "en", round: true },
         )}`,
       },
     });
@@ -484,7 +484,7 @@ describe("App e2e", () => {
 
     let newDate2 = new Date();
     let res = await authService.resendMobileCode(
-      createdUser3.insertedId.toString()
+      createdUser3.insertedId.toString(),
     );
 
     let userNewData = await mongoConnection.db
@@ -495,13 +495,13 @@ describe("App e2e", () => {
 
     expect(res).toEqual(AuthServiceMessage.RESEND_VERIFICATION_CODE_SUCCESSFUL);
     expect(
-      userNewData.mobileCodeRequestedAt.getTime() > newDate2.getTime()
+      userNewData.mobileCodeRequestedAt.getTime() > newDate2.getTime(),
     ).toBe(true);
     expect(userNewData.updatedAt.getTime() > newDate2.getTime()).toBe(true);
     expect(userNewData.mobile).toEqual("+989145667853");
     expect(userNewData.mobileCodeRequestsCountForToday).toEqual(1);
     expect(
-      userNewData.mobileCode > 100000 && userNewData.mobileCode < 999999
+      userNewData.mobileCode > 100000 && userNewData.mobileCode < 999999,
     ).toBeTruthy();
   });
 });

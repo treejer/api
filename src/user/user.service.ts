@@ -162,7 +162,7 @@ export class UserService {
       { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1 },
     );
 
-    if (!user) throw new BadRequestException(EmailMessage.INVALID_TOKEN);
+    if (!user) throw new ForbiddenException(EmailMessage.INVALID_TOKEN);
 
     if (user.emailVerifiedAt)
       throw new ConflictException(AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL);

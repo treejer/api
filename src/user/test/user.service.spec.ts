@@ -309,7 +309,7 @@ describe("user service", () => {
 
     await expect(userService.verifyEmail("test2")).rejects.toMatchObject({
       response: {
-        statusCode: 400,
+        statusCode: 403,
         message: EmailMessage.INVALID_TOKEN,
       },
     });

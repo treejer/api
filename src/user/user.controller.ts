@@ -115,16 +115,27 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: "invalid input or invalid token ot token expired",
+    description: "invalid input or token expired",
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
           example: [
             SwaggerErrors.INVALID_INPUT,
-            EmailMessage.INVALID_TOKEN,
             `15 ${UserErrorMessage.RESEND_EMAIL_MESSAGE}`,
           ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "invalid token",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [EmailMessage.INVALID_TOKEN],
         },
       },
     },

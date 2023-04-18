@@ -132,7 +132,7 @@ export class AuthController {
   @Post("login/:wallet")
   loginWithWallet(
     @Param("wallet") wallet: string,
-    @Body() dto: LoginWithWalletDto
+    @Body() dto: LoginWithWalletDto,
   ): Promise<LoginResultDto> {
     const signature: string = dto.signature;
     return this.authService.loginWithWallet(wallet, signature);
@@ -190,7 +190,7 @@ export class AuthController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
+          example: AuthErrorMessages.YOU_HAVE_VERIFED_MOBILE,
         },
       },
     },
@@ -211,13 +211,13 @@ export class AuthController {
   @Post("mobile/verify")
   async verifyMobileCode(
     @User() user: JwtUserDto,
-    @Body() dto: MobileVerifyDto
+    @Body() dto: MobileVerifyDto,
   ) {
     const { verifyMobileCode } = dto;
 
     return await this.authService.verifyMobileCode(
       user.userId,
-      verifyMobileCode
+      verifyMobileCode,
     );
   }
 
@@ -283,14 +283,14 @@ export class AuthController {
   @Patch("mobile/send")
   async patchMobileNumber(
     @User() user: JwtUserDto,
-    @Body() dto: PatchMobileNumberDto
+    @Body() dto: PatchMobileNumberDto,
   ) {
     const { mobileNumber, country } = dto;
 
     return await this.authService.patchMobileNumber(
       user.userId,
       mobileNumber,
-      country
+      country,
     );
   }
 
@@ -328,13 +328,13 @@ export class AuthController {
     },
   })
   @ApiResponse({
-    status: 403,
+    status: 409,
     description: "Response for verified mobile numbers.",
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: AuthErrorMessages.MOBILE_ALREADY_VERIFIED,
+          example: AuthErrorMessages.YOU_HAVE_VERIFED_MOBILE,
         },
       },
     },

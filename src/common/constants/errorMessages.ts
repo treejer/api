@@ -10,6 +10,7 @@ export const AuthErrorMessages = {
   UNAUTHORIZED: "Unauthorized",
   INVALID_ID: "Invalid Id",
   MOBILE_ALREADY_VERIFIED: "Mobile number already verified",
+  YOU_HAVE_VERIFED_MOBILE: "Your mobile number are verified before",
   WAIT_TIME_LIMIT: "Please wait until the time limit ends:",
   INVLID_MOBILECODE: "Invalid code",
   EXPIRED_MOBILECODE_MESSAGE:
