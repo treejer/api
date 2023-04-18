@@ -20,6 +20,8 @@ import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/auth/strategies";
 import {
   AuthErrorMessages,
+  AuthServiceMessage,
+  EmailMessage,
   Role,
   SwaggerErrors,
   UserErrorMessage,
@@ -48,10 +50,16 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
+    description: "invalid input or wait time limit",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
+        schema: {
+          format: "text/plain",
+          example: [
+            SwaggerErrors.INVALID_INPUT,
+            "Please wait until the time limit ends",
+          ],
+        },
       },
     },
   })
@@ -61,6 +69,18 @@ export class UserController {
     content: {
       "text/plain": {
         schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: AuthErrorMessages.EMAIL_IN_USE,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.EMAIL_IN_USE,
+        },
       },
     },
   })
@@ -82,13 +102,6 @@ export class UserController {
     return this.userService.updateEmail(dto, user);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
-  @Get("/email/resend")
-  resendEmailToken(@User() user: JwtUserDto) {
-    return this.userService.resendEmailToken(user);
-  }
-
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiOperation({ summary: "verify email." })
   @ApiResponse({
@@ -102,10 +115,29 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: SwaggerErrors.INVALID_INPUT_DESCRIPTION,
+    description: "invalid input or invalid token ot token expired",
     content: {
       "text/plain": {
-        schema: { format: "text/plain", example: SwaggerErrors.INVALID_INPUT },
+        schema: {
+          format: "text/plain",
+          example: [
+            SwaggerErrors.INVALID_INPUT,
+            EmailMessage.INVALID_TOKEN,
+            `15 ${UserErrorMessage.RESEND_EMAIL_MESSAGE}`,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
+        },
       },
     },
   })
@@ -124,6 +156,73 @@ export class UserController {
   @Get("/email/verify")
   verifyEmail(@Query("token") token: string) {
     return this.userService.verifyEmail(token);
+  }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+
+  @ApiOperation({ summary: "resend email." })
+  @ApiResponse({
+    status: 200,
+    description: "email successfully resend.",
+    content: {
+      "text/plain": {
+        example: AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "email not found or wait limit",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            AuthErrorMessages.EMAIL_ADDRESS_NOT_FOUND,
+            "Please wait until the time limit ends",
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Get("/email/resend")
+  resendEmailToken(@User() user: JwtUserDto) {
+    return this.userService.resendEmailToken(user);
   }
 
   //------------------------------------------ ************************ ------------------------------------------//

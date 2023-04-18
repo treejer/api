@@ -154,7 +154,7 @@ describe("user service", () => {
         _id: createdUser3.insertedId,
       });
 
-    expect(res.message).toEqual("Email token sent to your mobile number!");
+    expect(res.message).toEqual("Email token sent to your email address");
 
     expect(res.email).toEqual("mahdigorbanzadeh@yahoo.com");
 
@@ -214,7 +214,7 @@ describe("user service", () => {
         _id: createdUser3.insertedId,
       });
 
-    expect(res2.message).toEqual("Email token sent to your mobile number!");
+    expect(res2.message).toEqual("Email token sent to your email address");
     expect(res2.email).toEqual("mahdigorbanzadeh@yandex.com");
 
     expect(userNewData2.emailToken).not.toBeUndefined();
@@ -256,7 +256,7 @@ describe("user service", () => {
     await expect(userService.verifyEmail("test3")).rejects.toMatchObject({
       response: {
         statusCode: 409,
-        message: AuthErrorMessages.EMAIL_ALREADY_VERIFIED,
+        message: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
       },
     });
 
@@ -391,7 +391,7 @@ describe("user service", () => {
       }),
     ).rejects.toMatchObject({
       response: {
-        statusCode: 403,
+        statusCode: 409,
         message: AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL,
       },
     });

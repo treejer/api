@@ -97,19 +97,6 @@ export class UserService {
     );
   }
 
-  async updateUserInfo(
-    userId: string,
-    userNewData: UpdateUserInfoRequest,
-    user: JwtUserDto,
-  ): Promise<UpdateUserInfoRequest> {
-    if (userId !== user.userId)
-      throw new UnauthorizedException(AuthErrorMessages.INVALID_ID);
-
-    await this.userRepository.updateOne({ _id: userId }, { ...userNewData });
-
-    return { ...userNewData };
-  }
-
   async updateEmail(
     { email }: ValidEmailDto,
     user: JwtUserDto,
@@ -166,7 +153,7 @@ export class UserService {
       throw new InternalServerErrorException();
     }
 
-    return { email, message: "Email token sent to your mobile number!" };
+    return { email, message: "Email token sent to your email address" };
   }
 
   async verifyEmail(token: string) {
@@ -178,7 +165,7 @@ export class UserService {
     if (!user) throw new BadRequestException(EmailMessage.INVALID_TOKEN);
 
     if (user.emailVerifiedAt)
-      throw new ConflictException(AuthErrorMessages.EMAIL_ALREADY_VERIFIED);
+      throw new ConflictException(AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL);
 
     let bound = new Date(Date.now() - Numbers.EMAIL_VERIFY_BOUND);
 
@@ -200,18 +187,19 @@ export class UserService {
   }
 
   async resendEmailToken(user: JwtUserDto) {
-    const bound = new Date(Date.now() - Numbers.EMAIL_TOKEN_RESEND_BOUND);
     const userData = await this.userRepository.findOne(
       { _id: user.userId },
       { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1, email: 1 },
     );
 
     if (userData.emailVerifiedAt)
-      throw new ForbiddenException(AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL);
+      throw new ConflictException(AuthErrorMessages.YOU_HAVE_VERIFED_EMAIL);
 
     if (!userData.emailTokenRequestedAt) {
       throw new BadRequestException(AuthErrorMessages.EMAIL_ADDRESS_NOT_FOUND);
     }
+
+    const bound = new Date(Date.now() - Numbers.EMAIL_TOKEN_RESEND_BOUND);
 
     if (
       userData.emailTokenRequestedAt &&
@@ -251,5 +239,18 @@ export class UserService {
     } catch (error) {
       throw new InternalServerErrorException();
     }
+  }
+
+  async updateUserInfo(
+    userId: string,
+    userNewData: UpdateUserInfoRequest,
+    user: JwtUserDto,
+  ): Promise<UpdateUserInfoRequest> {
+    if (userId !== user.userId)
+      throw new UnauthorizedException(AuthErrorMessages.INVALID_ID);
+
+    await this.userRepository.updateOne({ _id: userId }, { ...userNewData });
+
+    return { ...userNewData };
   }
 }
