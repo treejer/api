@@ -28,15 +28,16 @@ export class DownloadService {
   constructor(
     private fileRepository: FileRepository,
     private userService: UserService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {}
 
-  async findFileByUserId(userId: string) {
-    return await this.fileRepository.findOne({
-      where: {
+  async findFileByUserId(userId: string, projection?: Record<string, number>) {
+    return await this.fileRepository.findOne(
+      {
         userId,
       },
-    });
+      { ...projection }
+    );
   }
 
   async downloadFile(filename: string, response: Response, user: JwtUserDto) {
@@ -58,7 +59,7 @@ export class DownloadService {
     let path = join(
       process.cwd(),
       this.configService.get<string>("STORAGE_DIRECTORY"),
-      file.filename,
+      file.filename
     );
 
     response.download(path);
@@ -77,7 +78,7 @@ export class DownloadService {
 
     let dir = join(
       process.cwd(),
-      this.configService.get<string>("STORAGE_DIRECTORY"),
+      this.configService.get<string>("STORAGE_DIRECTORY")
     );
 
     if (!fs.existsSync(dir)) {

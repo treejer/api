@@ -11,6 +11,8 @@ export enum CollectionNames {
   ASSIGNED_TREE_PLANT = "assignedtreeplants",
   LAST_STATE = "laststates",
   USER_MOBILE = "usermobiles",
+  APPLICATION = "applications",
+  FILE = "files",
 }
 
 export enum Role {
