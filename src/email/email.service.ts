@@ -8,7 +8,7 @@ import { getAdminMailList } from "src/common/helpers";
 export class EmailService {
   public constructor(
     private configService: ConfigService,
-    private readonly mailerService: MailerService,
+    private readonly mailerService: MailerService
   ) {}
 
   async sendEmail(reciever: ValidEmailDto, subject: string, htmlBody: string) {

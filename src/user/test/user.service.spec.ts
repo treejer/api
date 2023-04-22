@@ -56,7 +56,7 @@ describe("user service", () => {
     web3 = new Web3(
       ganache.provider({
         wallet: { deterministic: true },
-      }),
+      })
     );
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
@@ -67,7 +67,7 @@ describe("user service", () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-      }),
+      })
     );
 
     await app.init();
@@ -84,7 +84,7 @@ describe("user service", () => {
     const collections = await mongoConnection.db.collections();
     for (const key in collections) {
       const collection = mongoConnection.collection(
-        collections[key].collectionName,
+        collections[key].collectionName
       );
       await collection.deleteMany({});
     }
@@ -124,8 +124,8 @@ describe("user service", () => {
         {
           userId: createdUser3.insertedId.toString(),
           walletAddress: getCheckedSumAddress(account3.address),
-        },
-      ),
+        }
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -136,7 +136,7 @@ describe("user service", () => {
     let newDate = new Date();
 
     // @ts-ignore
-    jest.spyOn(emailService, "sendEmail");
+    jest.spyOn(emailService, "sendEmail").mockImplementation();
 
     //----------- run successfully
 
@@ -145,7 +145,7 @@ describe("user service", () => {
       {
         userId: createdUser3.insertedId.toString(),
         walletAddress: getCheckedSumAddress(account3.address),
-      },
+      }
     );
 
     let userNewData = await mongoConnection.db
@@ -162,7 +162,7 @@ describe("user service", () => {
 
     expect(userNewData.updatedAt.getTime()).toBeGreaterThan(newDate.getTime());
     expect(userNewData.emailTokenRequestedAt.getTime()).toBeGreaterThan(
-      newDate.getTime(),
+      newDate.getTime()
     );
 
     expect(userNewData.email).toEqual("mahdigorbanzadeh@yahoo.com");
@@ -176,8 +176,8 @@ describe("user service", () => {
         {
           userId: createdUser3.insertedId.toString(),
           walletAddress: getCheckedSumAddress(account3.address),
-        },
-      ),
+        }
+      )
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -194,10 +194,10 @@ describe("user service", () => {
       {
         $set: {
           emailTokenRequestedAt: new Date(
-            new Date().getTime() - Numbers.EMAIL_TOKEN_RESEND_BOUND,
+            new Date().getTime() - Numbers.EMAIL_TOKEN_RESEND_BOUND
           ),
         },
-      },
+      }
     );
 
     let res2 = await userService.updateEmail(
@@ -205,7 +205,7 @@ describe("user service", () => {
       {
         userId: createdUser3.insertedId.toString(),
         walletAddress: getCheckedSumAddress(account3.address),
-      },
+      }
     );
 
     let userNewData2 = await mongoConnection.db
@@ -220,10 +220,10 @@ describe("user service", () => {
     expect(userNewData2.emailToken).not.toBeUndefined();
 
     expect(userNewData2.updatedAt.getTime()).toBeGreaterThan(
-      newDate2.getTime(),
+      newDate2.getTime()
     );
     expect(userNewData2.emailTokenRequestedAt.getTime()).toBeGreaterThan(
-      newDate2.getTime(),
+      newDate2.getTime()
     );
 
     expect(userNewData2.email).toEqual("mahdigorbanzadeh@yandex.com");
@@ -276,10 +276,10 @@ describe("user service", () => {
       {
         $set: {
           emailTokenRequestedAt: new Date(
-            Date.now() - (Numbers.SMS_VERIFY_BOUND + 60000),
+            Date.now() - (Numbers.SMS_VERIFY_BOUND + 60000)
           ),
         },
-      },
+      }
     );
 
     //----------- fail becuse user didn't request to patchMobileNumber
@@ -299,10 +299,10 @@ describe("user service", () => {
         $set: {
           email: "mahdigorbanzadeh@yahoo.com",
           emailTokenRequestedAt: new Date(
-            Date.now() - (Numbers.SMS_VERIFY_BOUND - 60000),
+            Date.now() - (Numbers.SMS_VERIFY_BOUND - 60000)
           ),
         },
-      },
+      }
     );
 
     //----------- fail becuse invalid mobile code
@@ -327,7 +327,7 @@ describe("user service", () => {
       });
 
     expect(userNewData.emailVerifiedAt.getTime()).toBeGreaterThan(
-      newDate.getTime(),
+      newDate.getTime()
     );
 
     expect(userNewData.updatedAt.getTime()).toBeGreaterThan(newDate.getTime());
@@ -353,7 +353,7 @@ describe("user service", () => {
       });
 
     let newDate = new Date(
-      Date.now() - (Numbers.EMAIL_TOKEN_RESEND_BOUND - 60000),
+      Date.now() - (Numbers.EMAIL_TOKEN_RESEND_BOUND - 60000)
     );
     let createdUser2 = await mongoConnection.db
       .collection(CollectionNames.USER)
@@ -378,7 +378,7 @@ describe("user service", () => {
         nonce: 1036312,
         email: "mahdigorbanzadeh.1378@gmail.com",
         emailTokenRequestedAt: new Date(
-          Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND + 60000),
+          Date.now() - (Numbers.SMS_TOKEN_RESEND_BOUND + 60000)
         ),
       });
 
@@ -388,7 +388,7 @@ describe("user service", () => {
       userService.resendEmailToken({
         userId: createdUser1.insertedId.toString(),
         walletAddress: getCheckedSumAddress(account1.address),
-      }),
+      })
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
@@ -402,7 +402,7 @@ describe("user service", () => {
       userService.resendEmailToken({
         userId: createdUser2_1.insertedId.toString(),
         walletAddress: getCheckedSumAddress(account2_1.address),
-      }),
+      })
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -416,21 +416,21 @@ describe("user service", () => {
       userService.resendEmailToken({
         userId: createdUser2.insertedId.toString(),
         walletAddress: getCheckedSumAddress(account2.address),
-      }),
+      })
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
         message: `${AuthErrorMessages.WAIT_TIME_LIMIT} ${humanize(
           Math.ceil(
-            newDate.getTime() + Numbers.EMAIL_TOKEN_RESEND_BOUND - Date.now(),
+            newDate.getTime() + Numbers.EMAIL_TOKEN_RESEND_BOUND - Date.now()
           ),
-          { language: "en", round: true },
+          { language: "en", round: true }
         )}`,
       },
     });
 
     // @ts-ignore
-    jest.spyOn(emailService, "sendEmail");
+    jest.spyOn(emailService, "sendEmail").mockImplementation();
 
     let newDate2 = new Date();
     let res = await userService.resendEmailToken({
@@ -445,10 +445,10 @@ describe("user service", () => {
       });
 
     expect(res).toEqual(
-      AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL,
+      AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL
     );
     expect(userNewData.emailTokenRequestedAt.getTime()).toBeGreaterThan(
-      newDate2.getTime(),
+      newDate2.getTime()
     );
     expect(userNewData.updatedAt.getTime()).toBeGreaterThan(newDate2.getTime());
     expect(userNewData.email).toEqual("mahdigorbanzadeh.1378@gmail.com");
