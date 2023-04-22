@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PlantModule } from "../plant.module";
-import { Connection, connect, Types, now } from "mongoose";
+import { Connection, connect } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const Web3 = require("web3");
@@ -30,7 +30,6 @@ describe("App e2e", () => {
   let mongoConnection: Connection;
   let config: ConfigService;
   let web3;
-  let httpServer: any;
   let plantService: PlantService;
   let web3Service: Web3Service;
 
@@ -58,8 +57,6 @@ describe("App e2e", () => {
       .connection;
 
     app = moduleRef.createNestApplication();
-
-    httpServer = app.getHttpServer();
 
     app.useGlobalPipes(
       new ValidationPipe({

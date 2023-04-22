@@ -10,15 +10,13 @@ import {
   Role,
 } from "./../../common/constants";
 
-import { getCheckedSumAddress, getEIP712Sign } from "./../../common/helpers";
+import { getEIP712Sign } from "./../../common/helpers";
 import { PlantService } from "../plant.service";
 import { Web3Service } from "src/web3/web3.service";
 const Web3 = require("web3");
 
 const request = require("supertest");
 const Jwt = require("jsonwebtoken");
-
-const ganache = require("ganache");
 
 describe("App e2e", () => {
   let app: INestApplication;

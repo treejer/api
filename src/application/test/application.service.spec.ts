@@ -1,23 +1,13 @@
-import {
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-  ConflictException,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ApplicationModule } from "../application.module";
-import { Connection, connect, Types, now } from "mongoose";
+import { Connection, connect } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const Web3 = require("web3");
 
 import {
-  PlantErrorMessage,
-  AuthErrorMessages,
-  PlantStatus,
   CollectionNames,
-  AdminErrorMessage,
-  AdminServiceMessage,
   ApplicationErrorMessage,
   ApplicationStatuses,
   FileModules,
@@ -25,9 +15,7 @@ import {
 
 import { ApplicationService } from "../application.service";
 import { AuthModule } from "src/auth/auth.module";
-import { Web3Service } from "src/web3/web3.service";
-import { getCheckedSumAddress, getEIP712Sign } from "src/common/helpers";
-import { assert, log } from "console";
+import { getCheckedSumAddress } from "src/common/helpers";
 import { SmsService } from "src/sms/sms.service";
 import { DownloadService } from "src/download/download.service";
 import { EmailService } from "src/email/email.service";
@@ -303,8 +291,6 @@ describe("App e2e", () => {
       .insertOne(application3Data);
 
     const applications = await applicationService.getApplicationList();
-
-    console.log("aaaa", applications);
 
     expect(applications[0]).toMatchObject(application1Data);
     expect(applications[1]).toMatchObject(application2Data);

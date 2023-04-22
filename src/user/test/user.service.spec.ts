@@ -1,19 +1,12 @@
-import {
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-  ConflictException,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Connection, connect, Types, now } from "mongoose";
+import { Connection, connect } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const Web3 = require("web3");
 
 import {
-  PlantErrorMessage,
   AuthErrorMessages,
-  PlantStatus,
   CollectionNames,
   Numbers,
   EmailMessage,
@@ -26,7 +19,6 @@ import { getCheckedSumAddress } from "../../common/helpers";
 import { EmailService } from "src/email/email.service";
 import { EmailModule } from "src/email/email.module";
 import { UserService } from "../user.service";
-import { UpdateUserInfoRequest } from "../dtos";
 
 const humanize = require("humanize-duration");
 
@@ -475,7 +467,7 @@ describe("user service", () => {
       {
         walletAddress: account.address,
         userId: createdUser.insertedId.toString(),
-      },
+      }
     );
 
     expect(res.firstName).toEqual("mahdi");
@@ -488,7 +480,7 @@ describe("user service", () => {
       });
 
     expect(userNewData.updatedAt.getTime()).toBeGreaterThanOrEqual(
-      newDate.getTime(),
+      newDate.getTime()
     );
 
     expect(userNewData.firstName).toEqual("mahdi");
@@ -503,7 +495,7 @@ describe("user service", () => {
       {
         walletAddress: account.address,
         userId: createdUser.insertedId.toString(),
-      },
+      }
     );
 
     expect(res2.firstName).toEqual("ali");
@@ -516,7 +508,7 @@ describe("user service", () => {
       });
 
     expect(userNewData2.updatedAt.getTime()).toBeGreaterThanOrEqual(
-      newDate2.getTime(),
+      newDate2.getTime()
     );
 
     expect(userNewData2.firstName).toEqual("ali");

@@ -1,20 +1,12 @@
-import {
-  ForbiddenException,
-  INestApplication,
-  ValidationPipe,
-  ConflictException,
-} from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AdminModule } from "../admin.module";
-import { Connection, connect, Types, now } from "mongoose";
+import { Connection, connect } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const Web3 = require("web3");
 
 import {
-  PlantErrorMessage,
-  AuthErrorMessages,
-  PlantStatus,
   CollectionNames,
   AdminErrorMessage,
   AdminServiceMessage,
@@ -22,9 +14,7 @@ import {
 
 import { AdminService } from "../admin.service";
 import { AuthModule } from "src/auth/auth.module";
-import { Web3Service } from "src/web3/web3.service";
-import { getCheckedSumAddress, getEIP712Sign } from "src/common/helpers";
-import { assert, log } from "console";
+import { getCheckedSumAddress } from "src/common/helpers";
 import { SmsService } from "src/sms/sms.service";
 
 const ganache = require("ganache");
