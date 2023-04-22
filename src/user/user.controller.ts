@@ -280,10 +280,9 @@ export class UserController {
   @UseGuards(AuthGuard("jwt"))
   @Patch("/:id")
   updateUserInfo(
-    @Param("id") id: string,
     @Body() userNewData: UpdateUserInfoRequest,
     @User() user: JwtUserDto,
   ) {
-    return this.userService.updateUserInfo(id, userNewData, user);
+    return this.userService.updateUserInfo(userNewData, user);
   }
 }

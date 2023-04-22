@@ -26,6 +26,7 @@ import { getCheckedSumAddress } from "../../common/helpers";
 import { EmailService } from "src/email/email.service";
 import { EmailModule } from "src/email/email.module";
 import { UserService } from "../user.service";
+import { UpdateUserInfoRequest } from "../dtos";
 
 const humanize = require("humanize-duration");
 
@@ -452,5 +453,73 @@ describe("user service", () => {
     );
     expect(userNewData.updatedAt.getTime()).toBeGreaterThan(newDate2.getTime());
     expect(userNewData.email).toEqual("mahdigorbanzadeh.1378@gmail.com");
+  });
+
+  it("test updateUserInfo", async () => {
+    let account = await web3.eth.accounts.create();
+
+    let createdUser = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account.address),
+        nonce: 1036312,
+      });
+
+    let newDate = new Date();
+
+    let res = await userService.updateUserInfo(
+      {
+        firstName: "mahdi",
+        lastName: "Ghz",
+      },
+      {
+        walletAddress: account.address,
+        userId: createdUser.insertedId.toString(),
+      },
+    );
+
+    expect(res.firstName).toEqual("mahdi");
+    expect(res.lastName).toEqual("Ghz");
+
+    let userNewData = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userNewData.updatedAt.getTime()).toBeGreaterThanOrEqual(
+      newDate.getTime(),
+    );
+
+    expect(userNewData.firstName).toEqual("mahdi");
+    expect(userNewData.lastName).toEqual("Ghz");
+
+    let newDate2 = new Date();
+    let res2 = await userService.updateUserInfo(
+      {
+        firstName: "ali",
+        lastName: "Ad",
+      },
+      {
+        walletAddress: account.address,
+        userId: createdUser.insertedId.toString(),
+      },
+    );
+
+    expect(res2.firstName).toEqual("ali");
+    expect(res2.lastName).toEqual("Ad");
+
+    let userNewData2 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .findOne({
+        _id: createdUser.insertedId,
+      });
+
+    expect(userNewData2.updatedAt.getTime()).toBeGreaterThanOrEqual(
+      newDate2.getTime(),
+    );
+
+    expect(userNewData2.firstName).toEqual("ali");
+    expect(userNewData2.lastName).toEqual("Ad");
   });
 });

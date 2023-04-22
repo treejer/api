@@ -242,14 +242,13 @@ export class UserService {
   }
 
   async updateUserInfo(
-    userId: string,
     userNewData: UpdateUserInfoRequest,
     user: JwtUserDto,
   ): Promise<UpdateUserInfoRequest> {
-    if (userId !== user.userId)
-      throw new UnauthorizedException(AuthErrorMessages.INVALID_ID);
-
-    await this.userRepository.updateOne({ _id: userId }, { ...userNewData });
+    await this.userRepository.updateOne(
+      { _id: user.userId },
+      { ...userNewData },
+    );
 
     return { ...userNewData };
   }
