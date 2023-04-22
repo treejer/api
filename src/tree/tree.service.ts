@@ -10,21 +10,22 @@ import axios from "axios";
 import { generateTreeAttributes } from "src/common/helpers";
 import { treeTemplate, TreeErrorMessage } from "./../common/constants";
 import { ConfigService } from "@nestjs/config";
+import { TreeDataResultDto } from "./dto/tree-data.dto";
 
 const fs = require("fs");
 
 const crownColor = JSON.parse(
   fs
     .readFileSync(
-      `${process.cwd()}/public/resources/attributeMapping/crownColor.json`,
+      `${process.cwd()}/public/resources/attributeMapping/crownColor.json`
     )
-    .toString(),
+    .toString()
 );
 @Injectable()
 export class TreeService {
   public constructor(private configService: ConfigService) {}
 
-  async getTree(treeId: string): Promise<any> {
+  async getTree(treeId: string): Promise<TreeDataResultDto> {
     let hexTreeId: string;
 
     try {
@@ -37,7 +38,7 @@ export class TreeService {
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(
-        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET,
+        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
       );
     }
 

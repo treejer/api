@@ -38,7 +38,7 @@ export class UserService {
   constructor(
     private userRepository: UserRepository,
     private emailService: EmailService,
-    private config: ConfigService,
+    private config: ConfigService
   ) {}
 
   async create(user: CreateUserDto) {
@@ -48,7 +48,7 @@ export class UserService {
   async updateRole(wallet: string, role: Role): Promise<UpdateRoleDto> {
     await this.userRepository.updateOne(
       { walletAddress: getCheckedSumAddress(wallet) },
-      { userRole: role },
+      { userRole: role }
     );
 
     return { wallet, role };
@@ -56,50 +56,53 @@ export class UserService {
 
   async findUser(
     query: UserDto,
-    projection?: Record<string, number>,
+    projection?: Record<string, number>
   ): Promise<User> {
     return await this.userRepository.findOne(query, { ...projection });
   }
 
-  async getUserList(filter = {}) {
+  async getUserList(filter = {}): Promise<User[]> {
     return await this.userRepository.find(filter);
   }
 
-  async getSortedUserByNonce() {
+  async getSortedUserByNonce(): Promise<User[]> {
     return await this.userRepository.sort({}, { nonce: 1 }, {});
   }
 
   async findUserByWallet(
     walletAddress: string,
-    projection?: Record<string, number>,
-  ) {
+    projection?: Record<string, number>
+  ): Promise<User> {
     return await this.userRepository.findOne(
       { walletAddress },
-      { ...projection },
+      { ...projection }
     );
   }
 
-  async findUserById(userId: string, projection?: Record<string, number>) {
+  async findUserById(
+    userId: string,
+    projection?: Record<string, number>
+  ): Promise<User> {
     return await this.userRepository.findOne(
       { _id: userId },
-      { ...projection },
+      { ...projection }
     );
   }
   async updateUserById(
     userId: string,
     data: UserDto,
-    removeDataList?: Array<string>,
-  ) {
+    removeDataList?: Array<string>
+  ): Promise<User> {
     return this.userRepository.findOneAndUpdate(
       { _id: userId },
       data,
-      removeDataList,
+      removeDataList
     );
   }
 
   async updateEmail(
     { email }: ValidEmailDto,
-    user: JwtUserDto,
+    user: JwtUserDto
   ): Promise<updateEmailResultDto> {
     const userData = await this.userRepository.findOne({ _id: user.userId });
 
@@ -108,7 +111,7 @@ export class UserService {
         email: email,
         emailVerifiedAt: { $exists: true },
       },
-      { _id: 1 },
+      { _id: 1 }
     );
 
     if (userWithSameEmail) {
@@ -126,10 +129,10 @@ export class UserService {
           Math.ceil(
             Date.now() -
               userData.emailTokenRequestedAt.getTime() -
-              Numbers.EMAIL_TOKEN_RESEND_BOUND,
+              Numbers.EMAIL_TOKEN_RESEND_BOUND
           ),
-          { language: "en", round: true },
-        )}`,
+          { language: "en", round: true }
+        )}`
       );
     }
 
@@ -140,14 +143,14 @@ export class UserService {
         email,
         "Treejer - Verify your email",
         `<b>Verify your email by opening this link :</b><b>${this.config.get<string>(
-          "APP_URL",
-        )}/email/verify?token=${emailToken}</b>`,
+          "APP_URL"
+        )}/email/verify?token=${emailToken}</b>`
       );
 
       await this.userRepository.updateOne(
         { _id: user.userId },
         { emailToken, email, emailTokenRequestedAt: new Date() },
-        ["emailVerifiedAt"],
+        ["emailVerifiedAt"]
       );
     } catch (e) {
       throw new InternalServerErrorException();
@@ -156,10 +159,10 @@ export class UserService {
     return { email, message: "Email token sent to your email address" };
   }
 
-  async verifyEmail(token: string) {
+  async verifyEmail(token: string): Promise<string> {
     const user = await this.userRepository.findOne(
       { emailToken: token },
-      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1 },
+      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1 }
     );
 
     if (!user) throw new ForbiddenException(EmailMessage.INVALID_TOKEN);
@@ -173,23 +176,23 @@ export class UserService {
       throw new BadRequestException(
         `${Numbers.EMAIL_VERIFY_BOUND / 60000} ${
           UserErrorMessage.RESEND_EMAIL_MESSAGE
-        }`,
+        }`
       );
     }
 
     await this.userRepository.updateOne(
       { _id: user._id },
       { emailVerifiedAt: new Date() },
-      ["emailToken", "emailTokenRequestedAt"],
+      ["emailToken", "emailTokenRequestedAt"]
     );
 
     return UserServiceMessage.EMAIL_VERIFIED;
   }
 
-  async resendEmailToken(user: JwtUserDto) {
+  async resendEmailToken(user: JwtUserDto): Promise<string> {
     const userData = await this.userRepository.findOne(
       { _id: user.userId },
-      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1, email: 1 },
+      { _id: 1, emailTokenRequestedAt: 1, emailVerifiedAt: 1, email: 1 }
     );
 
     if (userData.emailVerifiedAt)
@@ -210,10 +213,10 @@ export class UserService {
           Math.ceil(
             userData.emailTokenRequestedAt.getTime() +
               Numbers.SMS_TOKEN_RESEND_BOUND -
-              Date.now(),
+              Date.now()
           ),
-          { language: "en", round: true },
-        )}`,
+          { language: "en", round: true }
+        )}`
       );
     }
 
@@ -224,8 +227,8 @@ export class UserService {
         userData.email,
         "Treejer - Verify your email",
         `<b>Verify your email by opening this link :</b><b>${this.config.get<string>(
-          "APP_URL",
-        )}/email/verify?token=${emailToken}</b>`,
+          "APP_URL"
+        )}/email/verify?token=${emailToken}</b>`
       );
       await this.userRepository.updateOne(
         { _id: user.userId },
@@ -233,7 +236,7 @@ export class UserService {
           emailToken,
           email: userData.email,
           emailTokenRequestedAt: new Date(),
-        },
+        }
       );
       return AuthServiceMessage.RESEND_VERIFICATION_EMAIL_TOKEN_SUCCESSFUL;
     } catch (error) {
@@ -243,11 +246,11 @@ export class UserService {
 
   async updateUserInfo(
     userNewData: UpdateUserInfoRequest,
-    user: JwtUserDto,
+    user: JwtUserDto
   ): Promise<UpdateUserInfoRequest> {
     await this.userRepository.updateOne(
       { _id: user.userId },
-      { ...userNewData },
+      { ...userNewData }
     );
 
     return { ...userNewData };
