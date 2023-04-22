@@ -14,6 +14,8 @@ import {
 import { UserService } from "src/user/user.service";
 import { EmailService } from "src/email/email.service";
 import { DownloadService } from "src/download/download.service";
+import { CreateApplicationResultDto } from "./dtos/create-application.dto";
+import { ApplicationDocument } from "./schemas";
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -23,7 +25,7 @@ export class ApplicationService {
     private downloadService: DownloadService
   ) {}
 
-  async updateUser(userId, req) {
+  async updateUser(userId, req): Promise<CreateApplicationResultDto> {
     const { field, file } = await this.downloadService.uploadFile(req);
 
     let user = await this.userServie.findUserById(userId);
@@ -96,18 +98,21 @@ export class ApplicationService {
     return { application: applicationOne, file: fileOne };
   }
 
-  async getApplicationList(filters = {}) {
+  async getApplicationList(filters = {}): Promise<ApplicationDocument[]> {
     return await this.applicationRepository.find(filters);
   }
 
-  async getApplicationById(_id: string, projection?: Record<string, number>) {
+  async getApplicationById(
+    _id: string,
+    projection?: Record<string, number>
+  ): Promise<ApplicationDocument> {
     return await this.applicationRepository.findOne({ _id }, { ...projection });
   }
 
   async getApplicationByUserId(
     userId: string,
     projection?: Record<string, number>
-  ) {
+  ): Promise<ApplicationDocument> {
     return await this.applicationRepository.findOne(
       { userId },
       { ...projection }
