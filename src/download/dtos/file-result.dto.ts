@@ -1,44 +1,47 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { IsDate, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class FileResultDto {
   @ApiResponseProperty()
   @IsString()
-  _id: string;
+  @IsOptional()
+  _id?;
 
   @ApiResponseProperty()
   @IsString()
-  originalname: string;
+  originalname;
 
   @ApiResponseProperty()
   @IsString()
-  filename: string;
+  filename;
 
   @ApiResponseProperty()
   @IsString()
-  encoding: string;
+  @IsOptional()
+  encoding?;
 
   @ApiResponseProperty()
   @IsString()
-  mimetype: string;
+  mimetype;
 
   @ApiResponseProperty()
   @IsNumber()
-  size: number;
+  size;
 
   @ApiResponseProperty()
   @IsString()
-  userId: string;
+  userId;
 
   @ApiResponseProperty()
   @IsString()
-  targetId: string;
+  @IsOptional()
+  targetId?;
 
   @ApiResponseProperty()
   @IsNumber()
-  module: number;
+  module;
 
   @ApiResponseProperty()
   @IsDate()
-  createdAt: Date;
+  createdAt;
 }

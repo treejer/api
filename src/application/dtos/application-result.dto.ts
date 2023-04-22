@@ -1,43 +1,44 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { IsDate, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class ApplicationResultDto {
   @ApiResponseProperty()
   @IsString()
-  _id: string;
+  @IsOptional()
+  _id?;
 
   @ApiResponseProperty()
   @IsString()
-  userId: string;
+  userId;
 
   @ApiResponseProperty()
   @IsNumber()
-  type: number;
+  type;
 
   @ApiResponseProperty()
   @IsNumber()
-  status: number;
+  status;
   @ApiResponseProperty()
   @IsDate()
-  createdAt: Date;
+  createdAt;
 
   @ApiResponseProperty()
   @IsDate()
-  updatedAt: Date;
+  updatedAt;
 
   @ApiResponseProperty()
   @IsString()
-  organizationAddress: string;
+  organizationAddress;
 
   @ApiResponseProperty()
   @IsString()
-  referrer: string;
+  referrer;
 
   @ApiResponseProperty()
   @IsNumber()
-  longitude: number;
+  longitude;
 
   @ApiResponseProperty()
   @IsNumber()
-  latitude: number;
+  latitude;
 }

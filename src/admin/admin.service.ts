@@ -5,9 +5,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { async } from "rxjs";
 
 import { ApplicationService } from "src/application/application.service";
+import { ApplicationResultDto } from "src/application/dtos";
 import { Application } from "src/application/schemas";
 import {
   AdminErrorMessage,
@@ -18,6 +18,7 @@ import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
 import { SmsService } from "src/sms/sms.service";
 import { UserService } from "src/user/user.service";
+import { GetUserResultDto } from "./dto";
 
 @Injectable()
 export class AdminService {
@@ -28,10 +29,11 @@ export class AdminService {
     private smsService: SmsService
   ) {}
 
-  async getUsers(filters) {
+  async getUsers(filters): Promise<GetUserResultDto[]> {
     try {
       const users = await this.userService.getUserList(filters);
-      const data = await Promise.all(
+      // @ts-ignore
+      const data: GetUserResultDto[] = await Promise.all(
         users.map((el) => {
           return new Promise(async (resolve, reject) => {
             resolve({
@@ -51,7 +53,7 @@ export class AdminService {
     }
   }
 
-  async getUserById(userId: string) {
+  async getUserById(userId: string): Promise<GetUserResultDto> {
     const user = await this.userService.findUserById(userId);
     if (!user) throw new NotFoundException(AdminErrorMessage.USER_NOT_FOUND);
     const file = await this.downloadService.findFileByUserId(userId);
@@ -66,7 +68,7 @@ export class AdminService {
     };
   }
 
-  async getUserByWallet(wallet: string) {
+  async getUserByWallet(wallet: string): Promise<GetUserResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
     if (!checkPublicKey(checkedSumWallet))
@@ -89,11 +91,11 @@ export class AdminService {
     };
   }
 
-  async getApplications(filters): Promise<Application[]> {
+  async getApplications(filters): Promise<ApplicationResultDto[]> {
     return await this.applicationService.getApplicationList(filters);
   }
 
-  async verifyUser(userId: string) {
+  async verifyUser(userId: string): Promise<string> {
     const application = await this.applicationService.getApplicationByUserId(
       userId
     );
@@ -124,7 +126,7 @@ export class AdminService {
     }
   }
 
-  async rejectUser(userId: string) {
+  async rejectUser(userId: string): Promise<string> {
     const application = await this.applicationService.getApplicationByUserId(
       userId
     );
