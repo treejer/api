@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { EtherValues } from "./schema";
 import { BugsnagService } from "src/bugsnag/bugsnag.service";
 import { EmailService } from "src/email/email.service";
+import { GetEthDataResultDto } from "./dto";
 
 @Injectable()
 export class EtherValuesService {
@@ -12,12 +13,12 @@ export class EtherValuesService {
     private etherValuesRepository: EtherValuesRepository,
     private configService: ConfigService,
     private bugsnag: BugsnagService,
-    private emailService: EmailService,
+    private emailService: EmailService
   ) {}
 
-  async getEtherPrice() {
+  async getEtherPrice(): Promise<GetEthDataResultDto> {
     const etherValueValidUntil = Number(
-      this.configService.get<number>("ETHER_VALUE_VALID_UNTIL"),
+      this.configService.get<number>("ETHER_VALUE_VALID_UNTIL")
     );
 
     const ethValue = await this.etherValuesRepository.findOne({});
@@ -53,7 +54,7 @@ export class EtherValuesService {
 
                 this.emailService.notifyAdmin(
                   "Error:Treejer nestapi",
-                  `<h3>etherValues Module : errorCount reach 3</h3><b>can't update ether price(You can see more about error on bugsnag)</b>`,
+                  `<h3>etherValues Module : errorCount reach 3</h3><b>can't update ether price(You can see more about error on bugsnag)</b>`
                 );
 
                 ethValue.errorCount = 0;

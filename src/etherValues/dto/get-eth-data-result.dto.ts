@@ -1,28 +1,29 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsDate, IsNumber, IsString } from "class-validator";
+import { IsDate, IsNumber, IsOptional, IsString } from "class-validator";
 import { EtherDataResultDto } from "./EtherDataResult.dto";
 
 export class GetEthDataResultDto {
   @ApiResponseProperty()
   @IsString()
-  _id: string;
+  @IsOptional()
+  _id?;
 
   @ApiResponseProperty()
   @IsString()
-  status: string;
+  status;
 
   @ApiResponseProperty()
   @IsString()
-  message: string;
+  message;
 
   @ApiResponseProperty()
   result: EtherDataResultDto;
 
   @ApiResponseProperty()
   @IsDate()
-  storedAt: Date;
+  storedAt;
 
   @ApiResponseProperty()
   @IsNumber()
-  errorCount: number;
+  errorCount;
 }

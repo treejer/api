@@ -4,17 +4,17 @@ import { IsString } from "class-validator";
 export class EtherDataResultDto {
   @ApiResponseProperty()
   @IsString()
-  ethbtc: string;
+  ethbtc;
 
   @ApiResponseProperty()
   @IsString()
-  ethbtc_timestamp: string;
+  ethbtc_timestamp;
 
   @ApiResponseProperty()
   @IsString()
-  ethusd: string;
+  ethusd;
 
   @ApiResponseProperty()
   @IsString()
-  ethusd_timestamp: string;
+  ethusd_timestamp;
 }

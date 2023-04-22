@@ -4,13 +4,13 @@ import { IsString } from "class-validator";
 export class SendVerificationCodeResultDto {
   @ApiResponseProperty()
   @IsString()
-  message: string;
+  message;
 
   @ApiResponseProperty()
   @IsString()
-  mobileCountry: string;
+  mobileCountry;
 
   @ApiResponseProperty()
   @IsString()
-  mobile: string;
+  mobile;
 }
