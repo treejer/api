@@ -10,7 +10,7 @@ export class SmsService {
   ) {}
 
   async sendSMS(body, to) {
-    this.twilioService.client.messages.create({
+    return this.twilioService.client.messages.create({
       body,
       from: this.configService.get<string>("TWILIO_FROM"),
       to,
