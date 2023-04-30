@@ -34,15 +34,19 @@ export class ErrorFilter implements ExceptionFilter {
       Boolean(this.configService.get<string>("BUGSNAG_ACTIVE")) === true &&
       !(error instanceof HttpException)
     ) {
-      this.bugsnag.notify(
-        new HttpException("Internal server error", 500, {
-          cause: error,
-        }),
-        function (event) {
-          if (request.user) event.setUser(request.user.userId);
-          event.addMetadata("path", { URL: request.url });
-        },
-      );
+      try {
+        this.bugsnag.notify(
+          new HttpException("Internal server error", 500, {
+            cause: error,
+          }),
+          function (event) {
+            if (request.user) event.setUser(request.user.userId);
+            event.addMetadata("path", { URL: request.url });
+          },
+        );
+      } catch (error) {
+        console.log("errorrrrrrrrrrrrrrrrrrrrrrrrr", error);
+      }
     }
     return response.status(status).json(errorResponse);
   }
