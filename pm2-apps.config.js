@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "app",
-      script: "nest start --watch",
+      script: "npm start dist/main.js",
       error_file: ".pm2/logs/app/app-error.log",
       out_file: ".pm2/logs/app/app-out.log",
       log_file: ".pm2/logs/app/app-log.log",

@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "add:role": "/bin/bash ./script-bash/role.bash"
+    "add:role": "bash ./script-bash/role.bash"
   },
   "dependencies": {
     "@bugsnag/js": "^7.20.0",
@@ -46,7 +46,7 @@
     "file-type": "^18.2.1",
     "fs": "^0.0.1-security",
     "ganache": "^7.7.4",
-    "humanize-duration": "^3.28.0", 
+    "humanize-duration": "^3.28.0",
     "mime-types": "^2.1.35",
     "mongoose": "^6.9.2",
     "multiparty": "^4.2.3",
