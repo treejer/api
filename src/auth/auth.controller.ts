@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
@@ -22,6 +23,7 @@ import { AuthGuard } from "@nestjs/passport";
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -67,8 +69,18 @@ export class AuthController {
     },
   })
   @Get("nonce/:wallet")
-  getNonce(@Param("wallet") wallet: string): Promise<NonceResultDto> {
-    return this.authService.getNonce(wallet);
+  @ApiQuery({ name: "token", required: false, type: String })
+  @ApiQuery({ name: "email", required: false, type: String })
+  @ApiQuery({ name: "mobile", required: false, type: String })
+  @ApiQuery({ name: "country", required: false, type: String })
+  getNonce(
+    @Param("wallet") wallet: string,
+    @Query("token") token: string,
+    @Query("email") email: string,
+    @Query("mobile") mobile: string,
+    @Query("country") country: string
+  ): Promise<NonceResultDto> {
+    return this.authService.getNonce(wallet, token, email, mobile, country);
   }
 
   //------------------------------------------ ************************ ------------------------------------------//
@@ -132,7 +144,7 @@ export class AuthController {
   @Post("login/:wallet")
   loginWithWallet(
     @Param("wallet") wallet: string,
-    @Body() dto: LoginWithWalletDto,
+    @Body() dto: LoginWithWalletDto
   ): Promise<LoginResultDto> {
     const signature: string = dto.signature;
     return this.authService.loginWithWallet(wallet, signature);
@@ -211,13 +223,13 @@ export class AuthController {
   @Post("mobile/verify")
   async verifyMobileCode(
     @User() user: JwtUserDto,
-    @Body() dto: MobileVerifyDto,
+    @Body() dto: MobileVerifyDto
   ) {
     const { verifyMobileCode } = dto;
 
     return await this.authService.verifyMobileCode(
       user.userId,
-      verifyMobileCode,
+      verifyMobileCode
     );
   }
 
@@ -283,14 +295,14 @@ export class AuthController {
   @Patch("mobile/send")
   async patchMobileNumber(
     @User() user: JwtUserDto,
-    @Body() dto: PatchMobileNumberDto,
+    @Body() dto: PatchMobileNumberDto
   ) {
     const { mobileNumber, country } = dto;
 
     return await this.authService.patchMobileNumber(
       user.userId,
       mobileNumber,
-      country,
+      country
     );
   }
 
