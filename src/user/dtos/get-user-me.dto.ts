@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDate,
   IsEmail,
+  IsNumber,
   IsOptional,
   IsString,
 } from "class-validator";
@@ -56,4 +57,8 @@ export class GetUserMeDto {
   @IsOptional()
   @IsBoolean()
   isVerified?;
+
+  @IsOptional()
+  @IsNumber()
+  plantingNonce?;
 }

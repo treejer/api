@@ -1,5 +1,5 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDate, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsNumber, IsString } from "class-validator";
 
 export class GetUserMeResultDto {
   @ApiResponseProperty()
@@ -49,4 +49,8 @@ export class GetUserMeResultDto {
   @ApiResponseProperty()
   @IsBoolean()
   isVerified: boolean;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  plantingNonce: number;
 }

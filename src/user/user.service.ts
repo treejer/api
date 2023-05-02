@@ -271,6 +271,7 @@ export class UserService {
       mobileCountry: 1,
       mobileVerifiedAt: 1,
       isVerified: 1,
+      plantingNonce: 1,
     });
   }
 }
