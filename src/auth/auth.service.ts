@@ -29,10 +29,16 @@ import {
   LoginResultDto,
   NonceResultDto,
   SendVerificationCodeResultDto,
+  UserEditDataDto,
 } from "./dtos";
 import { UserMobileRepository } from "./auth.repository";
 const humanize = require("humanize-duration");
 import { SmsService } from "src/sms/sms.service";
+
+import { CreateUserDto } from "src/user/dtos";
+
+import { MagicAuthService } from "src/magicAuth/magicAuth.service";
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,31 +46,190 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private smsService: SmsService,
-    private userMobileRepository: UserMobileRepository
+    private userMobileRepository: UserMobileRepository,
+    private magicAuthService: MagicAuthService
   ) {}
 
-  async getNonce(wallet: string): Promise<NonceResultDto> {
+  async getNonce(
+    wallet: string,
+    token: string,
+    email: string,
+    mobile: string,
+    country: string
+  ): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
+
+    token = token?.trim();
+    email = email?.trim();
+    mobile = mobile?.trim();
+    country = country?.trim();
 
     if (!checkPublicKey(checkedSumWallet))
       throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
+
+    let magicUserMetadata;
+    if (token) {
+      try {
+        magicUserMetadata = await this.magicAuthService.getUserMetaData(token);
+
+        console.log("magicUserMetadata", magicUserMetadata);
+      } catch (e) {
+        throw new BadRequestException(e.message);
+      }
+    }
+
+    let hasRegisteredMobile: boolean = false;
+    let hasRegisteredEmail: boolean = false;
+    let registerationWithEmail: boolean = false;
+    let registerationWithMobile: boolean = false;
+
+    if (email) {
+      console.log(checkedSumWallet);
+
+      const dbEmailCount = await this.userService.findUser({
+        email,
+        walletAddress: { $ne: checkedSumWallet },
+      });
+      console.log("dbEmailCount", dbEmailCount);
+
+      if (dbEmailCount) hasRegisteredEmail = true;
+    }
+
+    if (mobile && country) {
+      const dbMobileCount = await this.userService.findUser({
+        walletAddress: { $ne: checkedSumWallet },
+        mobile,
+        mobileCountry: country,
+      });
+
+      if (dbMobileCount) hasRegisteredMobile = true;
+    }
 
     let user = await this.userService.findUserByWallet(checkedSumWallet);
 
     const nonce = getRandomNonce();
 
     if (user) {
+      const prevUser: UserEditDataDto = {};
+      const isMobileVerified = !!prevUser.mobileVerifiedAt;
+
+      if (
+        email &&
+        !user.email &&
+        !user.emailVerifiedAt &&
+        !hasRegisteredEmail &&
+        magicUserMetadata?.email?.toLowerCase() === email
+      ) {
+        prevUser.email = email;
+        prevUser.emailVerifiedAt = new Date();
+
+        await this.magicAuthService.createMagicAuth({
+          walletAddress: checkedSumWallet,
+          email,
+          createdAt: new Date(),
+          userId: user._id,
+          issuer: magicUserMetadata?.issuer ?? undefined,
+          oauthProvider: magicUserMetadata.oauthProvider ?? undefined,
+        });
+      }
+
+      if (
+        mobile &&
+        country &&
+        !isMobileVerified &&
+        !hasRegisteredMobile &&
+        magicUserMetadata?.phoneNumber?.toLowerCase() === mobile
+      ) {
+        prevUser.mobileCountry = country;
+        prevUser.mobile = mobile;
+        prevUser.mobileVerifiedAt = new Date();
+
+        await this.userService.updateUserById(user._id, prevUser);
+
+        await this.userMobileRepository.create({
+          userId: user._id,
+          number: mobile,
+          verifiedAt: new Date(),
+          createdAt: new Date(),
+        });
+
+        await this.magicAuthService.createMagicAuth({
+          walletAddress: checkedSumWallet,
+          createdAt: new Date(),
+          userId: user._id,
+          issuer: magicUserMetadata?.issuer ?? undefined,
+          oauthProvider: magicUserMetadata.oauthProvider ?? undefined,
+          mobile,
+        });
+      }
+
       return {
         message: Messages.SIGN_MESSAGE + user.nonce.toString(),
         userId: user._id,
       };
     }
 
-    const newUser = await this.userService.create({
-      nonce,
+    const newUserObject: CreateUserDto = {
+      createdAt: new Date(),
       walletAddress: checkedSumWallet,
+      updatedAt: new Date(),
+      nonce,
+      mobileCodeRequestsCountForToday: 0,
+      isVerified: false,
       plantingNonce: 1,
-    });
+    };
+
+    if (
+      email &&
+      !hasRegisteredEmail &&
+      magicUserMetadata?.email?.toLowerCase() === email.toLowerCase()
+    ) {
+      newUserObject.email = email;
+      newUserObject.emailVerifiedAt = new Date();
+      registerationWithEmail = true;
+    }
+
+    if (
+      mobile &&
+      country &&
+      !hasRegisteredMobile &&
+      magicUserMetadata?.phoneNumber?.toLowerCase() === mobile
+    ) {
+      newUserObject.mobile = mobile;
+      newUserObject.mobileCountry = country;
+      newUserObject.mobileVerifiedAt = new Date();
+      registerationWithMobile = true;
+    }
+
+    const newUser = await this.userService.create(newUserObject);
+
+    if (registerationWithEmail) {
+      await this.magicAuthService.createMagicAuth({
+        walletAddress: checkedSumWallet,
+        email,
+        createdAt: new Date(),
+        userId: newUser._id,
+        issuer: magicUserMetadata?.issuer ?? undefined,
+        oauthProvider: magicUserMetadata.oauthProvider ?? undefined,
+      });
+    }
+
+    if (registerationWithMobile) {
+      await this.userMobileRepository.create({
+        userId: newUser._id,
+        number: mobile,
+        verifiedAt: new Date(),
+        createdAt: new Date(),
+      });
+      await this.magicAuthService.createMagicAuth({
+        walletAddress: checkedSumWallet,
+        createdAt: new Date(),
+        userId: newUser._id,
+        issuer: magicUserMetadata?.issuer ?? undefined,
+        oauthProvider: magicUserMetadata.oauthProvider ?? undefined,
+        mobile,
+      });
+    }
 
     return {
       message: Messages.SIGN_MESSAGE + newUser.nonce.toString(),

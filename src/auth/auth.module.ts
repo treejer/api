@@ -11,6 +11,7 @@ import { UserMobile, UserMobileSchema } from "./schemas";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatabaseModule } from "./../database/database.module";
 import { SmsModule } from "src/sms/sms.module";
+import { MagicAuthModule } from "src/magicAuth/magicAuth.module";
 @Module({
   imports: [
     UserModule,
@@ -20,6 +21,7 @@ import { SmsModule } from "src/sms/sms.module";
     ]),
     DatabaseModule,
     SmsModule,
+    MagicAuthModule,
   ],
   controllers: [AuthController],
   providers: [

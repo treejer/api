@@ -12,6 +12,7 @@ import {
   ValidEmailDto,
   UserDto,
   updateEmailResultDto,
+  GetUserMeDto,
 } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
@@ -254,5 +255,23 @@ export class UserService {
     );
 
     return { ...userNewData };
+  }
+
+  async getUserData(userId: string): Promise<GetUserMeDto> {
+    return await this.findUserById(userId, {
+      id: 1,
+      firstName: 1,
+      lastName: 1,
+      email: 1,
+      emailVerifiedAtL: 1,
+      idCard: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      mobile: 1,
+      mobileCountry: 1,
+      mobileVerifiedAt: 1,
+      isVerified: 1,
+      plantingNonce: 1,
+    });
   }
 }

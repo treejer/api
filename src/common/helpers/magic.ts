@@ -1,6 +1,7 @@
 export function checkClientMagicToken(token: string): string {
   try {
     const [proof, claim] = JSON.parse(globalThis.atob(token));
+
     const parsedClaim = JSON.parse(claim);
     if (!parsedClaim.ext) {
       parsedClaim.ext = Date.now() + 2592000000;

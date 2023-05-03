@@ -8,6 +8,14 @@ import {
 } from "class-validator";
 
 export class UserDto {
+  @IsString()
+  @IsOptional()
+  _id?;
+
+  @IsString()
+  @IsOptional()
+  walletAddress?;
+
   @IsOptional()
   @IsEmail()
   @IsString()

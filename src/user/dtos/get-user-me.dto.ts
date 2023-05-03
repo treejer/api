@@ -1,3 +1,4 @@
+import { ApiResponseProperty } from "@nestjs/swagger";
 import {
   IsBoolean,
   IsDate,
@@ -7,7 +8,19 @@ import {
   IsString,
 } from "class-validator";
 
-export class CreateUserDto {
+export class GetUserMeDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @IsOptional()
+  @IsString()
+  firstName?;
+
+  @IsOptional()
+  @IsString()
+  lastName?;
+
   @IsOptional()
   @IsEmail()
   @IsString()
@@ -16,6 +29,18 @@ export class CreateUserDto {
   @IsOptional()
   @IsDate()
   emailVerifiedAt?;
+
+  @IsOptional()
+  @IsString()
+  idCard?;
+
+  @IsOptional()
+  @IsDate()
+  createdAt?;
+
+  @IsOptional()
+  @IsDate()
+  updatedAt?;
 
   @IsOptional()
   @IsString()
@@ -30,36 +55,10 @@ export class CreateUserDto {
   mobileVerifiedAt?;
 
   @IsOptional()
-  @IsDate()
-  createdAt?;
-
-  @IsOptional()
-  @IsDate()
-  updatedAt?;
-
-  @IsOptional()
-  @IsNumber()
-  mobileCodeRequestsCountForToday?;
-
-  @IsOptional()
   @IsBoolean()
   isVerified?;
 
   @IsOptional()
-  @IsString()
-  firstName?;
-
-  @IsOptional()
-  @IsString()
-  lastName?;
-
-  @IsOptional()
-  @IsString()
-  walletAddress?;
-
   @IsNumber()
-  nonce;
-
-  @IsNumber()
-  plantingNonce;
+  plantingNonce?;
 }
