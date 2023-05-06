@@ -22,7 +22,7 @@ export enum Role {
 }
 
 export enum EventName {
-  TREE_ASSIGNED = "TreeAssigned",
+  TREE_ASSIGNED = "AssignedTreeVerified",
   TREE_UPDATE = "TreeUpdatedVerified",
   TREE_PLANT = "TreeVerified",
 }
