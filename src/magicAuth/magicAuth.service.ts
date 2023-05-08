@@ -13,8 +13,6 @@ export class MagicAuthService {
     private configService: ConfigService
   ) {
     this.magic = new Magic(configService.get<string>("MAGIC_SECRET_API_KEY"));
-
-    console.log("magc", configService.get<string>("MAGIC_SECRET_API_KEY"));
   }
 
   async createMagicAuth(magicAuth: CreateMagicAuthDto) {
@@ -22,10 +20,6 @@ export class MagicAuthService {
   }
 
   async getUserMetaData(token: string): Promise<UserMetadataResultDto> {
-    let tempToken = checkClientMagicToken(token);
-
-    console.log("temp", tempToken);
-
-    return await this.magic.users.getMetadataByToken(tempToken);
+    return await this.magic.users.getMetadataByToken(token);
   }
 }

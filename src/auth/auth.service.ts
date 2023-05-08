@@ -35,13 +35,13 @@ import { UserMobileRepository } from "./auth.repository";
 const humanize = require("humanize-duration");
 import { SmsService } from "src/sms/sms.service";
 
-import atob from "atob";
-import btoa from "btoa";
+// import atob from "atob";
+// import btoa from "btoa";
 
 // Somewhere before Magic Admin usage
-globalThis.atob = atob;
-globalThis.btoa = btoa;
-import { Magic } from "@magic-sdk/admin";
+// globalThis.atob = atob;
+// globalThis.btoa = btoa;
+// import { Magic } from "@magic-sdk/admin";
 import { CreateUserDto } from "src/user/dtos";
 
 import { MagicAuthService } from "src/magicAuth/magicAuth.service";
@@ -67,14 +67,9 @@ export class AuthService {
   ): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
-    const magic = new Magic(
-      this.configService.get<string>("MAGIC_SECRET_API_KEY")
-    );
-
-    console.log(
-      "dddddddddd",
-      this.configService.get<string>("MAGIC_SECRET_API_KEY")
-    );
+    // const magic = new Magic(
+    //   this.configService.get<string>("MAGIC_SECRET_API_KEY")
+    // );
 
     token = token?.trim();
     email = email?.trim();
@@ -89,7 +84,7 @@ export class AuthService {
       try {
         // let tempToken = checkClientMagicToken(token);
 
-        magicUserMetadata = await magic.users.getMetadataByToken(token);
+        magicUserMetadata = await this.magicAuthService.getUserMetaData(token);
 
         console.log("magicUserMetadata", magicUserMetadata);
       } catch (e) {
