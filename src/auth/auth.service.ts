@@ -35,17 +35,9 @@ import { UserMobileRepository } from "./auth.repository";
 const humanize = require("humanize-duration");
 import { SmsService } from "src/sms/sms.service";
 
-// import atob from "atob";
-// import btoa from "btoa";
-
-// Somewhere before Magic Admin usage
-// globalThis.atob = atob;
-// globalThis.btoa = btoa;
-// import { Magic } from "@magic-sdk/admin";
 import { CreateUserDto } from "src/user/dtos";
 
 import { MagicAuthService } from "src/magicAuth/magicAuth.service";
-import { checkClientMagicToken } from "src/common/helpers/magic";
 
 @Injectable()
 export class AuthService {
@@ -67,10 +59,6 @@ export class AuthService {
   ): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
-    // const magic = new Magic(
-    //   this.configService.get<string>("MAGIC_SECRET_API_KEY")
-    // );
-
     token = token?.trim();
     email = email?.trim();
     mobile = mobile?.trim();
@@ -82,16 +70,11 @@ export class AuthService {
     let magicUserMetadata;
     if (token) {
       try {
-        // let tempToken = checkClientMagicToken(token);
-
         magicUserMetadata = await this.magicAuthService.getUserMetaData(token);
-
-        console.log("magicUserMetadata", magicUserMetadata);
       } catch (e) {
         throw new BadRequestException(e.message);
       }
     }
-    console.log("mmmmmmmm", magicUserMetadata);
 
     let hasRegisteredMobile: boolean = false;
     let hasRegisteredEmail: boolean = false;
