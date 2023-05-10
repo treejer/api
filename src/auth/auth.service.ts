@@ -345,7 +345,7 @@ export class AuthService {
 
   async verifyMobileCode(
     userId: string,
-    verificationCode: number
+    verificationCode: string
   ): Promise<string> {
     const user = await this.userService.findUserById(userId);
 
