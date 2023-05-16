@@ -47,7 +47,7 @@ export class AuthService {
     private jwtService: JwtService,
     private smsService: SmsService,
     private userMobileRepository: UserMobileRepository,
-    private magicAuthService: MagicAuthService
+    private magicAuthService: MagicAuthService,
   ) {}
 
   async getNonce(
@@ -55,7 +55,7 @@ export class AuthService {
     token: string,
     email: string,
     mobile: string,
-    country: string
+    country: string,
   ): Promise<NonceResultDto> {
     const checkedSumWallet = getCheckedSumAddress(wallet);
 
@@ -78,31 +78,36 @@ export class AuthService {
       }
     }
 
-    let hasRegisteredMobile: boolean = false;
-    let hasRegisteredEmail: boolean = false;
-    let registerationWithEmail: boolean = false;
-    let registerationWithMobile: boolean = false;
-
     if (email) {
-      console.log(checkedSumWallet);
+      if (
+        await this.userService.findUser({
+          emailVerifiedAt: { $exists: true },
+          email,
+          walletAddress: { $ne: checkedSumWallet },
+        })
+      ) {
+        throw new BadRequestException("email already in use");
+      }
 
-      const dbEmailCount = await this.userService.findUser({
-        email,
-        walletAddress: { $ne: checkedSumWallet },
-      });
-      console.log("dbEmailCount", dbEmailCount);
-
-      if (dbEmailCount) hasRegisteredEmail = true;
+      if (magicUserMetadata?.email?.toLowerCase() === email.toLowerCase()) {
+        throw new ForbiddenException("Invalid Access");
+      }
     }
 
-    if (mobile && country) {
-      const dbMobileCount = await this.userService.findUser({
-        walletAddress: { $ne: checkedSumWallet },
-        mobile,
-        mobileCountry: country,
-      });
+    if (mobile) {
+      if (
+        await this.userService.findUser({
+          walletAddress: { $ne: checkedSumWallet },
+          mobile,
+          mobileVerifiedAt: { $exists: true },
+        })
+      ) {
+        throw new BadRequestException("email already in use");
+      }
 
-      if (dbMobileCount) hasRegisteredMobile = true;
+      if (magicUserMetadata?.phoneNumber?.toLowerCase() === mobile) {
+        throw new ForbiddenException("Invalid Access");
+      }
     }
 
     let user = await this.userService.findUserByWallet(checkedSumWallet);
@@ -111,17 +116,12 @@ export class AuthService {
 
     if (user) {
       const prevUser: UserEditDataDto = {};
-      const isMobileVerified = !!prevUser.mobileVerifiedAt;
 
-      if (
-        email &&
-        !user.email &&
-        !user.emailVerifiedAt &&
-        !hasRegisteredEmail &&
-        magicUserMetadata?.email?.toLowerCase() === email
-      ) {
+      if (email && !user.emailVerifiedAt) {
         prevUser.email = email;
         prevUser.emailVerifiedAt = new Date();
+
+        await this.userService.updateUserById(user._id, prevUser);
 
         await this.magicAuthService.createMagicAuth({
           walletAddress: checkedSumWallet,
@@ -133,13 +133,7 @@ export class AuthService {
         });
       }
 
-      if (
-        mobile &&
-        country &&
-        !isMobileVerified &&
-        !hasRegisteredMobile &&
-        magicUserMetadata?.phoneNumber?.toLowerCase() === mobile
-      ) {
+      if (mobile && !user.mobileVerifiedAt) {
         prevUser.mobileCountry = country;
         prevUser.mobile = mobile;
         prevUser.mobileVerifiedAt = new Date();
@@ -179,31 +173,20 @@ export class AuthService {
       plantingNonce: 1,
     };
 
-    if (
-      email &&
-      !hasRegisteredEmail &&
-      magicUserMetadata?.email?.toLowerCase() === email.toLowerCase()
-    ) {
+    if (email) {
       newUserObject.email = email;
       newUserObject.emailVerifiedAt = new Date();
-      registerationWithEmail = true;
     }
 
-    if (
-      mobile &&
-      country &&
-      !hasRegisteredMobile &&
-      magicUserMetadata?.phoneNumber?.toLowerCase() === mobile
-    ) {
+    if (mobile) {
       newUserObject.mobile = mobile;
       newUserObject.mobileCountry = country;
       newUserObject.mobileVerifiedAt = new Date();
-      registerationWithMobile = true;
     }
 
     const newUser = await this.userService.create(newUserObject);
 
-    if (registerationWithEmail) {
+    if (email) {
       await this.magicAuthService.createMagicAuth({
         walletAddress: checkedSumWallet,
         email,
@@ -214,7 +197,7 @@ export class AuthService {
       });
     }
 
-    if (registerationWithMobile) {
+    if (mobile) {
       await this.userMobileRepository.create({
         userId: newUser._id,
         number: mobile,
@@ -236,10 +219,9 @@ export class AuthService {
       userId: newUser._id,
     };
   }
-
   async loginWithWallet(
     walletAddress: string,
-    signature: string
+    signature: string,
   ): Promise<LoginResultDto> {
     const checkedSumWallet = getCheckedSumAddress(walletAddress);
 
@@ -258,7 +240,7 @@ export class AuthService {
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
     const recoveredAddress: string = recoverPublicAddressfromSignature(
       signature,
-      msg
+      msg,
     );
 
     if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
@@ -276,7 +258,7 @@ export class AuthService {
   async patchMobileNumber(
     userId: string,
     mobileNumber: string,
-    country: string
+    country: string,
   ): Promise<SendVerificationCodeResultDto> {
     const user = await this.userService.findUserById(userId);
 
@@ -285,7 +267,7 @@ export class AuthService {
         mobile: mobileNumber,
         mobileVerifiedAt: { $exists: true },
       },
-      { _id: 1 }
+      { _id: 1 },
     );
 
     if (userWithSameMobile) {
@@ -302,10 +284,10 @@ export class AuthService {
           Math.ceil(
             Date.now() -
               user.mobileCodeRequestedAt.getTime() -
-              Numbers.SMS_TOKEN_RESEND_BOUND
+              Numbers.SMS_TOKEN_RESEND_BOUND,
           ),
-          { language: "en", round: true }
-        )}`
+          { language: "en", round: true },
+        )}`,
       );
     }
 
@@ -316,7 +298,7 @@ export class AuthService {
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        mobileNumber
+        mobileNumber,
       );
 
       await this.userService.updateUserById(
@@ -329,7 +311,7 @@ export class AuthService {
           mobileCodeRequestsCountForToday:
             user.mobileCodeRequestsCountForToday + 1,
         },
-        ["mobileVerifiedAt"]
+        ["mobileVerifiedAt"],
       );
 
       return {
@@ -347,7 +329,7 @@ export class AuthService {
 
   async verifyMobileCode(
     userId: string,
-    verificationCode: number
+    verificationCode: number,
   ): Promise<string> {
     const user = await this.userService.findUserById(userId);
 
@@ -360,7 +342,7 @@ export class AuthService {
       throw new BadRequestException(
         `${Numbers.SMS_VERIFY_BOUND / 60000} ${
           AuthErrorMessages.EXPIRED_MOBILECODE_MESSAGE
-        }`
+        }`,
       );
     }
 
@@ -372,7 +354,7 @@ export class AuthService {
       {
         mobileVerifiedAt: new Date(),
       },
-      ["mobileCode", "mobileCodeRequestedAt"]
+      ["mobileCode", "mobileCodeRequestedAt"],
     );
     await this.createUserMobile({
       number: user.mobile,
@@ -401,10 +383,10 @@ export class AuthService {
           Math.ceil(
             user.mobileCodeRequestedAt.getTime() +
               Numbers.SMS_TOKEN_RESEND_BOUND -
-              Date.now()
+              Date.now(),
           ),
-          { language: "en", round: true }
-        )}`
+          { language: "en", round: true },
+        )}`,
       );
     }
 
@@ -415,7 +397,7 @@ export class AuthService {
         `${code} is your Treejer verification code. this code expires in ${
           Numbers.SMS_VERIFY_BOUND / 1000 / 60
         } minutes`,
-        user.mobile
+        user.mobile,
       );
 
       await this.userService.updateUserById(user._id, {
