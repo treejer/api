@@ -82,13 +82,10 @@ export class AuthService {
     let registerationWithMobile: boolean = false;
 
     if (email) {
-      console.log(checkedSumWallet);
-
       const dbEmailCount = await this.userService.findUser({
         email,
         walletAddress: { $ne: checkedSumWallet },
       });
-      console.log("dbEmailCount", dbEmailCount);
 
       if (dbEmailCount) hasRegisteredEmail = true;
     }
