@@ -1,9 +1,12 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
 
 export class PatchMobileNumberDto {
+  @ApiProperty()
   @IsString()
-  mobileNumber;
+  mobileNumber: string;
 
+  @ApiProperty()
   @IsString()
-  country;
+  country: string;
 }

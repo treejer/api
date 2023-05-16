@@ -21,7 +21,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.useGlobalFilters(
-    new ErrorFilter(bugsnagService.getBugsnag(), configService),
+    new ErrorFilter(bugsnagService.getBugsnag(), configService)
   );
 
   const config = new DocumentBuilder()

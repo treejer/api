@@ -514,4 +514,59 @@ describe("user service", () => {
     expect(userNewData2.firstName).toEqual("ali");
     expect(userNewData2.lastName).toEqual("Ad");
   });
+
+  it.only("test getUserData", async () => {
+    let account1 = await web3.eth.accounts.create();
+
+    const firstName = "firstName";
+    const lastName = "lastName";
+    const email = "email";
+    const emailVerifiedAt = new Date();
+
+    const idCard = "id card";
+    const createdAt = new Date();
+    const updatedAt = new Date();
+    const mobile = "+98901234567";
+    const mobileCountry = "IR";
+    const mobileVerifiedAt = new Date();
+    const isVerified = true;
+    const plantingNonce = 1;
+
+    let createdUser1 = await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .insertOne({
+        walletAddress: getCheckedSumAddress(account1.address),
+        nonce: 1036312,
+        firstName,
+        lastName,
+        email,
+        emailVerifiedAt,
+        idCard,
+        createdAt,
+        updatedAt,
+        mobile,
+        mobileCountry,
+        mobileVerifiedAt,
+        isVerified,
+        plantingNonce,
+      });
+
+    const result = await userService.getUserData(
+      createdUser1.insertedId.toString()
+    );
+    expect(result).toMatchObject({
+      firstName,
+      lastName,
+      email,
+      emailVerifiedAt,
+      idCard,
+      createdAt,
+      updatedAt,
+      mobile,
+      mobileCountry,
+      mobileVerifiedAt,
+      isVerified,
+      plantingNonce,
+    });
+  });
 });

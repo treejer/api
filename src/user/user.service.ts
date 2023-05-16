@@ -263,7 +263,7 @@ export class UserService {
       firstName: 1,
       lastName: 1,
       email: 1,
-      emailVerifiedAtL: 1,
+      emailVerifiedAt: 1,
       idCard: 1,
       createdAt: 1,
       updatedAt: 1,

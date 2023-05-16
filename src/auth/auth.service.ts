@@ -71,8 +71,6 @@ export class AuthService {
     if (token) {
       try {
         magicUserMetadata = await this.magicAuthService.getUserMetaData(token);
-
-        console.log("magicUserMetadata", magicUserMetadata);
       } catch (e) {
         throw new BadRequestException(e.message);
       }
@@ -329,7 +327,7 @@ export class AuthService {
 
   async verifyMobileCode(
     userId: string,
-    verificationCode: number,
+    verificationCode: string,
   ): Promise<string> {
     const user = await this.userService.findUserById(userId);
 
