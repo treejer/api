@@ -10,7 +10,7 @@ export class MagicAuthService {
   private magic;
   constructor(
     private magicAuthRepository: MagicAuthRepository,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {
     this.magic = new Magic(configService.get<string>("MAGIC_SECRET_API_KEY1"));
   }
@@ -20,6 +20,8 @@ export class MagicAuthService {
   }
 
   async getUserMetaData(token: string): Promise<UserMetadataResultDto> {
+    console.log("allllllllllllllllllllll");
+
     return await this.magic.users.getMetadataByToken(token);
   }
 }

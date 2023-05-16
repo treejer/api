@@ -76,6 +76,17 @@ export class AuthService {
       }
     }
 
+    console.log(
+      "magicUserMetadata",
+      typeof magicUserMetadata?.email?.toLowerCase(),
+    );
+    console.log("email", typeof email.toLowerCase());
+
+    console.log(
+      "magicUserMetadata?.email?.toLowerCase() === email.toLowerCase()",
+      magicUserMetadata?.email?.toLowerCase() === email.toLowerCase(),
+    );
+
     if (email) {
       if (
         await this.userService.findUser({
@@ -87,7 +98,7 @@ export class AuthService {
         throw new BadRequestException("email already in use");
       }
 
-      if (magicUserMetadata?.email?.toLowerCase() === email.toLowerCase()) {
+      if (magicUserMetadata?.email?.toLowerCase() !== email.toLowerCase()) {
         throw new ForbiddenException("Invalid Access");
       }
     }
@@ -103,7 +114,7 @@ export class AuthService {
         throw new BadRequestException("email already in use");
       }
 
-      if (magicUserMetadata?.phoneNumber?.toLowerCase() === mobile) {
+      if (magicUserMetadata?.phoneNumber?.toLowerCase() !== mobile) {
         throw new ForbiddenException("Invalid Access");
       }
     }
