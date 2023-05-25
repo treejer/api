@@ -1,4 +1,5 @@
 const fs = require("fs");
+
 export const treeTemplate = `{
     tree(id: "TREE_ID") {
       id
@@ -16,6 +17,7 @@ export const treeTemplate = `{
       treeStatus
       plantDate
       birthDate
+      treeSpecs
       attribute{
         attribute1
         attribute2
@@ -42,7 +44,19 @@ export const treeTemplate = `{
         latitude
         longitude
         attributes
+        updates
+        nursery
+        locations
       }
+
+      lastUpdate {
+        id
+        updateStatus
+        updateSpecs
+        createdAt
+        updatedAt
+      }
+
     }
     symbol(id: "TREE_ID") {
         shape

@@ -69,7 +69,7 @@ export class PlantService {
       signer,
     });
 
-    if (planterData.plantedCount + count >= planterData.supplyCap)
+    if (Number(planterData.plantedCount) + count >= Number(planterData.supplyCap))
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
     const createdData = await this.treePlantRepository.create({
