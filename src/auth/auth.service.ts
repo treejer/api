@@ -100,11 +100,11 @@ export class AuthService {
           mobileVerifiedAt: { $exists: true },
         })
       ) {
-        throw new BadRequestException("email already in use");
+        throw new BadRequestException(AuthErrorMessages.MOBILE_IN_USE);
       }
 
       if (magicUserMetadata?.phoneNumber?.toLowerCase() !== mobile) {
-        throw new ForbiddenException("Invalid Access");
+        throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
       }
     }
 

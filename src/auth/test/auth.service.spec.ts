@@ -756,4 +756,109 @@ describe("App e2e", () => {
     expect(insertedUser1_3.email).toBe(email);
     expect(!!insertedUser1_3.emailVerifiedAt).toBeTruthy();
   });
+
+  it.only("getNonce with token (mobile)", async () => {
+    const phone = "+989015418323";
+    const account = await web3.eth.accounts.create();
+    const account2 = await web3.eth.accounts.create();
+
+    jest.spyOn(magicAuthService, "getUserMetaData").mockReturnValue(
+      Promise.resolve({
+        issuer: "",
+        publicAddress: "",
+        email: "",
+        oauthProvider: "",
+        phoneNumber: phone,
+        wallets: [],
+      })
+    );
+
+    await expect(
+      authService.getNonce(account.address, "token", "+989023333232", "", "")
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: AuthErrorMessages.INVALID_ACCESS,
+      },
+    });
+
+    const result = await authService.getNonce(
+      account.address,
+      "token",
+      "",
+      phone,
+      "IR"
+    );
+
+    expect(!!result.message).toBeTruthy();
+    expect(!!result.userId).toBeTruthy();
+
+    let insertedUser = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result.userId });
+    console.log("innnn", insertedUser);
+
+    const expectedUser = {
+      walletAddress: getCheckedSumAddress(account.address),
+      mobileCodeRequestsCountForToday: 0,
+      isVerified: false,
+      plantingNonce: 1,
+      mobile: phone,
+      mobileCountry: "IR",
+    };
+
+    expect(insertedUser).toMatchObject(expectedUser);
+    expect(!!insertedUser.nonce).toBeTruthy();
+    expect(!!insertedUser.mobileVerifiedAt).toBeTruthy();
+
+    const createdMagicAuth = await mongoConnection
+      .collection(CollectionNames.MAGIC_AUTH)
+      .findOne({ userId: result.userId.toString() });
+
+    const createdMobileRepository = await mongoConnection
+      .collection(CollectionNames.USER_MOBILE)
+      .findOne({ userId: result.userId.toString() });
+
+    const expectedMobileRepository = {
+      userId: result.userId.toString(),
+      number: phone,
+    };
+
+    console.log("createdMobileRepository", createdMobileRepository);
+    expect(createdMobileRepository).toMatchObject(expectedMobileRepository);
+
+    const expectedMagicAuth = {
+      userId: result.userId.toString(),
+      walletAddress: getCheckedSumAddress(account.address),
+      mobile: phone,
+    };
+
+    expect(createdMagicAuth).toMatchObject(expectedMagicAuth);
+
+    await expect(
+      authService.getNonce(account2.address, "token", "", phone, "")
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 400,
+        message: AuthErrorMessages.MOBILE_IN_USE,
+      },
+    });
+
+    let result2 = await authService.getNonce(
+      account.address,
+      "token",
+      "",
+      phone,
+      ""
+    );
+
+    expect(!!result2.message).toBeTruthy();
+    expect(!!result2.userId).toBeTruthy();
+
+    const createdMagicAuth2 = await mongoConnection
+      .collection(CollectionNames.MAGIC_AUTH)
+      .findOne({ userId: result.userId.toString() });
+
+    expect(createdMagicAuth2).toMatchObject(expectedMagicAuth);
+  });
 });
