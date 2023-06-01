@@ -13,6 +13,8 @@ export enum CollectionNames {
   USER_MOBILE = "usermobiles",
   APPLICATION = "applications",
   FILE = "files",
+  MAGIC_AUTH = "magicauths",
+  ETHER_VALUE = "ethervalues",
 }
 
 export enum Role {
