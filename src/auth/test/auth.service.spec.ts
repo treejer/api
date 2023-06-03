@@ -757,7 +757,7 @@ describe("App e2e", () => {
     expect(!!insertedUser1_3.emailVerifiedAt).toBeTruthy();
   });
 
-  it.only("getNonce with token (mobile)", async () => {
+  it("getNonce with token (mobile)", async () => {
     const phone = "+989015418323";
     const account = await web3.eth.accounts.create();
     const account2 = await web3.eth.accounts.create();
@@ -796,7 +796,6 @@ describe("App e2e", () => {
     let insertedUser = await mongoConnection
       .collection(CollectionNames.USER)
       .findOne({ _id: result.userId });
-    console.log("innnn", insertedUser);
 
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account.address),
@@ -824,7 +823,6 @@ describe("App e2e", () => {
       number: phone,
     };
 
-    console.log("createdMobileRepository", createdMobileRepository);
     expect(createdMobileRepository).toMatchObject(expectedMobileRepository);
 
     const expectedMagicAuth = {
@@ -855,10 +853,176 @@ describe("App e2e", () => {
     expect(!!result2.message).toBeTruthy();
     expect(!!result2.userId).toBeTruthy();
 
-    const createdMagicAuth2 = await mongoConnection
+    const magicAuthLen = await mongoConnection
       .collection(CollectionNames.MAGIC_AUTH)
-      .findOne({ userId: result.userId.toString() });
+      .count();
 
-    expect(createdMagicAuth2).toMatchObject(expectedMagicAuth);
+    expect(magicAuthLen).toBe(1);
+  });
+
+  it("getNonce with token (mobile) (mobile registered by other and not verified)", async () => {
+    const phone = "+989015418323";
+    const account1 = await web3.eth.accounts.create();
+    const account2 = await web3.eth.accounts.create();
+
+    jest.spyOn(magicAuthService, "getUserMetaData").mockReturnValue(
+      Promise.resolve({
+        issuer: "",
+        publicAddress: "",
+        email: "",
+        oauthProvider: "",
+        phoneNumber: phone,
+        wallets: [],
+      })
+    );
+
+    const result = await authService.getNonce(account1.address, "", "", "", "");
+
+    let insertedUser1_1 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result.userId });
+
+    // @ts-ignore
+    jest.spyOn(smsService, "sendSMS").mockReturnValue(Promise.resolve(true));
+
+    //----------- run successfully
+
+    await authService.patchMobileNumber(result.userId.toString(), phone, "IR");
+
+    let insertedUser1_2 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result.userId });
+
+    expect(insertedUser1_2.mobile).toBe(phone);
+    expect(insertedUser1_2.mobileCountry).toBe("IR");
+
+    let result2 = await authService.getNonce(
+      account2.address,
+      "token",
+      "",
+      phone,
+      "IR"
+    );
+
+    const expectedUser = {
+      walletAddress: getCheckedSumAddress(account2.address),
+      mobileCodeRequestsCountForToday: 0,
+      isVerified: false,
+      plantingNonce: 1,
+      mobile: phone,
+      mobileCountry: "IR",
+    };
+
+    let insertedUser2_1 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result2.userId });
+
+    expect(insertedUser2_1).toMatchObject(expectedUser);
+    expect(!!insertedUser2_1.mobileVerifiedAt).toBeTruthy();
+  });
+
+  it.only("getNonce with token (mobile) (another mobile registered and not verified)", async () => {
+    const phone1 = "+989015418323";
+    const phone2 = "+989015410000";
+
+    const account1 = await web3.eth.accounts.create();
+
+    jest.spyOn(magicAuthService, "getUserMetaData").mockReturnValue(
+      Promise.resolve({
+        issuer: "",
+        publicAddress: "",
+        email: "",
+        oauthProvider: "",
+        phoneNumber: phone1,
+        wallets: [],
+      })
+    );
+
+    const result = await authService.getNonce(account1.address, "", "", "", "");
+
+    expect(
+      await mongoConnection.collection(CollectionNames.MAGIC_AUTH).count()
+    ).toBe(0);
+
+    expect(
+      await mongoConnection.collection(CollectionNames.USER_MOBILE).count()
+    ).toBe(0);
+
+    // @ts-ignore
+    jest.spyOn(smsService, "sendSMS").mockReturnValue(Promise.resolve(true));
+
+    //----------- run successfully
+
+    await authService.patchMobileNumber(result.userId.toString(), phone2, "TR");
+
+    let insertedUser1_1 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result.userId });
+
+    expect(insertedUser1_1.mobile).toBe(phone2);
+    expect(insertedUser1_1.mobileCountry).toBe("TR");
+    expect(insertedUser1_1.mobileVerifiedAt).toBeFalsy();
+
+    let result2 = await authService.getNonce(
+      account1.address,
+      "token",
+      "",
+      "",
+      ""
+    );
+
+    expect(!!result2.message).toBeTruthy();
+    expect(!!result2.userId).toBeTruthy();
+    expect(
+      await mongoConnection.collection(CollectionNames.MAGIC_AUTH).count()
+    ).toBe(0);
+
+    expect(
+      await mongoConnection.collection(CollectionNames.USER_MOBILE).count()
+    ).toBe(0);
+
+    let insertedUser1_2 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result2.userId });
+
+    expect(insertedUser1_2.mobile).toBe(phone2);
+    expect(insertedUser1_2.mobileCountry).toBe("TR");
+    expect(insertedUser1_2.mobileVerifiedAt).toBeFalsy();
+
+    let result3 = await authService.getNonce(
+      account1.address,
+      "token",
+      "",
+      phone1,
+      "IR"
+    );
+
+    expect(!!result3.message).toBeTruthy();
+    expect(!!result3.userId).toBeTruthy();
+
+    expect(
+      await mongoConnection.collection(CollectionNames.MAGIC_AUTH).count()
+    ).toBe(1);
+
+    expect(
+      await mongoConnection.collection(CollectionNames.USER_MOBILE).count()
+    ).toBe(1);
+
+    let insertedUser1_3 = await mongoConnection
+      .collection(CollectionNames.USER)
+      .findOne({ _id: result3.userId });
+
+    const expectedUser = {
+      walletAddress: getCheckedSumAddress(account1.address),
+      mobileCodeRequestsCountForToday: 1,
+      isVerified: false,
+      plantingNonce: 1,
+      mobile: phone1,
+      mobileCountry: "IR",
+    };
+
+    expect(insertedUser1_3).toMatchObject(expectedUser);
+
+    expect(!!insertedUser1_3.mobileVerifiedAt).toBeTruthy();
   });
 });
