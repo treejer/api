@@ -29,6 +29,7 @@ import { JwtUserDto } from "../auth/dtos";
 import { Web3Service } from "src/web3/web3.service";
 
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
+import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
 
 @Injectable()
 export class PlantService {
@@ -69,12 +70,15 @@ export class PlantService {
       signer,
     });
 
-    if (Number(planterData.plantedCount) + count >= Number(planterData.supplyCap))
+    if (
+      Number(planterData.plantedCount) + count >=
+      Number(planterData.supplyCap)
+    )
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
     const createdData = await this.treePlantRepository.create({
       ...dto,
-      signer,
+      signer: user.walletAddress,
       nonce: userData.plantingNonce,
     });
 
@@ -382,7 +386,7 @@ export class PlantService {
 
     const createdData = await this.updateTreeRepository.create({
       ...dto,
-      signer,
+      signer: user.walletAddress,
       nonce: userData.plantingNonce,
     });
 
@@ -509,6 +513,25 @@ export class PlantService {
     return await this.treePlantRepository.sort(filter, sortOption, projection);
   }
 
+  async getPlantRequestsWithLimit(
+    limit,
+    filter,
+    sortOption,
+    projection?
+  ): Promise<PlantRequestsWithLimitResultDto> {
+    const data = await this.treePlantRepository.findWithLimit(
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+
+    const count = await this.treePlantRepository.count(filter);
+
+    // @ts-ignore
+    return { data, count };
+  }
+
   async getAssignedTreeRequests(
     filter,
     sortOption,
@@ -521,12 +544,43 @@ export class PlantService {
     );
   }
 
+  async getAssignedTreeRequestsWithLimit(
+    limit,
+    filter,
+    sortOption,
+    projection?
+  ) {
+    const data = await this.assignedTreePlantRepository.findWithLimit(
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+
+    const count = await this.assignedTreePlantRepository.count(filter);
+
+    return { data, count };
+  }
+
   async getUpdateTreeRequests(
     filter,
     sortOption,
     projection?
   ): Promise<UpdateTree[]> {
     return await this.updateTreeRepository.sort(filter, sortOption, projection);
+  }
+
+  async getUpdateTreeRequestsWithLimit(limit, filter, sortOption, projection?) {
+    const data = await this.updateTreeRepository.findWithLimit(
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+
+    const count = await this.updateTreeRepository.count(filter);
+
+    return { data, count };
   }
 
   async getPendingListCount(filter): Promise<number> {

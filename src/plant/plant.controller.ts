@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   Get,
+  Query,
 } from "@nestjs/common";
 
 import {
@@ -37,9 +38,13 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
+import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
+import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 
 @Controller()
 @ApiTags("plant")
@@ -303,6 +308,71 @@ export class PlantController {
       {}
     );
   }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get plant requests for login user." })
+  @ApiResponse({
+    status: 200,
+    description: "get plant requests for verification",
+    type: PlantRequestsWithLimitResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiQuery({ name: "filters", required: false, type: String })
+  @ApiQuery({ name: "sort", required: false, type: String })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("plant_requests/verification/me")
+  getMyPlantRequests(
+    @User() user: JwtUserDto,
+    @Query("limit") limit: number,
+    @Query("filters") filters?: string,
+    @Query("sort") sort?: string
+  ) {
+    if (!filters || filters.length === 0) filters = "{}";
+    if (!sort || sort.length === 0) sort = "{}";
+    try {
+      filters = JSON.parse(decodeURIComponent(filters));
+    } catch (error) {
+      filters = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    try {
+      sort = JSON.parse(decodeURIComponent(sort));
+    } catch (error) {
+      sort = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    filters["signer"] = user.walletAddress;
+
+    return this.plantService.getPlantRequestsWithLimit(
+      limit,
+      filters,
+      sort,
+      {}
+    );
+  }
+
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "create assigned request." })
@@ -578,6 +648,71 @@ export class PlantController {
       {}
     );
   }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get assigned requests for login user." })
+  @ApiResponse({
+    status: 200,
+    description: "get assigned requests for verification",
+    type: AssignedRequestWithLimitResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiQuery({ name: "filters", required: false, type: String })
+  @ApiQuery({ name: "sort", required: false, type: String })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("assigned_requests/verification/me")
+  getMyAssignedTreeRequests(
+    @User() user: JwtUserDto,
+    @Query("limit") limit: number,
+    @Query("filters") filters?: string,
+    @Query("sort") sort?: string
+  ) {
+    if (!filters || filters.length === 0) filters = "{}";
+    if (!sort || sort.length === 0) sort = "{}";
+    try {
+      filters = JSON.parse(decodeURIComponent(filters));
+    } catch (error) {
+      filters = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    try {
+      sort = JSON.parse(decodeURIComponent(sort));
+    } catch (error) {
+      sort = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    filters["signer"] = user.walletAddress;
+
+    return this.plantService.getAssignedTreeRequestsWithLimit(
+      limit,
+      filters,
+      sort,
+      {}
+    );
+  }
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "create update request." })
@@ -846,6 +981,71 @@ export class PlantController {
     return this.plantService.getUpdateTreeRequests(
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 },
+      {}
+    );
+  }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get update requests for login user." })
+  @ApiResponse({
+    status: 200,
+    description: "get update requests for verification",
+    type: UpdateRequestWithLimitResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiQuery({ name: "filters", required: false, type: String })
+  @ApiQuery({ name: "sort", required: false, type: String })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("update_requests/verification/me")
+  getMyUpdateRequests(
+    @User() user: JwtUserDto,
+    @Query("limit") limit: number,
+    @Query("filters") filters?: string,
+    @Query("sort") sort?: string
+  ) {
+    if (!filters || filters.length === 0) filters = "{}";
+    if (!sort || sort.length === 0) sort = "{}";
+    try {
+      filters = JSON.parse(decodeURIComponent(filters));
+    } catch (error) {
+      filters = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    try {
+      sort = JSON.parse(decodeURIComponent(sort));
+    } catch (error) {
+      sort = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    filters["signer"] = user.walletAddress;
+
+    return this.plantService.getUpdateTreeRequestsWithLimit(
+      limit,
+      filters,
+      sort,
       {}
     );
   }
