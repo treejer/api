@@ -921,7 +921,7 @@ describe("App e2e", () => {
     expect(!!insertedUser2_1.mobileVerifiedAt).toBeTruthy();
   });
 
-  it.only("getNonce with token (mobile) (another mobile registered and not verified)", async () => {
+  it("getNonce with token (mobile) (another mobile registered and not verified)", async () => {
     const phone1 = "+989015418323";
     const phone2 = "+989015410000";
 

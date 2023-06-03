@@ -63,7 +63,7 @@ export class PlantService {
 
     const planterData = await this.web3Service.getPlanterData(signer);
 
-    if (planterData.status != 1)
+    if (Number(planterData.status) !== 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
     let count = await this.getPendingListCount({
@@ -211,18 +211,18 @@ export class PlantService {
 
     let tree = await this.web3Service.getTreeData(dto.treeId);
 
-    if (tree.treeStatus != 2)
+    if (Number(tree.treeStatus) !== 2)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     const planterData = await this.web3Service.getPlanterData(signer);
 
-    if (planterData.status != 1)
+    if (Number(planterData.status) !== 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER_STATUS);
 
     if (signer !== getCheckedSumAddress(tree.planter)) {
       if (
         !(
-          planterData.planterType == 3 &&
+          Number(planterData.planterType) === 3 &&
           tree.planter ==
             (await this.web3Service.getPlanterOrganization(signer))
         )
@@ -234,7 +234,10 @@ export class PlantService {
       signer: signer,
     });
 
-    if (planterData.plantedCount + pendingPlantsCount >= planterData.supplyCap)
+    if (
+      Number(planterData.plantedCount) + pendingPlantsCount >=
+      Number(planterData.supplyCap)
+    )
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
     const assignedPlant = await this.assignedTreePlantRepository.create({
@@ -364,7 +367,7 @@ export class PlantService {
 
     let tree = await this.web3Service.getTreeData(dto.treeId);
 
-    if (tree.treeStatus < 4)
+    if (Number(tree.treeStatus) < 4)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
     if (signer !== getCheckedSumAddress(tree.planter))
@@ -372,7 +375,7 @@ export class PlantService {
 
     if (
       Math.floor(new Date().getTime() / 1000) <
-      tree.plantDate + tree.treeStatus * 3600 + 604800
+      Number(tree.plantDate) + Number(tree.treeStatus) * 3600 + 604800
     )
       throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
 
