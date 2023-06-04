@@ -12,4 +12,10 @@ export class GraphController {
   getTree(@Param("id") id: string) {
     return this.graphService.getTreeData(id);
   }
+
+  @ApiOperation({ summary: "get graph planter data" })
+  @Get("/planter/:id")
+  getPlanterData(@Param("id") id: string) {
+    return this.graphService.getPlanterData(id);
+  }
 }
