@@ -5,7 +5,7 @@ import { AssignedRequestResultDto } from "./assignedRequestResult.dto";
 export class AssignedRequestWithLimitResultDto {
   @ApiResponseProperty({ type: [AssignedRequestResultDto] })
   @IsArray()
-  data: AssignedRequestResultDto;
+  data: AssignedRequestResultDto[];
 
   @ApiResponseProperty()
   @IsNumber()

@@ -5,7 +5,7 @@ import { UpdateRequestResultDto } from "./updateRequestResult.dto";
 export class UpdateRequestWithLimitResultDto {
   @ApiResponseProperty({ type: [UpdateRequestResultDto] })
   @IsArray()
-  data: UpdateRequestResultDto;
+  data: UpdateRequestResultDto[];
 
   @ApiResponseProperty()
   @IsNumber()
