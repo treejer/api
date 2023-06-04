@@ -18,6 +18,7 @@ import { EtherValuesModule } from "./etherValues/etherValues.module";
 import { TreeModule } from "./tree/tree.module";
 import { AdminModule } from "./admin/admin.module";
 import { ApplicationModule } from "./application/application.module";
+import { GraphModule } from "./graph/graph.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ApplicationModule } from "./application/application.module";
     EmailModule,
     EtherValuesModule,
     TreeModule,
+    GraphModule,
     AdminModule,
     ApplicationModule,
     ConfigModule.forRoot({ isGlobal: true }),
