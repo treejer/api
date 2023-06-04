@@ -4,7 +4,7 @@ import { GraphService } from "./graph.service";
 
 @ApiTags("trees")
 @Controller("graph")
-export class TreeController {
+export class GraphController {
   constructor(private graphService: GraphService) {}
 
   @Get("/tree/:id")
