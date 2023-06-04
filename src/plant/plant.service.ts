@@ -32,6 +32,7 @@ import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
 import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
+import { GraphService } from "src/graph/graph.service";
 
 @Injectable()
 export class PlantService {
@@ -40,7 +41,8 @@ export class PlantService {
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
     private userService: UserService,
-    private web3Service: Web3Service
+    private web3Service: Web3Service,
+    private graphService: GraphService
   ) {}
 
   async plant(dto: PlantRequestDto, user: JwtUserDto): Promise<TreePlant> {
@@ -63,7 +65,7 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const planterData = await this.web3Service.getPlanterData(signer);
+    const planterData = await this.graphService.getPlanterData(signer);
 
     if (Number(planterData.status) !== 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
@@ -211,12 +213,12 @@ export class PlantService {
     if (plantData)
       throw new ConflictException(PlantErrorMessage.PENDING_ASSIGNED_PLANT);
 
-    let tree = await this.web3Service.getTreeData(dto.treeId);
+    let tree = await this.graphService.getTreeData(dto.treeId.toString());
 
     if (Number(tree.treeStatus) !== 2)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
 
-    const planterData = await this.web3Service.getPlanterData(signer);
+    const planterData = await this.graphService.getPlanterData(signer);
 
     if (Number(planterData.status) !== 1)
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER_STATUS);
@@ -225,8 +227,8 @@ export class PlantService {
       if (
         !(
           Number(planterData.planterType) === 3 &&
-          tree.planter ==
-            (await this.web3Service.getPlanterOrganization(signer))
+          getCheckedSumAddress(tree.planter) ==
+            getCheckedSumAddress(planterData.memberOf)
         )
       )
         throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
@@ -367,7 +369,7 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    let tree = await this.web3Service.getTreeData(dto.treeId);
+    let tree = await this.graphService.getTreeData(dto.treeId.toString());
 
     if (Number(tree.treeStatus) < 4)
       throw new ForbiddenException(PlantErrorMessage.INVALID_TREE_STATUS);
