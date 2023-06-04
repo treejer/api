@@ -7,12 +7,12 @@ import { ConfigService } from "@nestjs/config";
 import { TreeErrorMessage } from "src/common/constants";
 import axios from "axios";
 import { getTreeForPlant } from "src/common/graphQuery/getTreeForPlant";
-
+import { GetTreeDataResultDto } from "./dto/get-tree-data-result-dto";
 @Injectable()
 export class GraphService {
   constructor(private config: ConfigService) {}
 
-  async getTreeData(treeId: string): Promise<any> {
+  async getTreeData(treeId: string): Promise<GetTreeDataResultDto> {
     let hexTreeId: string;
 
     try {
@@ -37,9 +37,14 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      if (res.status == 200) {
-        console.log("ssss", res.data.errors);
-        console.log("res", res.data.data);
+      if (res.status == 200 && res.data.data) {
+        let data = res.data.data.tree;
+
+        data.planter = res.data.data.tree.planter.id;
+
+        console.log("data", data);
+
+        return data;
       } else {
         throw new InternalServerErrorException();
       }
