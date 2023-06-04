@@ -7,7 +7,7 @@ import { GraphService } from "./graph.service";
 export class GraphController {
   constructor(private graphService: GraphService) {}
 
-  @ApiOperation({ summary: "get tree data" })
+  @ApiOperation({ summary: "get graph data" })
   @Get("/tree/:id")
   getTree(@Param("id") id: string) {
     return this.graphService.getTreeData(id);

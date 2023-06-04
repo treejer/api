@@ -37,7 +37,12 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res", res);
+      if (res.status == 200) {
+        console.log("ssss", res.data.errors);
+        console.log("res", res.data.data);
+      } else {
+        throw new InternalServerErrorException();
+      }
     } catch (error) {
       throw new InternalServerErrorException();
     }
