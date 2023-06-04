@@ -57,10 +57,10 @@ export class GraphService {
           return res.data.data.planter;
         }
       } else {
-        throw new InternalServerErrorException();
+        throw new InternalServerErrorException("Graph failed !!");
       }
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException("Graph failed !!");
     }
   }
 
