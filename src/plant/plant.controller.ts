@@ -345,6 +345,7 @@ export class PlantController {
   @Get("plant_requests/verification/me")
   getMyPlantRequests(
     @User() user: JwtUserDto,
+    @Query("skip") skip: number,
     @Query("limit") limit: number,
     @Query("filters") filters?: string,
     @Query("sort") sort?: string
@@ -366,6 +367,7 @@ export class PlantController {
     filters["signer"] = user.walletAddress;
 
     return this.plantService.getPlantRequestsWithLimit(
+      skip,
       limit,
       filters,
       sort,
@@ -686,6 +688,7 @@ export class PlantController {
   @Get("assigned_requests/verification/me")
   getMyAssignedTreeRequests(
     @User() user: JwtUserDto,
+    @Query("skip") skip: number,
     @Query("limit") limit: number,
     @Query("filters") filters?: string,
     @Query("sort") sort?: string
@@ -707,6 +710,7 @@ export class PlantController {
     filters["signer"] = user.walletAddress;
 
     return this.plantService.getAssignedTreeRequestsWithLimit(
+      skip,
       limit,
       filters,
       sort,
@@ -1022,6 +1026,7 @@ export class PlantController {
   @Get("update_requests/verification/me")
   getMyUpdateRequests(
     @User() user: JwtUserDto,
+    @Query("skip") skip: number,
     @Query("limit") limit: number,
     @Query("filters") filters?: string,
     @Query("sort") sort?: string
@@ -1043,6 +1048,7 @@ export class PlantController {
     filters["signer"] = user.walletAddress;
 
     return this.plantService.getUpdateTreeRequestsWithLimit(
+      skip,
       limit,
       filters,
       sort,

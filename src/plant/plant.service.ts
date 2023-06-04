@@ -521,12 +521,14 @@ export class PlantService {
   }
 
   async getPlantRequestsWithLimit(
+    skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<PlantRequestsWithLimitResultDto> {
-    const data = await this.treePlantRepository.findWithLimit(
+    const data = await this.treePlantRepository.findWithPaginate(
+      skip * limit,
       limit,
       filter,
       sortOption,
@@ -552,12 +554,14 @@ export class PlantService {
   }
 
   async getAssignedTreeRequestsWithLimit(
+    skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<AssignedRequestWithLimitResultDto> {
-    const data = await this.assignedTreePlantRepository.findWithLimit(
+    const data = await this.assignedTreePlantRepository.findWithPaginate(
+      skip * limit,
       limit,
       filter,
       sortOption,
@@ -579,12 +583,14 @@ export class PlantService {
   }
 
   async getUpdateTreeRequestsWithLimit(
+    skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<UpdateRequestWithLimitResultDto> {
-    const data = await this.updateTreeRepository.findWithLimit(
+    const data = await this.updateTreeRepository.findWithPaginate(
+      skip * limit,
       limit,
       filter,
       sortOption,

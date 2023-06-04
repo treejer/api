@@ -41,7 +41,8 @@ export abstract class EntityRepository<T extends Document> {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async findWithLimit(
+  async findWithPaginate(
+    skip,
     limit,
     entityFilterQuery: FilterQuery<T>,
     sortFilter: any,
@@ -50,7 +51,8 @@ export abstract class EntityRepository<T extends Document> {
     try {
       const query = this.entityModel
         .find(entityFilterQuery, { ...projection })
-        .sort(sortFilter);
+        .sort(sortFilter)
+        .skip(skip);
 
       if (limit) {
         query.limit(limit);

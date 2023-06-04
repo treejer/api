@@ -3035,12 +3035,23 @@ describe("App e2e", () => {
         });
     }
 
-    let result1 = await plantService.getPlantRequestsWithLimit(2, {}, {});
+    for (let i = 0; i < 4; i++) {
+      let result1 = await plantService.getPlantRequestsWithLimit(i, 3, {}, {});
+      if (i == 3) {
+        expect(result1.data.length).toBe(1);
+      } else {
+        expect(result1.data.length).toBe(3);
+      }
 
-    expect(result1.data.length).toBe(2);
-    expect(result1.count).toBe(10);
+      expect(result1.count).toBe(10);
+
+      for (let index = 0; index < result1.data.length; index++) {
+        expect(result1.data[index].nonce).toBe(i * 3 + index + 1);
+      }
+    }
 
     let result2 = await plantService.getPlantRequestsWithLimit(
+      0,
       5,
       { status: PlantStatus.DELETE },
       {}
@@ -3050,12 +3061,13 @@ describe("App e2e", () => {
     expect(result2.count).toBe(3);
 
     let result3 = await plantService.getPlantRequestsWithLimit(
-      5,
+      0,
+      6,
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 }
     );
 
-    expect(result3.data.length).toBe(5);
+    expect(result3.data.length).toBe(6);
     expect(result3.count).toBe(7);
 
     for (let index = 0; index < result3.data.length; index++) {
@@ -3121,16 +3133,28 @@ describe("App e2e", () => {
         });
     }
 
-    let result1 = await plantService.getAssignedTreeRequestsWithLimit(
-      2,
-      {},
-      {}
-    );
+    for (let i = 0; i < 4; i++) {
+      let result1 = await plantService.getAssignedTreeRequestsWithLimit(
+        i,
+        3,
+        {},
+        {}
+      );
+      if (i == 3) {
+        expect(result1.data.length).toBe(1);
+      } else {
+        expect(result1.data.length).toBe(3);
+      }
 
-    expect(result1.data.length).toBe(2);
-    expect(result1.count).toBe(10);
+      expect(result1.count).toBe(10);
+
+      for (let index = 0; index < result1.data.length; index++) {
+        expect(result1.data[index].nonce).toBe(i * 3 + index + 1);
+      }
+    }
 
     let result2 = await plantService.getAssignedTreeRequestsWithLimit(
+      0,
       5,
       { status: PlantStatus.DELETE },
       {}
@@ -3140,12 +3164,13 @@ describe("App e2e", () => {
     expect(result2.count).toBe(3);
 
     let result3 = await plantService.getAssignedTreeRequestsWithLimit(
-      5,
+      0,
+      6,
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 }
     );
 
-    expect(result3.data.length).toBe(5);
+    expect(result3.data.length).toBe(6);
     expect(result3.count).toBe(7);
 
     for (let index = 0; index < result3.data.length; index++) {
@@ -3208,12 +3233,28 @@ describe("App e2e", () => {
         });
     }
 
-    let result1 = await plantService.getUpdateTreeRequestsWithLimit(2, {}, {});
+    for (let i = 0; i < 4; i++) {
+      let result1 = await plantService.getUpdateTreeRequestsWithLimit(
+        i,
+        3,
+        {},
+        {}
+      );
+      if (i == 3) {
+        expect(result1.data.length).toBe(1);
+      } else {
+        expect(result1.data.length).toBe(3);
+      }
 
-    expect(result1.data.length).toBe(2);
-    expect(result1.count).toBe(10);
+      expect(result1.count).toBe(10);
+
+      for (let index = 0; index < result1.data.length; index++) {
+        expect(result1.data[index].nonce).toBe(i * 3 + index + 1);
+      }
+    }
 
     let result2 = await plantService.getUpdateTreeRequestsWithLimit(
+      0,
       5,
       { status: PlantStatus.DELETE },
       {}
@@ -3223,12 +3264,13 @@ describe("App e2e", () => {
     expect(result2.count).toBe(3);
 
     let result3 = await plantService.getUpdateTreeRequestsWithLimit(
-      5,
+      0,
+      6,
       { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 }
     );
 
-    expect(result3.data.length).toBe(5);
+    expect(result3.data.length).toBe(6);
     expect(result3.count).toBe(7);
 
     for (let index = 0; index < result3.data.length; index++) {
