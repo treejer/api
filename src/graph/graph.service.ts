@@ -40,13 +40,22 @@ export class GraphService {
       console.log("res.data.errors", res.data);
 
       if (res.status == 200 && res.data.data) {
-        let data = res.data.data.tree;
+        if (res.data.data.tree == null) {
+          return {
+            id: hexTreeId,
+            plantDate: "0",
+            planter: "0x0",
+            treeStatus: "0",
+          };
+        } else {
+          let data = res.data.data.tree;
 
-        data.planter = res.data.data.tree.planter.id;
+          data.planter = res.data.data.tree.planter.id;
 
-        console.log("data", data);
+          console.log("data", data);
 
-        return data;
+          return data;
+        }
       } else {
         throw new InternalServerErrorException();
       }

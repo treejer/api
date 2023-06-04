@@ -7,9 +7,7 @@ export class GetTreeDataResultDto {
   id: string;
 
   @ApiResponseProperty()
-  planter: {
-    id: string;
-  };
+  planter: string;
 
   @ApiResponseProperty()
   @IsString()
