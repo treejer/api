@@ -36,8 +36,6 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res.data", res.data);
-
       if (res.status == 200 && res.data.data) {
         if (res.data.data.planter == null) {
           return {
@@ -46,8 +44,16 @@ export class GraphService {
             planterType: "0",
             plantedCount: "0",
             supplyCap: "0",
+            memberOf: "0x0",
           };
         } else {
+          let data = res.data.data.planter;
+          if (data.memberOf == null) {
+            data.memberOf = "0x0";
+          } else {
+            data.memberOf = res.data.data.planter.memberOf.id;
+          }
+
           return res.data.data.planter;
         }
       } else {

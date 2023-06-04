@@ -5,5 +5,8 @@ export const getPlanterDataForPlant = `{
       planterType
       plantedCount
       supplyCap
+      memberOf {
+        id
+      },
     }
   }`;

@@ -20,4 +20,8 @@ export class GetPlanterDataResultDto {
   @ApiResponseProperty()
   @IsString()
   supplyCap: string;
+
+  @ApiResponseProperty()
+  @IsString()
+  memberOf: string;
 }
