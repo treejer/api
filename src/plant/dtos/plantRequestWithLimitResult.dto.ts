@@ -5,7 +5,7 @@ import { PlantRequestResultDto } from "./plantRequestResult.dto";
 export class PlantRequestsWithLimitResultDto {
   @ApiResponseProperty({ type: [PlantRequestResultDto] })
   @IsArray()
-  data: PlantRequestResultDto;
+  data: PlantRequestResultDto[];
 
   @ApiResponseProperty()
   @IsNumber()

@@ -30,6 +30,8 @@ import { Web3Service } from "src/web3/web3.service";
 
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
+import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
+import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
 
 @Injectable()
 export class PlantService {
@@ -552,7 +554,7 @@ export class PlantService {
     filter,
     sortOption,
     projection?
-  ) {
+  ): Promise<AssignedRequestWithLimitResultDto> {
     const data = await this.assignedTreePlantRepository.findWithLimit(
       limit,
       filter,
@@ -562,6 +564,7 @@ export class PlantService {
 
     const count = await this.assignedTreePlantRepository.count(filter);
 
+    // @ts-ignore
     return { data, count };
   }
 
@@ -573,7 +576,12 @@ export class PlantService {
     return await this.updateTreeRepository.sort(filter, sortOption, projection);
   }
 
-  async getUpdateTreeRequestsWithLimit(limit, filter, sortOption, projection?) {
+  async getUpdateTreeRequestsWithLimit(
+    limit,
+    filter,
+    sortOption,
+    projection?
+  ): Promise<UpdateRequestWithLimitResultDto> {
     const data = await this.updateTreeRepository.findWithLimit(
       limit,
       filter,
@@ -583,6 +591,7 @@ export class PlantService {
 
     const count = await this.updateTreeRepository.count(filter);
 
+    // @ts-ignore
     return { data, count };
   }
 
