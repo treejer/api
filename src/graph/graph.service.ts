@@ -37,6 +37,8 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
+      console.log("res.data.errors", res.data.errors);
+
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.tree;
 
