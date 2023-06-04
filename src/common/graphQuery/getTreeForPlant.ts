@@ -6,4 +6,5 @@ export const getTreeForPlant = `{
       planter{
         id
       }
+    }
   }`;
