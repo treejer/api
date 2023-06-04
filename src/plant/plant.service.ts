@@ -26,7 +26,6 @@ import {
   PlantStatus,
 } from "../common/constants";
 import { JwtUserDto } from "../auth/dtos";
-import { Web3Service } from "src/web3/web3.service";
 
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
@@ -41,7 +40,6 @@ export class PlantService {
     private assignedTreePlantRepository: AssignedTreePlantRepository,
     private treePlantRepository: TreePlantRepository,
     private userService: UserService,
-    private web3Service: Web3Service,
     private graphService: GraphService
   ) {}
 

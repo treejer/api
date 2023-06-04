@@ -19,7 +19,6 @@ import {
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserModule } from "src/user/user.module";
 import { AuthModule } from "src/auth/auth.module";
-import { Web3Module } from "src/web3/web3.module";
 import { DatabaseModule } from "src/database/database.module";
 import { GraphModule } from "src/graph/graph.module";
 
@@ -28,7 +27,6 @@ import { GraphModule } from "src/graph/graph.module";
     UserModule,
     AuthModule,
     GraphModule,
-    Web3Module,
     DatabaseModule,
     MongooseModule.forFeature([
       { name: AssignedTreePlant.name, schema: AssignedTreePlantSchema },
