@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { TreeErrorMessage } from "src/common/constants";
 import axios from "axios";
 import { getTreeForPlant } from "src/common/graphQuery/getTreeForPlant";
+import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { GetTreeDataResultDto } from "./dto/get-tree-data-result.dto";
 import { GetPlanterDataResultDto } from "./dto/get-planter-data-result.dto";
 import { getPlanterDataForPlant } from "src/common/graphQuery/getPlanterDataForPlant";
@@ -89,8 +90,6 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res.data.errors", res.data);
-
       if (res.status == 200 && res.data.data) {
         if (res.data.data.tree == null) {
           return {
@@ -112,5 +111,49 @@ export class GraphService {
     } catch (error) {
       throw new InternalServerErrorException();
     }
+  }
+
+  async getSubmittedData(): Promise<any> {
+    
+
+    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
+
+    if (!theGraphUrl) {
+      throw new InternalServerErrorException(
+        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
+      );
+    }
+
+    // getTreeForPlant.replace(/TREE_ID/g, hexTreeId)
+
+    // try {
+    //   const postBody = JSON.stringify({
+    //     query: getTreeForPlant.replace(/TREE_ID/g, hexTreeId),
+    //     variables: null,
+    //   });
+
+    //   const res = await axios.post(theGraphUrl, postBody);
+
+    //   if (res.status == 200 && res.data.data) {
+    //     if (res.data.data.tree == null) {
+    //       return {
+    //         id: hexTreeId,
+    //         plantDate: "0",
+    //         planter: "0x0",
+    //         treeStatus: "0",
+    //       };
+    //     } else {
+    //       let data = res.data.data.tree;
+
+    //       data.planter = res.data.data.tree.planter.id;
+
+    //       return data;
+    //     }
+    //   } else {
+    //     throw new InternalServerErrorException();
+    //   }
+    // } catch (error) {
+    //   throw new InternalServerErrorException();
+    // }
   }
 }

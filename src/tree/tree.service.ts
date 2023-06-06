@@ -85,7 +85,7 @@ export class TreeService {
         if (tree.id > 0) {
           tree.name = "Genesis Tree #" + treeId;
         } else {
-          tree.name = "TREE OF LIFE";
+          tree.name = "TREE OF LIFE"; 
         }
       } else {
         tree.name = "Tree #" + treeId;
