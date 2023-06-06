@@ -27,6 +27,9 @@ export class TreePlant extends Document {
   @Prop({ type: Number, required: true, default: PlantStatus.PENDING })
   status;
 
+  @Prop({ type: String })
+  comment;
+
   @Prop({ type: Date, required: true, default: Date.now })
   createdAt;
 
