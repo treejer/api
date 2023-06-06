@@ -519,21 +519,28 @@ export class PlantService {
   }
 
   async getPlantRequestsWithLimit(
+    signer,
     skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<PlantRequestsWithLimitResultDto> {
+    const filterQuery = {
+      ...filter,
+      signer,
+      status: { $ne: PlantStatus.DELETE },
+    };
+
     const data = await this.treePlantRepository.findWithPaginate(
       skip * limit,
       limit,
-      filter,
+      filterQuery,
       sortOption,
       projection
     );
 
-    const count = await this.treePlantRepository.count(filter);
+    const count = await this.treePlantRepository.count(filterQuery);
 
     // @ts-ignore
     return { data, count };
@@ -552,21 +559,28 @@ export class PlantService {
   }
 
   async getAssignedTreeRequestsWithLimit(
+    signer,
     skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<AssignedRequestWithLimitResultDto> {
+    const filterQuery = {
+      ...filter,
+      signer,
+      status: { $ne: PlantStatus.DELETE },
+    };
+
     const data = await this.assignedTreePlantRepository.findWithPaginate(
       skip * limit,
       limit,
-      filter,
+      filterQuery,
       sortOption,
       projection
     );
 
-    const count = await this.assignedTreePlantRepository.count(filter);
+    const count = await this.assignedTreePlantRepository.count(filterQuery);
 
     // @ts-ignore
     return { data, count };
@@ -581,21 +595,28 @@ export class PlantService {
   }
 
   async getUpdateTreeRequestsWithLimit(
+    signer,
     skip,
     limit,
     filter,
     sortOption,
     projection?
   ): Promise<UpdateRequestWithLimitResultDto> {
+    const filterQuery = {
+      ...filter,
+      signer,
+      status: { $ne: PlantStatus.DELETE },
+    };
+
     const data = await this.updateTreeRepository.findWithPaginate(
       skip * limit,
       limit,
-      filter,
+      filterQuery,
       sortOption,
       projection
     );
 
-    const count = await this.updateTreeRepository.count(filter);
+    const count = await this.updateTreeRepository.count(filterQuery);
 
     // @ts-ignore
     return { data, count };

@@ -364,9 +364,8 @@ export class PlantController {
       sort = JSON.parse(decodeURIComponent("{}"));
     }
 
-    filters["signer"] = user.walletAddress;
-
     return this.plantService.getPlantRequestsWithLimit(
+      user.walletAddress,
       skip,
       limit,
       filters,
@@ -707,9 +706,8 @@ export class PlantController {
       sort = JSON.parse(decodeURIComponent("{}"));
     }
 
-    filters["signer"] = user.walletAddress;
-
     return this.plantService.getAssignedTreeRequestsWithLimit(
+      user.walletAddress,
       skip,
       limit,
       filters,
@@ -1045,9 +1043,8 @@ export class PlantController {
       sort = JSON.parse(decodeURIComponent("{}"));
     }
 
-    filters["signer"] = user.walletAddress;
-
     return this.plantService.getUpdateTreeRequestsWithLimit(
+      user.walletAddress,
       skip,
       limit,
       filters,
