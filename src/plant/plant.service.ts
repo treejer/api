@@ -657,7 +657,7 @@ export class PlantService {
     try {
       const postBody = JSON.stringify({
         query:`{
-          trees(skip:${skip},first:${limit},where: { planter:${(planterAddress.toLowerCase()).toString()}}){
+          trees(skip:${skip},first:${limit},where: { planter:"${planterAddress.toLowerCase()}"}){
             id
             treeStatus
             plantDate
@@ -671,18 +671,8 @@ export class PlantService {
       console.log("res.data.data",res.data.data)
 
       if (res.status == 200 && res.data.data) {
-        if (res.data.data.trees == null) {
-          // return {
-          //   id: hexTreeId,
-          //   plantDate: "0",
-          //   planter: "0x0",
-          //   treeStatus: "0",
-          // };
-        } else {
+        
           let data = res.data.data.trees;
-
-          console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaaa",data);
-
 
           data = await Promise.all(data.map(async item => {
             let t = item;
@@ -695,9 +685,9 @@ export class PlantService {
               })
 
               if(assignedCount>0){
-                treeS = "Assigned&Pending"
+                treeS = "Pending"
               }else{
-                treeS = "Assigned&NotPending" 
+                treeS = "Assigned" 
               }
             }else if(Number(t.treeStatus)>=4){
               let updatedCount = await this.getUpdatePendingListCount({
@@ -705,32 +695,27 @@ export class PlantService {
                 status:PlantStatus.PENDING
               })
 
-              console.log("updatedCount",parseInt(t.id, 16),updatedCount);
-
               if(updatedCount>0){
-                treeS = "Verified&Pending"
+                treeS = "Pending"
               }else {
                 if (
                   Math.floor(new Date().getTime() / 1000) <
                   Number(t.plantDate) + Number(t.treeStatus) * 3600 + 604800
                 ){
-                  treeS = "Verified&CantUpdate"
+                  treeS = "Verified"
                 }else{
-                  treeS = "Verified&CanUpdate"
+                  treeS = "CanUpdate"
                 }
               }
             }
 
-            t.treeS = treeS;
+            t.status = treeS;
 
             return t;
           }))
-
-          console.log("finish",data);
-
           
           return data;
-        }
+        
       } else {
         throw new InternalServerErrorException();
       }
