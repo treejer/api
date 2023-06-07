@@ -652,12 +652,11 @@ export class PlantService {
         TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
       );
     }
-    // getSubmittedQuery.replace(/PLANTER_ID/g, planterAddress.toLowerCase()).replace(/SKIP/g,skip).replace(/FIRST/g,limit.toString()),
 
     try {
       const postBody = JSON.stringify({
         query:`{
-          trees(skip:0,first:2,where: { planter: "0x2adec9ea34c04731d84e6110edc9f63b999da0cb"}){
+          trees(skip:${skip},first:${limit},where: { planter: "0x2adec9ea34c04731d84e6110edc9f63b999da0cb"}){
             id
             treeStatus
             plantDate
@@ -685,11 +684,12 @@ export class PlantService {
 
 
           data = await Promise.all(data.map(async item => {
+            let t = item;
             let treeS;
 
-            if(Number(treeS.treeStatus)<4){
+            if(Number(t.treeStatus)<4){
               let assignedCount = await this.getAssignPendingListCount({
-                treeId:parseInt(item.id, 16),
+                treeId:parseInt(t.id, 16),
                 status:PlantStatus.PENDING
               })
 
@@ -698,18 +698,20 @@ export class PlantService {
               }else{
                 treeS = "Assigned&NotPending" 
               }
-            }else if(Number(treeS.treeStatus)>=4){
+            }else if(Number(t.treeStatus)>=4){
               let updatedCount = await this.getAssignPendingListCount({
-                treeId:parseInt(item.id, 16),
+                treeId:parseInt(t.id, 16),
                 status:PlantStatus.PENDING
               })
+
+              console.log("updatedCount",updatedCount);
 
               if(updatedCount>0){
                 treeS = "Verified&Pending"
               }else {
                 if (
                   Math.floor(new Date().getTime() / 1000) <
-                  Number(item.plantDate) + Number(item.treeStatus) * 3600 + 604800
+                  Number(t.plantDate) + Number(t.treeStatus) * 3600 + 604800
                 ){
                   treeS = "Verified&CantUpdate"
                 }else{
@@ -718,9 +720,9 @@ export class PlantService {
               }
             }
 
-            item.treeS = treeS;
+            t.treeS = treeS;
 
-            return item;
+            return t;
           }))
 
           console.log("finish",data);
