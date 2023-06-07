@@ -9,12 +9,11 @@ import { PlantStatus, TreeErrorMessage } from "src/common/constants";
 import { getPlanterDataForPlant } from "src/common/graphQuery/getPlanterDataForPlant";
 import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { getTreeForPlant } from "src/common/graphQuery/getTreeForPlant";
-import { PlantService } from "src/plant/plant.service";
 import { GetPlanterDataResultDto } from "./dto/get-planter-data-result.dto";
 import { GetTreeDataResultDto } from "./dto/get-tree-data-result.dto";
 @Injectable()
 export class GraphService {
-  constructor(private config: ConfigService,private plantService:PlantService) {}
+  constructor(private config: ConfigService) {}
 
   async getPlanterData(
     planterAddress: string
@@ -114,91 +113,4 @@ export class GraphService {
     }
   }
 
-  async getSubmittedData( planterAddress: string,skip:number,limit:number): Promise<any> {
-    
-
-    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
-
-    if (!theGraphUrl) {
-      throw new InternalServerErrorException(
-        TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
-      );
-    }
-
-    try {
-      const postBody = JSON.stringify({
-        query: getSubmittedQuery.replace(/PLANTER_ID/g, planterAddress.toLowerCase()).replace(/SKIP/g,skip.toString()).replace(/FIRST/g,limit.toString()),
-        variables: null,
-      });
-
-      const res = await axios.post(theGraphUrl, postBody);
-
-      console.log("res.data.data",res.data.data)
-
-      if (res.status == 200 && res.data.data) {
-        if (res.data.data.trees == null) {
-          // return {
-          //   id: hexTreeId,
-          //   plantDate: "0",
-          //   planter: "0x0",
-          //   treeStatus: "0",
-          // };
-        } else {
-          let data = res.data.data.trees;
-
-          console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaaa",data);
-
-
-          data = await Promise.all(data.map(async item => {
-            let treeS;
-
-            if(Number(treeS.treeStatus)<4){
-              let assignedCount = await this.plantService.getAssignPendingListCount({
-                treeId:parseInt(item.id, 16),
-                status:PlantStatus.PENDING
-              })
-
-              if(assignedCount>0){
-                treeS = "Assigned&Pending"
-              }else{
-                treeS = "Assigned&NotPending" 
-              }
-            }else if(Number(treeS.treeStatus)>=4){
-              let updatedCount = await this.plantService.getAssignPendingListCount({
-                treeId:parseInt(item.id, 16),
-                status:PlantStatus.PENDING
-              })
-
-              if(updatedCount>0){
-                treeS = "Verified&Pending"
-              }else {
-                if (
-                  Math.floor(new Date().getTime() / 1000) <
-                  Number(item.plantDate) + Number(item.treeStatus) * 3600 + 604800
-                ){
-                  treeS = "Verified&CantUpdate"
-                }else{
-                  treeS = "Verified&CanUpdate"
-                }
-              }
-            }
-
-            item.treeS = treeS;
-
-            return item;
-          }))
-
-          console.log("finish",data);
-
-          
-          return data;
-        }
-      } else {
-        throw new InternalServerErrorException();
-      }
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
-  
-  }
 }
