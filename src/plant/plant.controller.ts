@@ -1054,14 +1054,14 @@ export class PlantController {
   }
 
 
-  @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @HasRoles(Role.PLANTER)
+  // @UseGuards(AuthGuard("jwt"), RolesGuard)
   @ApiOperation({ summary: "get graph planter data" })
   @Get("/submitted/me")
   getSubmittedData(
   @User() user: JwtUserDto,
   @Query("skip") skip: number,
   @Query("limit") limit: number) {
-    return this.plantService.getSubmittedData(user.walletAddress,skip,limit);
+    return this.plantService.getSubmittedData("0x2adec9ea34c04731d84e6110edc9f63b999da0cb",skip,limit);
   }
 }
