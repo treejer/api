@@ -133,6 +133,8 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
+      console.log("res.data.data",res.data.data)
+
       if (res.status == 200 && res.data.data) {
         if (res.data.data.trees == null) {
           // return {
@@ -144,8 +146,10 @@ export class GraphService {
         } else {
           let data = res.data.data.trees;
 
+          console.log("dataaaaaaaaaaaaaaaaaaaaaaaaaaaaa",data);
 
-          data = data.map(async item => {
+
+          data = await Promise.all(data.map(async item => {
             let treeS;
 
             if(Number(treeS.treeStatus)<4){
@@ -180,7 +184,12 @@ export class GraphService {
             }
 
             item.treeS = treeS;
-          })
+
+            return item;
+          }))
+
+          console.log("finish",data);
+
           
           return data;
         }
