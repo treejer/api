@@ -1061,7 +1061,9 @@ export class PlantController {
   getSubmittedData(
   @User() user: JwtUserDto,
   @Query("skip") skip: number,
-  @Query("limit") limit: number) {
-    return this.plantService.getSubmittedData("0x2adec9ea34c04731d84e6110edc9f63b999da0cb",skip,limit);
+  @Query("limit") limit: number,
+  @Query("planterAddress") planterAddress: string
+  ) {
+    return this.plantService.getSubmittedData(planterAddress,skip,limit);
   }
 }

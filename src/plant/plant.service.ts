@@ -656,7 +656,7 @@ export class PlantService {
     try {
       const postBody = JSON.stringify({
         query:`{
-          trees(skip:${skip},first:${limit},where: { planter: "0x2adec9ea34c04731d84e6110edc9f63b999da0cb"}){
+          trees(skip:${skip},first:${limit},where: { planter:${planterAddress.toLowerCase()}}){
             id
             treeStatus
             plantDate
