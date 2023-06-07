@@ -700,12 +700,12 @@ export class PlantService {
                 treeS = "Assigned&NotPending" 
               }
             }else if(Number(t.treeStatus)>=4){
-              let updatedCount = await this.getAssignPendingListCount({
+              let updatedCount = await this.getUpdatePendingListCount({
                 treeId:parseInt(t.id, 16),
                 status:PlantStatus.PENDING
               })
 
-              console.log("updatedCount",updatedCount);
+              console.log("updatedCount",parseInt(t.id, 16),updatedCount);
 
               if(updatedCount>0){
                 treeS = "Verified&Pending"
