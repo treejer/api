@@ -1,37 +1,37 @@
 import {
-  CreateAssignedRequestDto,
-  PlantRequestDto,
-  EditAssignedRequestDto,
-  CreateUpdateRequestDto,
-  EditUpdateRequestDto,
-} from "./dtos";
-import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
-  ConflictException,
 } from "@nestjs/common";
+import {
+  CreateAssignedRequestDto,
+  CreateUpdateRequestDto,
+  EditAssignedRequestDto,
+  EditUpdateRequestDto,
+  PlantRequestDto,
+} from "./dtos";
 
 import {
   AssignedTreePlantRepository,
-  UpdateTreeRepository,
   TreePlantRepository,
+  UpdateTreeRepository,
 } from "./plant.repository";
 
-import { getCheckedSumAddress, getSigner } from "../common/helpers";
-import { UserService } from "../user/user.service";
+import { JwtUserDto } from "../auth/dtos";
 import {
   AuthErrorMessages,
   PlantErrorMessage,
   PlantStatus,
 } from "../common/constants";
-import { JwtUserDto } from "../auth/dtos";
+import { getCheckedSumAddress, getSigner } from "../common/helpers";
+import { UserService } from "../user/user.service";
 
-import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
-import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
-import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
-import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
 import { GraphService } from "src/graph/graph.service";
+import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
+import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
+import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
+import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
 
 @Injectable()
 export class PlantService {
@@ -631,6 +631,22 @@ export class PlantService {
       (await this.treePlantRepository.count({
         ...filter,
         status: PlantStatus.PENDING,
+      }))
+    );
+  }
+
+  async getAssignPendingListCount(filter): Promise<number> {
+    return (
+      (await this.assignedTreePlantRepository.count({
+        ...filter
+      }))
+    );
+  }
+
+  async getUpdatePendingListCount(filter): Promise<number> {
+    return (
+      (await this.updateTreeRepository.count({
+        ...filter
       }))
     );
   }

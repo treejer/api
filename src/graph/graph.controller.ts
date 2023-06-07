@@ -1,11 +1,12 @@
-import { Controller, Get, Param, UseGuards } from "@nestjs/common";
-import { ApiTags, ApiOperation } from "@nestjs/swagger";
-import { GraphService } from "./graph.service";
-import { HasRoles } from "src/auth/decorators";
-import { Role } from "src/common/constants";
-import { RolesGuard } from "src/auth/strategies";
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { HasRoles } from "src/auth/decorators";
+import { JwtUserDto } from "src/auth/dtos";
+import { RolesGuard } from "src/auth/strategies";
+import { Role } from "src/common/constants";
+import { User } from "src/user/decorators";
+import { GraphService } from "./graph.service";
 @ApiTags("graph")
 @Controller("graph")
 export class GraphController {
@@ -27,8 +28,11 @@ export class GraphController {
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
   @ApiOperation({ summary: "get graph planter data" })
-  @Get("/submitted/:id")
-  getSubmittedData(@Param("id") id: string) {
-    return this.graphService.getPlanterData(id);
+  @Get("/submitted/me")
+  getSubmittedData(
+  @User() user: JwtUserDto,
+  @Query("skip") skip: number,
+  @Query("limit") limit: number) {
+    return this.graphService.getSubmittedData(user.walletAddress,skip,limit);
   }
 }
