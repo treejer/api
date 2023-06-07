@@ -652,10 +652,17 @@ export class PlantService {
         TreeErrorMessage.GRAPH_SOURCE_URL_NOT_SET
       );
     }
+    // getSubmittedQuery.replace(/PLANTER_ID/g, planterAddress.toLowerCase()).replace(/SKIP/g,skip).replace(/FIRST/g,limit.toString()),
 
     try {
       const postBody = JSON.stringify({
-        query: getSubmittedQuery.replace(/PLANTER_ID/g, planterAddress.toLowerCase()).replace(/SKIP/g,skip.toString()).replace(/FIRST/g,limit.toString()),
+        query:`{
+          trees(skip:0,first:2,where: { planter: "0x2adec9ea34c04731d84e6110edc9f63b999da0cb"}){
+            id
+            treeStatus
+            plantDate
+          }
+        }`, 
         variables: null,
       });
 
