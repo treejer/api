@@ -642,8 +642,9 @@ export class PlantService {
   }
 
 
-  async getSubmittedData( planterAddress: string,skip:number,limit:number): Promise<any> {
+  async getSubmittedData(planterAddress: string,skip:number,limit:number): Promise<any> {
     
+    console.log("planterAddress",planterAddress)
 
     const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
 
