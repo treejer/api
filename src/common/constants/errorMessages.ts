@@ -80,3 +80,9 @@ export const AdminErrorMessage = {
   APPLICATION_NOT_SUBMITTED: "Application is not submitted for this user",
   ALREADY_VERIFIED: "Already Verified",
 };
+
+
+export const CommonErrorMessage = {
+  SKIP_LIMIT: "skip must be lt 30"
+};
+

@@ -1,7 +1,10 @@
-export const getSubmittedQuery = `{
-    trees(where: { planter: "PLANTER_ID"}, skip: SKIP, first: FIRST){
-        id,
-        treeStatus,
-        plantDate
-    }
-  }`;
+
+export const getSubmittedQuery = (planterAddress:string,skip:number,limit:number) => {
+    return `{
+        trees(skip:${skip},first:${limit},where: { planter:"${planterAddress.toLowerCase()}"}){
+          id
+          treeStatus
+          plantDate
+        }
+    }`
+};

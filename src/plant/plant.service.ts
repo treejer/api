@@ -22,9 +22,11 @@ import {
 import { JwtUserDto } from "../auth/dtos";
 import {
   AuthErrorMessages,
+  CommonErrorMessage,
   PlantErrorMessage,
   PlantStatus,
   TreeErrorMessage,
+  submittedQueryEnum,
 } from "../common/constants";
 import { getCheckedSumAddress, getSigner } from "../common/helpers";
 import { UserService } from "../user/user.service";
@@ -644,7 +646,12 @@ export class PlantService {
 
   async getSubmittedData(planterAddress: string,skip:number,limit:number): Promise<any> {
     
-    console.log("planterAddress",planterAddress)
+
+    if(limit > 30){
+      throw new ForbiddenException(
+        CommonErrorMessage.SKIP_LIMIT
+      );
+    }
 
     const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
 
@@ -656,13 +663,7 @@ export class PlantService {
 
     try {
       const postBody = JSON.stringify({
-        query:`{
-          trees(skip:${skip},first:${limit},where: { planter:"${planterAddress.toLowerCase()}"}){
-            id
-            treeStatus
-            plantDate
-          }
-        }`, 
+        query:getSubmittedQuery(planterAddress,skip,limit),
         variables: null,
       });
 
@@ -674,44 +675,45 @@ export class PlantService {
         
           let data = res.data.data.trees;
 
-          data = await Promise.all(data.map(async item => {
-            let t = item;
-            let treeS;
+          data = await Promise.all(data.map(async ele => {
 
-            if(Number(t.treeStatus)<4){
+            let item = ele;
+            
+            if(Number(item.treeStatus)<4){
+
               let assignedCount = await this.getAssignPendingListCount({
-                treeId:parseInt(t.id, 16),
+                treeId:parseInt(item.id, 16),
                 status:PlantStatus.PENDING
               })
 
               if(assignedCount>0){
-                treeS = "Pending"
+                item.status = submittedQueryEnum.Pending
               }else{
-                treeS = "Assigned" 
+                item.status = submittedQueryEnum.Assigned 
               }
-            }else if(Number(t.treeStatus)>=4){
+
+            }else if(Number(item.treeStatus)>=4){
+              
               let updatedCount = await this.getUpdatePendingListCount({
-                treeId:parseInt(t.id, 16),
+                treeId:parseInt(item.id, 16),
                 status:PlantStatus.PENDING
               })
 
               if(updatedCount>0){
-                treeS = "Pending"
+                item.status = submittedQueryEnum.Pending
               }else {
                 if (
                   Math.floor(new Date().getTime() / 1000) <
-                  Number(t.plantDate) + Number(t.treeStatus) * 3600 + 604800
+                  Number(item.plantDate) + Number(item.treeStatus) * 3600 + 604800
                 ){
-                  treeS = "Verified"
+                  item.status = submittedQueryEnum.Verified
                 }else{
-                  treeS = "CanUpdate"
+                  item.status = submittedQueryEnum.CanUpdate
                 }
               }
             }
 
-            t.status = treeS;
-
-            return t;
+            return item;
           }))
           
           return data;
