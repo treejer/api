@@ -48,3 +48,11 @@ export enum ApplicationStatuses {
 export enum FileModules {
   idcard = 1,
 }
+
+
+export enum submittedQueryEnum {
+  Pending = "Pending",
+  Assigned = "Assigned",
+  Verified = "Verified",
+  CanUpdate = "CanUpdate"
+}

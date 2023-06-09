@@ -82,3 +82,9 @@ export const AdminErrorMessage = {
   ALREADY_VERIFIED: "Already Verified",
   INVALID_USER_STATUS: "Invalid User Status",
 };
+
+
+export const CommonErrorMessage = {
+  SKIP_LIMIT: "skip must be lt 30"
+};
+
