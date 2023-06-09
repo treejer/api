@@ -12,6 +12,7 @@ import {
   EmailMessage,
   UserErrorMessage,
   AuthServiceMessage,
+  UserStatus,
 } from "../../common/constants";
 
 import { UserModule } from "../user.module";
@@ -515,7 +516,7 @@ describe("user service", () => {
     expect(userNewData2.lastName).toEqual("Ad");
   });
 
-  it.only("test getUserData", async () => {
+  it("test getUserData", async () => {
     let account1 = await web3.eth.accounts.create();
 
     const firstName = "firstName";
@@ -529,7 +530,7 @@ describe("user service", () => {
     const mobile = "+98901234567";
     const mobileCountry = "IR";
     const mobileVerifiedAt = new Date();
-    const isVerified = true;
+    const userStatus = UserStatus.NOT_VERIFIED;
     const plantingNonce = 1;
 
     let createdUser1 = await mongoConnection.db
@@ -547,7 +548,7 @@ describe("user service", () => {
         mobile,
         mobileCountry,
         mobileVerifiedAt,
-        isVerified,
+        userStatus,
         plantingNonce,
       });
 
@@ -565,7 +566,7 @@ describe("user service", () => {
       mobile,
       mobileCountry,
       mobileVerifiedAt,
-      isVerified,
+      userStatus,
       plantingNonce,
     });
   });

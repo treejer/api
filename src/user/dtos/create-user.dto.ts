@@ -42,8 +42,8 @@ export class CreateUserDto {
   mobileCodeRequestsCountForToday?;
 
   @IsOptional()
-  @IsBoolean()
-  isVerified?;
+  @IsNumber()
+  userStatus?;
 
   @IsOptional()
   @IsString()

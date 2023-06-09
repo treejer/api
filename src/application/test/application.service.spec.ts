@@ -11,6 +11,7 @@ import {
   ApplicationErrorMessage,
   ApplicationStatuses,
   FileModules,
+  UserStatus,
 } from "../../common/constants";
 
 import { ApplicationService } from "../application.service";
@@ -98,14 +99,7 @@ describe("App e2e", () => {
       walletAddress: getCheckedSumAddress(account1.address),
       nonce: 103631,
       plantingNonce: 1,
-      isVerified: false,
-    };
-
-    const user2Data = {
-      walletAddress: getCheckedSumAddress(account2.address),
-      nonce: 103632,
-      plantingNonce: 2,
-      isVerified: true,
+      userStatus: UserStatus.NOT_VERIFIED,
     };
 
     const invalidField = {
@@ -157,19 +151,6 @@ describe("App e2e", () => {
       },
     });
 
-    let createdUser2 = await mongoConnection.db
-      .collection(CollectionNames.USER)
-      .insertOne(user2Data);
-
-    await expect(
-      applicationService.updateUser(createdUser2.insertedId.toString(), {})
-    ).rejects.toMatchObject({
-      response: {
-        statusCode: 409,
-        message: ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED,
-      },
-    });
-
     const userBeforeUpdate = await mongoConnection.db
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
@@ -191,7 +172,6 @@ describe("App e2e", () => {
     const insertedFile = result["file"];
 
     expect(insertedApplication).toMatchObject({
-      status: ApplicationStatuses.PENDING,
       type: field.type,
       userId: createdUser.insertedId.toString(),
       organizationAddress: field.organizationAddress,
@@ -214,13 +194,25 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
 
+    expect(userBeforeUpdate.userStatus).toBe(UserStatus.NOT_VERIFIED);
+
     const fileData = await mongoConnection.db
       .collection(CollectionNames.FILE)
       .findOne({ _id: insertedFile._id });
 
     expect(userAfterUpdate.firstName).toBe(field.firstName);
     expect(userAfterUpdate.lastName).toBe(field.lastName);
+    expect(userAfterUpdate.userStatus).toBe(UserStatus.PENDING);
     expect(fileData.targetId).toBe(insertedApplication._id.toString());
+
+    await expect(
+      applicationService.updateUser(createdUser.insertedId.toString(), {})
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED,
+      },
+    });
   });
 
   it("getApplicationList", async () => {
@@ -260,18 +252,18 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
+
       type: 1,
     };
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
+
       type: 2,
     };
 
     const application3Data = {
       userId: createdUser3.insertedId.toString(),
-      status: 3,
+
       type: 3,
     };
 
@@ -300,17 +292,23 @@ describe("App e2e", () => {
 
     const applicationsFilterByGtStatus =
       await applicationService.getApplicationList({
-        status: { $gt: 1 },
+        type: { $gt: 1 },
       });
 
     expect(applicationsFilterByGtStatus.length).toBe(2);
 
     const applicationsFilterByEqStatus =
       await applicationService.getApplicationList({
-        status: 1,
+        type: 1,
       });
 
     expect(applicationsFilterByEqStatus.length).toBe(1);
+
+    const applicationListForUser1 = await applicationService.getApplicationList(
+      { userId: createdUser.insertedId.toString() }
+    );
+
+    expect(applicationListForUser1.length).toBe(1);
   });
   it("getApplicationById", async () => {
     let account1 = await web3.eth.accounts.create();
@@ -327,7 +325,6 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
 
@@ -347,7 +344,6 @@ describe("App e2e", () => {
       { userId: 1 }
     );
 
-    expect(applicationResult2.status).toBe(undefined);
     expect(applicationResult2.type).toBe(undefined);
 
     let applicationResult3 = await applicationService.getApplicationById(
@@ -394,13 +390,13 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
+
       type: 1,
     };
 
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
+
       type: 2,
     };
 
@@ -435,7 +431,6 @@ describe("App e2e", () => {
       { userId: 1 }
     );
 
-    expect(application1Result2.status).toBe(undefined);
     expect(application1Result2.type).toBe(undefined);
   });
 });

@@ -9,6 +9,7 @@ import {
   ApplicationStatuses,
   ApplicationTypes,
   FileModules,
+  UserStatus,
 } from "src/common/constants";
 
 import { UserService } from "src/user/user.service";
@@ -16,6 +17,7 @@ import { EmailService } from "src/email/email.service";
 import { DownloadService } from "src/download/download.service";
 import { CreateApplicationResultDto } from "./dtos/create-application.dto";
 import { ApplicationDocument } from "./schemas";
+import { ApplocationUpdateDto } from "./dtos";
 @Injectable()
 export class ApplicationService {
   constructor(
@@ -30,7 +32,13 @@ export class ApplicationService {
 
     let user = await this.userServie.findUserById(userId);
 
-    if (user.isVerified) {
+    // if (user.isVerified) {
+    //   throw new ConflictException(
+    //     ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
+    //   );
+    // }
+
+    if (user.userStatus !== UserStatus.NOT_VERIFIED) {
       throw new ConflictException(
         ApplicationErrorMessage.APPLICATION_ALREADY_SUBMITTED
       );
@@ -69,7 +77,6 @@ export class ApplicationService {
     }
 
     const applicationOne = await this.applicationRepository.create({
-      status: ApplicationStatuses.PENDING,
       type,
       userId,
       organizationAddress,
@@ -82,6 +89,7 @@ export class ApplicationService {
       firstName,
       lastName,
       idCard: fileOne._id,
+      userStatus: UserStatus.PENDING,
     });
 
     await this.downloadService.updateFileById(fileOne._id, {
@@ -96,6 +104,18 @@ export class ApplicationService {
     );
 
     return { application: applicationOne, file: fileOne };
+  }
+
+  async updateApplicationById(
+    applicationId: string,
+    data: ApplocationUpdateDto,
+    removeDataList?: Array<string>
+  ): Promise<ApplicationDocument> {
+    return this.applicationRepository.findOneAndUpdate(
+      { _id: applicationId },
+      data,
+      removeDataList
+    );
   }
 
   async getApplicationList(filters = {}): Promise<ApplicationDocument[]> {
@@ -117,5 +137,12 @@ export class ApplicationService {
       { userId },
       { ...projection }
     );
+  }
+
+  async getApplication(
+    filter,
+    projection?: Record<string, number>
+  ): Promise<ApplicationDocument> {
+    return await this.applicationRepository.findOne(filter, { ...projection });
   }
 }

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Role } from "src/common/constants";
+import { Role, UserStatus } from "src/common/constants";
 
 export type UserDocument = User & Document;
 
@@ -24,8 +24,8 @@ export class User extends Document {
   @Prop({ type: Date, default: Date.now, required: true })
   updatedAt;
 
-  @Prop({ type: Boolean, default: false, required: true })
-  isVerified;
+  @Prop({ type: Number, default: UserStatus.NOT_VERIFIED, required: true })
+  userStatus;
 
   @Prop({ type: String })
   firstName;

@@ -233,25 +233,13 @@ export class AdminController {
     },
   })
   @ApiResponse({
-    status: 404,
-    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
-    content: {
-      "text/plain": {
-        schema: {
-          format: "text/plain",
-          example: AdminErrorMessage.APPLICATION_NOT_SUBMITTED,
-        },
-      },
-    },
-  })
-  @ApiResponse({
     status: 409,
-    description: "Response for verified users.",
+    description: "Response for users with invalid status.",
     content: {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: AdminErrorMessage.ALREADY_VERIFIED,
+          example: AdminErrorMessage.INVALID_USER_STATUS,
         },
       },
     },
@@ -304,6 +292,18 @@ export class AdminController {
         schema: {
           format: "text/plain",
           example: AdminErrorMessage.APPLICATION_NOT_SUBMITTED,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "Response for users with invalid status.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: AdminErrorMessage.INVALID_USER_STATUS,
         },
       },
     },

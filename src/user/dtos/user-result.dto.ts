@@ -38,8 +38,8 @@ export class UserResultDto {
   updatedAt;
 
   @ApiResponseProperty()
-  @IsBoolean()
-  isVerified;
+  @IsNumber()
+  userStatus;
 
   @ApiResponseProperty()
   @IsString()

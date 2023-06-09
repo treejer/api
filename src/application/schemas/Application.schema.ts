@@ -11,14 +11,14 @@ export class Application extends Document {
   @Prop({ type: Number, required: true })
   type;
 
-  @Prop({ type: Number, required: true })
-  status;
-
   @Prop({ type: Date, required: true, default: Date.now })
   createdAt;
 
   @Prop({ type: Date, required: true, default: Date.now })
   updatedAt;
+
+  @Prop({ type: Date })
+  deletedAt;
 
   @Prop({ type: String })
   organizationAddress;

@@ -47,8 +47,8 @@ export class GetUserMeResultDto {
   mobileVerifiedAt: Date;
 
   @ApiResponseProperty()
-  @IsBoolean()
-  isVerified: boolean;
+  @IsNumber()
+  userStatus: number;
 
   @ApiResponseProperty()
   @IsNumber()

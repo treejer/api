@@ -167,7 +167,6 @@ export class AuthService {
       updatedAt: new Date(),
       nonce,
       mobileCodeRequestsCountForToday: 0,
-      isVerified: false,
       plantingNonce: 1,
     };
 

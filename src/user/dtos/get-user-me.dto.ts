@@ -55,8 +55,8 @@ export class GetUserMeDto {
   mobileVerifiedAt?;
 
   @IsOptional()
-  @IsBoolean()
-  isVerified?;
+  @IsNumber()
+  userStatus?;
 
   @IsOptional()
   @IsNumber()

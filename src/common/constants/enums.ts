@@ -23,6 +23,12 @@ export enum Role {
   ADMIN = 3,
 }
 
+export enum UserStatus {
+  NOT_VERIFIED = 1,
+  PENDING = 2,
+  VERIFIED = 3,
+}
+
 export enum EventName {
   TREE_ASSIGNED = "AssignedTreeVerified",
   TREE_UPDATE = "TreeUpdatedVerified",

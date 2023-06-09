@@ -5,43 +5,43 @@ export class FileResultDto {
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  _id?;
+  _id?: string;
 
   @ApiResponseProperty()
   @IsString()
-  originalname;
+  originalname: string;
 
   @ApiResponseProperty()
   @IsString()
-  filename;
-
-  @ApiResponseProperty()
-  @IsString()
-  @IsOptional()
-  encoding?;
-
-  @ApiResponseProperty()
-  @IsString()
-  mimetype;
-
-  @ApiResponseProperty()
-  @IsNumber()
-  size;
-
-  @ApiResponseProperty()
-  @IsString()
-  userId;
+  filename: string;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  targetId?;
+  encoding?: string;
+
+  @ApiResponseProperty()
+  @IsString()
+  mimetype: string;
 
   @ApiResponseProperty()
   @IsNumber()
-  module;
+  size: number;
+
+  @ApiResponseProperty()
+  @IsString()
+  userId: string;
+
+  @ApiResponseProperty()
+  @IsString()
+  @IsOptional()
+  targetId?: string;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  module: number;
 
   @ApiResponseProperty()
   @IsDate()
-  createdAt;
+  createdAt: Date;
 }

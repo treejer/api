@@ -10,6 +10,7 @@ import {
   CollectionNames,
   AdminErrorMessage,
   AdminServiceMessage,
+  UserStatus,
 } from "../../common/constants";
 
 import { AdminService } from "../admin.service";
@@ -118,12 +119,10 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
       type: 2,
     };
     const file1Data = {
@@ -228,12 +227,10 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
       type: 2,
     };
     const file1Data = {
@@ -333,12 +330,10 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
       type: 2,
     };
     const file1Data = {
@@ -444,18 +439,15 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
     const application2Data = {
       userId: createdUser2.insertedId.toString(),
-      status: 2,
       type: 2,
     };
 
     const application3Data = {
       userId: createdUser3.insertedId.toString(),
-      status: 3,
       type: 3,
     };
 
@@ -483,13 +475,13 @@ describe("App e2e", () => {
     expect(applications.length).toBe(3);
 
     const applicationsFilterByGtStatus = await adminService.getApplications({
-      status: { $gt: 1 },
+      type: { $gt: 1 },
     });
 
     expect(applicationsFilterByGtStatus.length).toBe(2);
 
     const applicationsFilterByEqStatus = await adminService.getApplications({
-      status: 1,
+      type: 1,
     });
 
     expect(applicationsFilterByEqStatus.length).toBe(1);
@@ -502,7 +494,7 @@ describe("App e2e", () => {
       walletAddress: getCheckedSumAddress(account1.address),
       nonce: 103631,
       plantingNonce: 1,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
     };
 
     let createdUser = await mongoConnection.db
@@ -513,7 +505,7 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
 
-    expect(userResultBeforeVerify.isVerified).toBe(false);
+    expect(userResultBeforeVerify.userStatus).toBe(UserStatus.NOT_VERIFIED);
 
     // @ts-ignore
     jest.spyOn(smsService, "sendSMS").mockReturnValue(Promise.resolve(true));
@@ -522,21 +514,17 @@ describe("App e2e", () => {
       adminService.verifyUser(createdUser.insertedId.toString())
     ).rejects.toMatchObject({
       response: {
-        statusCode: 404,
-        message: AdminErrorMessage.APPLICATION_NOT_SUBMITTED,
+        statusCode: 409,
+        message: AdminErrorMessage.INVALID_USER_STATUS,
       },
     });
 
-    const application1Data = {
-      userId: createdUser.insertedId.toString(),
-      status: 1,
-      type: 1,
-    };
-
-    //application for user1
     await mongoConnection.db
-      .collection(CollectionNames.APPLICATION)
-      .insertOne(application1Data);
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: createdUser.insertedId },
+        { $set: { userStatus: UserStatus.PENDING } }
+      );
 
     let verifiedResult = await adminService.verifyUser(
       createdUser.insertedId.toString()
@@ -548,14 +536,14 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
 
-    expect(userAfterVerify.isVerified).toBe(true);
+    expect(userAfterVerify.userStatus).toBe(UserStatus.VERIFIED);
 
     await expect(
       adminService.verifyUser(createdUser.insertedId.toString())
     ).rejects.toMatchObject({
       response: {
         statusCode: 409,
-        message: AdminErrorMessage.ALREADY_VERIFIED,
+        message: AdminErrorMessage.INVALID_USER_STATUS,
       },
     });
   });
@@ -567,7 +555,7 @@ describe("App e2e", () => {
       walletAddress: getCheckedSumAddress(account1.address),
       nonce: 103631,
       plantingNonce: 1,
-      isVerified: true,
+      userStatus: UserStatus.NOT_VERIFIED,
     };
 
     let createdUser = await mongoConnection.db
@@ -578,7 +566,23 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
 
-    expect(userResultBeforeReject.isVerified).toBe(true);
+    expect(userResultBeforeReject.userStatus).toBe(UserStatus.NOT_VERIFIED);
+
+    await expect(
+      adminService.rejectUser(createdUser.insertedId.toString())
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 409,
+        message: AdminErrorMessage.INVALID_USER_STATUS,
+      },
+    });
+
+    await mongoConnection.db
+      .collection(CollectionNames.USER)
+      .updateOne(
+        { _id: createdUser.insertedId },
+        { $set: { userStatus: UserStatus.PENDING } }
+      );
 
     await expect(
       adminService.rejectUser(createdUser.insertedId.toString())
@@ -591,18 +595,29 @@ describe("App e2e", () => {
 
     const application1Data = {
       userId: createdUser.insertedId.toString(),
-      status: 1,
       type: 1,
     };
 
     //application for user1
-    await mongoConnection.db
+    const insertedApplication = await mongoConnection.db
       .collection(CollectionNames.APPLICATION)
       .insertOne(application1Data);
+
+    let applicationBeforeReject = await mongoConnection.db
+      .collection(CollectionNames.APPLICATION)
+      .findOne({ _id: insertedApplication.insertedId });
+
+    expect(applicationBeforeReject.deletedAt).not.toBeDefined();
 
     let rejectResult = await adminService.rejectUser(
       createdUser.insertedId.toString()
     );
+
+    let applicationAfterReject = await mongoConnection.db
+      .collection(CollectionNames.APPLICATION)
+      .findOne({ _id: insertedApplication.insertedId });
+
+    expect(applicationAfterReject.deletedAt).toBeDefined();
 
     expect(rejectResult).toBe(AdminServiceMessage.REJECT_MESSAGE);
 
@@ -610,6 +625,6 @@ describe("App e2e", () => {
       .collection(CollectionNames.USER)
       .findOne({ _id: createdUser.insertedId });
 
-    expect(userAfterReject.isVerified).toBe(false);
+    expect(userAfterReject.userStatus).toBe(UserStatus.NOT_VERIFIED);
   });
 });

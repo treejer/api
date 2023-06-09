@@ -5,40 +5,42 @@ export class ApplicationResultDto {
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  _id?;
+  _id?: string;
 
   @ApiResponseProperty()
   @IsString()
-  userId;
+  userId: string;
 
   @ApiResponseProperty()
   @IsNumber()
-  type;
-
-  @ApiResponseProperty()
-  @IsNumber()
-  status;
-  @ApiResponseProperty()
-  @IsDate()
-  createdAt;
+  type: number;
 
   @ApiResponseProperty()
   @IsDate()
-  updatedAt;
+  @IsOptional()
+  deletedAt: Date;
+
+  @ApiResponseProperty()
+  @IsDate()
+  createdAt: Date;
+
+  @ApiResponseProperty()
+  @IsDate()
+  updatedAt: Date;
 
   @ApiResponseProperty()
   @IsString()
-  organizationAddress;
+  organizationAddress: string;
 
   @ApiResponseProperty()
   @IsString()
-  referrer;
+  referrer: string;
 
   @ApiResponseProperty()
   @IsNumber()
-  longitude;
+  longitude: number;
 
   @ApiResponseProperty()
   @IsNumber()
-  latitude;
+  latitude: number;
 }

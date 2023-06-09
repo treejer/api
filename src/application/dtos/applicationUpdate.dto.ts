@@ -1,27 +1,45 @@
-import { IsDate, IsEmail, IsNumber, IsString } from "class-validator";
+import {
+  IsDate,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class ApplocationUpdateDto {
   @IsEmail()
-  firstName;
+  @IsOptional()
+  firstName?;
 
   @IsString()
-  lastName;
+  @IsOptional()
+  lastName?;
 
   @IsNumber()
-  type;
+  @IsOptional()
+  type?;
+
+  @IsDate()
+  @IsOptional()
+  deletedAt?;
 
   @IsString()
-  organizationAddress;
+  @IsOptional()
+  organizationAddress?;
 
   @IsString()
-  referrer;
+  @IsOptional()
+  referrer?;
 
   @IsString()
-  mimetype;
+  @IsOptional()
+  mimetype?;
 
   @IsNumber()
-  longitude;
+  @IsOptional()
+  longitude?;
 
   @IsNumber()
-  latitude;
+  @IsOptional()
+  latitude?;
 }

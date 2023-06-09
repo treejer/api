@@ -74,8 +74,8 @@ export class UserDto {
   mobileCountry?;
 
   @IsOptional()
-  @IsBoolean()
-  isVerified?;
+  @IsNumber()
+  userStatus?;
 
   @IsOptional()
   @IsString()

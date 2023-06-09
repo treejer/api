@@ -13,6 +13,7 @@ import {
   AdminErrorMessage,
   AdminServiceMessage,
   AuthErrorMessages,
+  UserStatus,
 } from "src/common/constants";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
@@ -96,22 +97,27 @@ export class AdminService {
   }
 
   async verifyUser(userId: string): Promise<string> {
-    const application = await this.applicationService.getApplicationByUserId(
-      userId
-    );
+    // const application = await this.applicationService.getApplication({
+    //   userId,
+    //   deletedAt: { $exists: true },
+    // });
 
-    if (!application)
-      throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
+    // if (!application)
+    //   throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
 
     const user = await this.userService.findUserById(userId);
 
-    if (user.isVerified) {
-      throw new ConflictException(AdminErrorMessage.ALREADY_VERIFIED);
+    // if (user.isVerified) {
+    //   throw new ConflictException(AdminErrorMessage.ALREADY_VERIFIED);
+    // }
+
+    if (user.userStatus !== UserStatus.PENDING) {
+      throw new ConflictException(AdminErrorMessage.INVALID_USER_STATUS);
     }
 
     try {
       await this.userService.updateUserById(user._id, {
-        isVerified: true,
+        userStatus: UserStatus.VERIFIED,
       });
 
       if (user.mobile) {
@@ -127,12 +133,30 @@ export class AdminService {
   }
 
   async rejectUser(userId: string): Promise<string> {
-    const application = await this.applicationService.getApplicationByUserId(
-      userId
-    );
+    const user = await this.userService.findUserById(userId);
+
+    if (user.userStatus !== UserStatus.PENDING) {
+      throw new ConflictException(AdminErrorMessage.INVALID_USER_STATUS);
+    }
+
+    const application = await this.applicationService.getApplication({
+      userId,
+      deletedAt: { $exists: false },
+    });
+
     if (!application)
       throw new NotFoundException(AdminErrorMessage.APPLICATION_NOT_SUBMITTED);
-    await this.userService.updateUserById(userId, { isVerified: false });
-    return AdminServiceMessage.REJECT_MESSAGE;
+
+    try {
+      await this.userService.updateUserById(userId, {
+        userStatus: UserStatus.NOT_VERIFIED,
+      });
+      await this.applicationService.updateApplicationById(application._id, {
+        deletedAt: new Date(),
+      });
+      return AdminServiceMessage.REJECT_MESSAGE;
+    } catch (error) {
+      throw new InternalServerErrorException(error.toString());
+    }
   }
 }

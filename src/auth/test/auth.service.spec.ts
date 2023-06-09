@@ -17,6 +17,7 @@ import {
   CollectionNames,
   Numbers,
   AuthServiceMessage,
+  UserStatus,
 } from "../../common/constants";
 
 import { AuthService } from "../auth.service";
@@ -585,7 +586,7 @@ describe("App e2e", () => {
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account.address),
       mobileCodeRequestsCountForToday: 0,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
       plantingNonce: 1,
       email,
     };
@@ -678,7 +679,7 @@ describe("App e2e", () => {
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account2.address),
       mobileCodeRequestsCountForToday: 0,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
       plantingNonce: 1,
       email,
     };
@@ -800,7 +801,7 @@ describe("App e2e", () => {
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account.address),
       mobileCodeRequestsCountForToday: 0,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
       plantingNonce: 1,
       mobile: phone,
       mobileCountry: "IR",
@@ -907,7 +908,7 @@ describe("App e2e", () => {
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account2.address),
       mobileCodeRequestsCountForToday: 0,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
       plantingNonce: 1,
       mobile: phone,
       mobileCountry: "IR",
@@ -1015,7 +1016,7 @@ describe("App e2e", () => {
     const expectedUser = {
       walletAddress: getCheckedSumAddress(account1.address),
       mobileCodeRequestsCountForToday: 1,
-      isVerified: false,
+      userStatus: UserStatus.NOT_VERIFIED,
       plantingNonce: 1,
       mobile: phone1,
       mobileCountry: "IR",

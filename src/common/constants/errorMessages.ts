@@ -73,10 +73,12 @@ export const UserErrorMessage = {
 export const ApplicationErrorMessage = {
   APPLICATION_ALREADY_SUBMITTED: "Application already submitted",
   INVALID_PARAMS: "Invalid parameters",
+  INVALID_USER_STATUS: "invalid user status",
 };
 
 export const AdminErrorMessage = {
   USER_NOT_FOUND: "User not found!",
   APPLICATION_NOT_SUBMITTED: "Application is not submitted for this user",
   ALREADY_VERIFIED: "Already Verified",
+  INVALID_USER_STATUS: "Invalid User Status",
 };
