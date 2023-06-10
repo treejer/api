@@ -304,8 +304,7 @@ export class PlantController {
   getPlantRequests() {
     return this.plantService.getPlantRequests(
       { status: PlantStatus.PENDING },
-      { signer: 1, nonce: 1 },
-      {}
+      { signer: 1, nonce: 1 }
     );
   }
 
@@ -369,8 +368,7 @@ export class PlantController {
       skip,
       limit,
       filters,
-      sort,
-      {}
+      sort
     );
   }
 
@@ -645,8 +643,7 @@ export class PlantController {
   getAssignedTreeRequests() {
     return this.plantService.getAssignedTreeRequests(
       { status: PlantStatus.PENDING },
-      { signer: 1, nonce: 1 },
-      {}
+      { signer: 1, nonce: 1 }
     );
   }
 
@@ -711,8 +708,7 @@ export class PlantController {
       skip,
       limit,
       filters,
-      sort,
-      {}
+      sort
     );
   }
   //------------------------------------------ ************************ ------------------------------------------//
@@ -1048,22 +1044,20 @@ export class PlantController {
       skip,
       limit,
       filters,
-      sort,
-      {}
+      sort
     );
   }
-
 
   // @HasRoles(Role.PLANTER)
   // @UseGuards(AuthGuard("jwt"), RolesGuard)
   @ApiOperation({ summary: "get graph planter data" })
   @Get("/submitted/me")
   getSubmittedData(
-  @User() user: JwtUserDto,
-  @Query("skip") skip: number,
-  @Query("limit") limit: number,
-  @Query("planterAddress") planterAddress: string
+    @User() user: JwtUserDto,
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("planterAddress") planterAddress: string
   ) {
-    return this.plantService.getSubmittedData(planterAddress,skip,limit);
+    return this.plantService.getSubmittedData(planterAddress, skip, limit);
   }
 }

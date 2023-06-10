@@ -31,10 +31,6 @@ export class AssignedRequestResultDto {
   countryCode: number;
 
   @ApiResponseProperty()
-  @IsString()
-  signature: string;
-
-  @ApiResponseProperty()
   @IsNumber()
   status: number;
 

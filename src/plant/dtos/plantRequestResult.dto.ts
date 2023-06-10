@@ -27,10 +27,6 @@ export class PlantRequestResultDto {
   countryCode: number;
 
   @ApiResponseProperty()
-  @IsString()
-  signature: string;
-
-  @ApiResponseProperty()
   @IsNumber()
   status: number;
 

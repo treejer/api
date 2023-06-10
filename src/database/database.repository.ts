@@ -31,7 +31,7 @@ export abstract class EntityRepository<T extends Document> {
   async sort(
     entityFilterQuery: FilterQuery<T>,
     sortFilter: any,
-    projection?: Record<string, null>
+    projection?: Record<string, number>
   ): Promise<T[]> {
     try {
       return await this.entityModel
@@ -46,7 +46,7 @@ export abstract class EntityRepository<T extends Document> {
     limit,
     entityFilterQuery: FilterQuery<T>,
     sortFilter: any,
-    projection?: Record<string, null>
+    projection?: Record<string, number>
   ): Promise<T[]> {
     try {
       const query = this.entityModel

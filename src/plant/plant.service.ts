@@ -48,7 +48,7 @@ export class PlantService {
     private treePlantRepository: TreePlantRepository,
     private userService: UserService,
     private graphService: GraphService,
-    private config:ConfigService
+    private config: ConfigService
   ) {}
 
   async plant(dto: PlantRequestDto, user: JwtUserDto): Promise<TreePlant> {
@@ -85,6 +85,8 @@ export class PlantService {
       Number(planterData.supplyCap)
     )
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
+
+    delete dto.signature;
 
     const createdData = await this.treePlantRepository.create({
       ...dto,
@@ -176,6 +178,8 @@ export class PlantService {
       nonce: userData.plantingNonce,
       updatedAt: new Date(),
     });
+
+    delete plantData.signature;
 
     return plantData;
   }
@@ -518,12 +522,18 @@ export class PlantService {
     return await this.updateTreeRepository.findOne(filter);
   }
 
-  async getPlantRequests(
-    filter,
-    sortOption,
-    projection?
-  ): Promise<TreePlant[]> {
-    return await this.treePlantRepository.sort(filter, sortOption, projection);
+  async getPlantRequests(filter, sortOption): Promise<TreePlant[]> {
+    return await this.treePlantRepository.sort(filter, sortOption, {
+      _id: 1,
+      signer: 1,
+      nonce: 1,
+      treeSpecs: 1,
+      birthDate: 1,
+      countryCode: 1,
+      status: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    });
   }
 
   async getPlantRequestsWithLimit(
@@ -531,8 +541,7 @@ export class PlantService {
     skip,
     limit,
     filter,
-    sortOption,
-    projection?
+    sortOption
   ): Promise<PlantRequestsWithLimitResultDto> {
     const filterQuery = {
       ...filter,
@@ -545,7 +554,17 @@ export class PlantService {
       limit,
       filterQuery,
       sortOption,
-      projection
+      {
+        _id: 1,
+        signer: 1,
+        nonce: 1,
+        treeSpecs: 1,
+        birthDate: 1,
+        countryCode: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
     );
 
     const count = await this.treePlantRepository.count(filterQuery);
@@ -556,14 +575,20 @@ export class PlantService {
 
   async getAssignedTreeRequests(
     filter,
-    sortOption,
-    projection?
+    sortOption
   ): Promise<AssignedTreePlant[]> {
-    return await this.assignedTreePlantRepository.sort(
-      filter,
-      sortOption,
-      projection
-    );
+    return await this.assignedTreePlantRepository.sort(filter, sortOption, {
+      _id: 1,
+      signer: 1,
+      nonce: 1,
+      treeId: 1,
+      treeSpecs: 1,
+      birthDate: 1,
+      countryCode: 1,
+      status: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    });
   }
 
   async getAssignedTreeRequestsWithLimit(
@@ -571,8 +596,7 @@ export class PlantService {
     skip,
     limit,
     filter,
-    sortOption,
-    projection?
+    sortOption
   ): Promise<AssignedRequestWithLimitResultDto> {
     const filterQuery = {
       ...filter,
@@ -585,7 +609,18 @@ export class PlantService {
       limit,
       filterQuery,
       sortOption,
-      projection
+      {
+        _id: 1,
+        signer: 1,
+        nonce: 1,
+        treeId: 1,
+        treeSpecs: 1,
+        birthDate: 1,
+        countryCode: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
     );
 
     const count = await this.assignedTreePlantRepository.count(filterQuery);
@@ -607,8 +642,7 @@ export class PlantService {
     skip,
     limit,
     filter,
-    sortOption,
-    projection?
+    sortOption
   ): Promise<UpdateRequestWithLimitResultDto> {
     const filterQuery = {
       ...filter,
@@ -621,7 +655,16 @@ export class PlantService {
       limit,
       filterQuery,
       sortOption,
-      projection
+      {
+        _id: 1,
+        signer: 1,
+        nonce: 1,
+        treeId: 1,
+        treeSpecs: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
     );
 
     const count = await this.updateTreeRepository.count(filterQuery);
@@ -643,14 +686,13 @@ export class PlantService {
     );
   }
 
-
-  async getSubmittedData(planterAddress: string,skip:number,limit:number): Promise<any> {
-    
-
-    if(limit > 30){
-      throw new ForbiddenException(
-        CommonErrorMessage.SKIP_LIMIT
-      );
+  async getSubmittedData(
+    planterAddress: string,
+    skip: number,
+    limit: number
+  ): Promise<any> {
+    if (limit > 30) {
+      throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
 
     const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
@@ -663,83 +705,76 @@ export class PlantService {
 
     try {
       const postBody = JSON.stringify({
-        query:getSubmittedQuery(planterAddress,skip,limit),
+        query: getSubmittedQuery(planterAddress, skip, limit),
         variables: null,
       });
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res.data.data",res.data.data)
+      console.log("res.data.data", res.data.data);
 
       if (res.status == 200 && res.data.data) {
-        
-          let data = res.data.data.trees;
+        let data = res.data.data.trees;
 
-          data = await Promise.all(data.map(async ele => {
-
+        data = await Promise.all(
+          data.map(async (ele) => {
             let item = ele;
-            
-            if(Number(item.treeStatus)<4){
 
+            if (Number(item.treeStatus) < 4) {
               let assignedCount = await this.getAssignPendingListCount({
-                treeId:parseInt(item.id, 16),
-                status:PlantStatus.PENDING
-              })
+                treeId: parseInt(item.id, 16),
+                status: PlantStatus.PENDING,
+              });
 
-              if(assignedCount>0){
-                item.status = submittedQueryEnum.Pending
-              }else{
-                item.status = submittedQueryEnum.Assigned 
+              if (assignedCount > 0) {
+                item.status = submittedQueryEnum.Pending;
+              } else {
+                item.status = submittedQueryEnum.Assigned;
               }
-
-            }else if(Number(item.treeStatus)>=4){
-              
+            } else if (Number(item.treeStatus) >= 4) {
               let updatedCount = await this.getUpdatePendingListCount({
-                treeId:parseInt(item.id, 16),
-                status:PlantStatus.PENDING
-              })
+                treeId: parseInt(item.id, 16),
+                status: PlantStatus.PENDING,
+              });
 
-              if(updatedCount>0){
-                item.status = submittedQueryEnum.Pending
-              }else {
+              if (updatedCount > 0) {
+                item.status = submittedQueryEnum.Pending;
+              } else {
                 if (
                   Math.floor(new Date().getTime() / 1000) <
-                  Number(item.plantDate) + Number(item.treeStatus) * 3600 + 604800
-                ){
-                  item.status = submittedQueryEnum.Verified
-                }else{
-                  item.status = submittedQueryEnum.CanUpdate
+                  Number(item.plantDate) +
+                    Number(item.treeStatus) * 3600 +
+                    604800
+                ) {
+                  item.status = submittedQueryEnum.Verified;
+                } else {
+                  item.status = submittedQueryEnum.CanUpdate;
                 }
               }
             }
 
             return item;
-          }))
-          
-          return data;
-        
+          })
+        );
+
+        return data;
       } else {
         throw new InternalServerErrorException();
       }
     } catch (error) {
       throw new InternalServerErrorException();
     }
-  
   }
 
   async getAssignPendingListCount(filter): Promise<number> {
-    return (
-      (await this.assignedTreePlantRepository.count({
-        ...filter
-      }))
-    );
+    return await this.assignedTreePlantRepository.count({
+      ...filter,
+    });
   }
 
   async getUpdatePendingListCount(filter): Promise<number> {
-    return (
-      (await this.updateTreeRepository.count({
-        ...filter
-      }))
-    );
+    return await this.updateTreeRepository.count({
+      ...filter,
+    });
   }
 }

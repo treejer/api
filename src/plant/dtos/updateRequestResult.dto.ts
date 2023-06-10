@@ -23,10 +23,6 @@ export class UpdateRequestResultDto {
   treeSpecs: string;
 
   @ApiResponseProperty()
-  @IsString()
-  signature: string;
-
-  @ApiResponseProperty()
   @IsNumber()
   status: number;
 
