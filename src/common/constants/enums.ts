@@ -50,7 +50,7 @@ export enum FileModules {
 }
 
 
-export enum SubmittedQueryStatus {
+export enum submittedQueryEnum {
   Pending = "Pending", // platner submitted request for plant or update but it hasn't accepted yet
   Assigned = "Assigned", // tree assigned to planter but planter hasn't submmited request for that
   Verified = "Verified", // tree is stable (there is not any pending request for that and The update time has not arrived yet)
