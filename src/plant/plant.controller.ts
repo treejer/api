@@ -1048,6 +1048,7 @@ export class PlantController {
     );
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: "get graph trees data (pagenation)" })
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
