@@ -711,8 +711,6 @@ export class PlantService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res.data.data", res.data.data);
-
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
 

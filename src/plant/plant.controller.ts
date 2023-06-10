@@ -1048,16 +1048,15 @@ export class PlantController {
     );
   }
 
-  // @HasRoles(Role.PLANTER)
-  // @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @ApiOperation({ summary: "get graph planter data" })
-  @Get("/submitted/me")
+  @ApiOperation({ summary: "get graph trees data (pagenation)" })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("/submitted_trees/me")
   getSubmittedData(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
     @Query("limit") limit: number,
-    @Query("planterAddress") planterAddress: string
   ) {
-    return this.plantService.getSubmittedData(planterAddress, skip, limit);
+    return this.plantService.getSubmittedData(user.walletAddress, skip, limit);
   }
 }
