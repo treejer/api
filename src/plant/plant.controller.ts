@@ -1,16 +1,20 @@
 import {
-  Controller,
   Body,
-  Post,
+  Controller,
   Delete,
+  Get,
+  HttpCode,
   Param,
   Patch,
-  UseGuards,
-  HttpCode,
-  Get,
+  Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 
+import { AuthGuard } from "@nestjs/passport";
+import { HasRoles } from "src/auth/decorators";
+import { JwtUserDto } from "src/auth/dtos";
+import { RolesGuard } from "src/auth/strategies";
 import {
   AuthErrorMessages,
   PlantErrorMessage,
@@ -19,22 +23,8 @@ import {
   SwaggerErrors,
 } from "src/common/constants";
 import { User } from "src/user/decorators";
-import { JwtUserDto } from "src/auth/dtos";
-import { HasRoles } from "src/auth/decorators";
-import { RolesGuard } from "src/auth/strategies";
 import { PlantService } from "./plant.service";
-import { AuthGuard } from "@nestjs/passport";
 
-import {
-  CreateAssignedRequestDto,
-  CreateUpdateRequestDto,
-  EditAssignedRequestDto,
-  EditUpdateRequestDto,
-  PlantRequestDto,
-  PlantRequestResultDto,
-  AssignedRequestResultDto,
-  UpdateRequestResultDto,
-} from "./dtos";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -42,9 +32,19 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import {
+  AssignedRequestResultDto,
+  CreateAssignedRequestDto,
+  CreateUpdateRequestDto,
+  EditAssignedRequestDto,
+  EditUpdateRequestDto,
+  PlantRequestDto,
+  PlantRequestResultDto,
+  UpdateRequestResultDto,
+} from "./dtos";
+import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
 import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
-import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 
 @Controller()
 @ApiTags("plant")
@@ -1048,16 +1048,17 @@ export class PlantController {
     );
   }
 
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOperation({ summary: "get graph trees data (pagenation)" })
-  @HasRoles(Role.PLANTER)
-  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  // @HasRoles(Role.PLANTER)
+  // @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Get("/submitted_trees/me")
   getSubmittedData(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
     @Query("limit") limit: number,
+    @Query("planterAddress") planterAddress: string,
   ) {
-    return this.plantService.getSubmittedData(user.walletAddress, skip, limit);
+    return this.plantService.getSubmittedData(planterAddress, skip, limit);
   }
 }

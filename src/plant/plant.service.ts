@@ -31,14 +31,14 @@ import {
 import { getCheckedSumAddress, getSigner } from "../common/helpers";
 import { UserService } from "../user/user.service";
 
+import { ConfigService } from "@nestjs/config";
+import axios from "axios";
+import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { GraphService } from "src/graph/graph.service";
 import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
 import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
-import axios from "axios";
-import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
-import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class PlantService {
@@ -695,6 +695,7 @@ export class PlantService {
     skip: number,
     limit: number
   ): Promise<any> {
+    
     if (limit > 30) {
       throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
@@ -714,6 +715,8 @@ export class PlantService {
       });
 
       const res = await axios.post(theGraphUrl, postBody);
+
+      console.log("res", res)
 
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
