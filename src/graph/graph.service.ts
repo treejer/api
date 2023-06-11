@@ -89,8 +89,6 @@ export class GraphService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res",res);
-
       if (res.status == 200 && res.data.data) {
         if (res.data.data.tree == null) {
           return {
@@ -102,7 +100,10 @@ export class GraphService {
         } else {
           let data = res.data.data.tree;
 
-          data.planter = res.data.data.tree.planter.id;
+          data.planter =
+            res.data.data.tree.planter != null
+              ? res.data.data.tree.planter.id
+              : "";
 
           return data;
         }
@@ -113,5 +114,4 @@ export class GraphService {
       throw new InternalServerErrorException();
     }
   }
-
 }
