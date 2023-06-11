@@ -5,9 +5,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
-import { PlantStatus, TreeErrorMessage } from "src/common/constants";
+import { TreeErrorMessage } from "src/common/constants";
 import { getPlanterDataForPlant } from "src/common/graphQuery/getPlanterDataForPlant";
-import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { getTreeForPlant } from "src/common/graphQuery/getTreeForPlant";
 import { GetPlanterDataResultDto } from "./dto/get-planter-data-result.dto";
 import { GetTreeDataResultDto } from "./dto/get-tree-data-result.dto";
@@ -89,6 +88,8 @@ export class GraphService {
       });
 
       const res = await axios.post(theGraphUrl, postBody);
+
+      console.log("res",res);
 
       if (res.status == 200 && res.data.data) {
         if (res.data.data.tree == null) {

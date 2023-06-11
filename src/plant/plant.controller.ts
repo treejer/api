@@ -1050,15 +1050,15 @@ export class PlantController {
 
   // @ApiBearerAuth()
   @ApiOperation({ summary: "get graph trees data (pagenation)" })
-  // @HasRoles(Role.PLANTER)
-  // @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
   @Get("/submitted_trees/me")
   getSubmittedData(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
     @Query("limit") limit: number,
-    @Query("planterAddress") planterAddress: string,
+    // @Query("planterAddress") planterAddress: string,
   ) {
-    return this.plantService.getSubmittedData(planterAddress, skip, limit);
+    return this.plantService.getSubmittedData(user.walletAddress, skip, limit);
   }
 }

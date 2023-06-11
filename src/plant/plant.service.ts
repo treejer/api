@@ -708,6 +708,8 @@ export class PlantService {
       );
     }
 
+    console.log("getSubmittedQuery(planterAddress, skip, limit),", getSubmittedQuery(planterAddress, skip, limit))
+
     try {
       const postBody = JSON.stringify({
         query: getSubmittedQuery(planterAddress, skip, limit),
