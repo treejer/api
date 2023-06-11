@@ -86,8 +86,6 @@ export class PlantService {
     )
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    delete dto.signature;
-
     const createdData = await this.treePlantRepository.create({
       ...dto,
       signer: user.walletAddress,
@@ -97,6 +95,8 @@ export class PlantService {
     await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
+
+    createdData.signature = undefined;
 
     return createdData;
   }
@@ -179,7 +179,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
-    delete plantData.signature;
+    plantData.signature = undefined;
 
     return plantData;
   }
@@ -264,6 +264,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
+    assignedPlant.signature = undefined;
     return assignedPlant;
   }
 
@@ -325,6 +326,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
+    assignedPlantData.signature = undefined;
     return assignedPlantData;
   }
 
@@ -411,6 +413,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
+    createdData.signature = undefined;
     return createdData;
   }
 
@@ -477,7 +480,7 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const result = await this.updateTreeRepository.updateOne(
+    await this.updateTreeRepository.updateOne(
       { _id: recordId },
       { ...dto, nonce: userData.plantingNonce }
     );
@@ -491,6 +494,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
+    updateData.signature = undefined;
     return updateData;
   }
 
