@@ -710,9 +710,11 @@ export class PlantService {
 
     let localLimit = Number(limit) + 1;
 
+    let localSkip = Number(limit) * skip;
+
     try {
       const postBody = JSON.stringify({
-        query: getSubmittedQuery(planterAddress, skip, localLimit),
+        query: getSubmittedQuery(planterAddress, localSkip, localLimit),
         variables: null,
       });
 
