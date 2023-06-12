@@ -711,6 +711,9 @@ export class PlantService {
     limit = limit + 1;
 
 
+    console.log("limit",limit)
+
+
     try {
       const postBody = JSON.stringify({
         query: getSubmittedQuery(planterAddress, skip, limit),
@@ -719,7 +722,7 @@ export class PlantService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      
+      console.log("getSubmittedQuery(planterAddress, skip, limit)",getSubmittedQuery(planterAddress, skip, limit))
 
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
@@ -730,11 +733,11 @@ export class PlantService {
           hasMore = true
         }
 
-        console.log("data.length", data.length,"data",data[0])
+        console.log("data.length", data.length,"data")
 
         data.pop();
 
-        console.log("last data.length", data.length,"data",data[0])
+        console.log("last data.length", data.length,"data")
 
 
         data = await Promise.all(

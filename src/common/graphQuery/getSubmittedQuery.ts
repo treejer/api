@@ -1,7 +1,7 @@
 
 export const getSubmittedQuery = (planterAddress:string,skip:number,limit:number) => {
     return `{
-        trees(skip:${skip},first:${limit},where: { planter:"${planterAddress.toLowerCase()}"}){
+        trees(skip:${Number(skip)},first:${Number(limit)},where: { planter:"${planterAddress.toLowerCase()}"}){
             id
             treeStatus
             countryCode
