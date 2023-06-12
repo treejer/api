@@ -708,7 +708,8 @@ export class PlantService {
       );
     }
 
-    console.log("getSubmittedQuery(planterAddress, skip, limit),", getSubmittedQuery(planterAddress, skip, limit))
+    limit = limit + 1;
+
 
     try {
       const postBody = JSON.stringify({
@@ -718,10 +719,23 @@ export class PlantService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("res", res)
+      
 
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
+        
+        let hasMore = false
+
+        if(data.length == limit){
+          hasMore = true
+        }
+
+        console.log("data.length", data.length,"data",data[0])
+
+        data.pop();
+
+        console.log("last data.length", data.length,"data",data[0])
+
 
         data = await Promise.all(
           data.map(async (ele) => {
@@ -764,7 +778,7 @@ export class PlantService {
           })
         );
 
-        return data;
+        return {hasMore:hasMore,data:data};
       } else {
         throw new InternalServerErrorException();
       }
