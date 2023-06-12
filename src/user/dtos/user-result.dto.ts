@@ -1,108 +1,102 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import {
-  IsBoolean,
-  IsDate,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from "class-validator";
+import { IsDate, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class UserResultDto {
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  _id?;
+  _id?: string;
 
   @ApiResponseProperty()
   @IsString()
-  walletAddress;
+  walletAddress: string;
 
   @ApiResponseProperty()
   @IsNumber()
-  nonce;
+  nonce: number;
 
   @ApiResponseProperty()
   @IsNumber()
-  plantingNonce;
+  plantingNonce: number;
 
   @ApiResponseProperty()
   @IsDate()
-  createdAt;
+  createdAt: Date;
 
   @ApiResponseProperty()
   @IsNumber()
-  userRole;
+  userRole: number;
 
   @ApiResponseProperty()
   @IsDate()
-  updatedAt;
+  updatedAt: Date;
 
   @ApiResponseProperty()
   @IsNumber()
-  userStatus;
+  userStatus: number;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  firstName?;
+  firstName?: string;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  lastName?;
+  lastName?: string;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  mobile?;
-
-  @ApiResponseProperty()
-  @IsDate()
-  @IsOptional()
-  mobileVerifiedAt?;
+  mobile?: string;
 
   @ApiResponseProperty()
   @IsDate()
   @IsOptional()
-  mobileCodeRequestedAt?;
-
-  @ApiResponseProperty()
-  @IsNumber()
-  @IsOptional()
-  mobileCodeRequestsCountForToday?;
-
-  @ApiResponseProperty()
-  @IsNumber()
-  @IsOptional()
-  mobileCode?;
-
-  @ApiResponseProperty()
-  @IsString()
-  @IsOptional()
-  mobileCountry?;
-
-  @ApiResponseProperty()
-  @IsString()
-  @IsOptional()
-  email?;
+  mobileVerifiedAt?: Date;
 
   @ApiResponseProperty()
   @IsDate()
   @IsOptional()
-  emailVerifiedAt?;
+  mobileCodeRequestedAt?: Date;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  @IsOptional()
+  mobileCodeRequestsCountForToday?: number;
+
+  @ApiResponseProperty()
+  @IsNumber()
+  @IsOptional()
+  mobileCode?: number;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  emailToken?;
+  mobileCountry?: string;
+
+  @ApiResponseProperty()
+  @IsString()
+  @IsOptional()
+  email?: string;
 
   @ApiResponseProperty()
   @IsDate()
   @IsOptional()
-  emailTokenRequestedAt?;
+  emailVerifiedAt?: Date;
 
   @ApiResponseProperty()
   @IsString()
   @IsOptional()
-  idCard?;
+  emailToken?: string;
+
+  @ApiResponseProperty()
+  @IsDate()
+  @IsOptional()
+  emailTokenRequestedAt?: Date;
+
+  @ApiResponseProperty()
+  @IsString()
+  @IsOptional()
+  idCard?: string;
 }

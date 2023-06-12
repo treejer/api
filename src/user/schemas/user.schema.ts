@@ -10,7 +10,7 @@ export class User extends Document {
   walletAddress;
 
   @Prop({ type: Number, required: true })
-  nonce: Number;
+  nonce;
 
   @Prop({ type: Number, required: true })
   plantingNonce;

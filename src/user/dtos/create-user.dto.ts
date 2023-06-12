@@ -58,7 +58,7 @@ export class CreateUserDto {
   walletAddress?;
 
   @IsNumber()
-  nonce;
+  nonce: number;
 
   @IsNumber()
   plantingNonce;
