@@ -708,14 +708,7 @@ export class PlantService {
       );
     }
 
-
-
-
     let localLimit = Number(limit) + 1;
-
-
-
-
 
     try {
       const postBody = JSON.stringify({
@@ -725,7 +718,6 @@ export class PlantService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("getSubmittedQuery(planterAddress, skip, limit)",getSubmittedQuery(planterAddress, skip, localLimit))
 
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
@@ -736,11 +728,9 @@ export class PlantService {
           hasMore = true
         }
 
-        console.log("data.length", data.length,"data")
 
         data.pop();
 
-        console.log("last data.length", data.length,"data")
 
 
         data = await Promise.all(
