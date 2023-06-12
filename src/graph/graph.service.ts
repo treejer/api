@@ -5,9 +5,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
-import { PlantStatus, TreeErrorMessage } from "src/common/constants";
+import { TreeErrorMessage } from "src/common/constants";
 import { getPlanterDataForPlant } from "src/common/graphQuery/getPlanterDataForPlant";
-import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { getTreeForPlant } from "src/common/graphQuery/getTreeForPlant";
 import { GetPlanterDataResultDto } from "./dto/get-planter-data-result.dto";
 import { GetTreeDataResultDto } from "./dto/get-tree-data-result.dto";
@@ -101,7 +100,10 @@ export class GraphService {
         } else {
           let data = res.data.data.tree;
 
-          data.planter = res.data.data.tree.planter.id;
+          data.planter =
+            res.data.data.tree.planter != null
+              ? res.data.data.tree.planter.id
+              : "";
 
           return data;
         }
@@ -112,5 +114,4 @@ export class GraphService {
       throw new InternalServerErrorException();
     }
   }
-
 }

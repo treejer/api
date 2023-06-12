@@ -31,14 +31,14 @@ import {
 import { getCheckedSumAddress, getSigner } from "../common/helpers";
 import { UserService } from "../user/user.service";
 
+import { ConfigService } from "@nestjs/config";
+import axios from "axios";
+import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
 import { GraphService } from "src/graph/graph.service";
 import { AssignedRequestWithLimitResultDto } from "./dtos/assignedRequestWithLimitResult.dto";
 import { PlantRequestsWithLimitResultDto } from "./dtos/plantRequestWithLimitResult.dto";
 import { UpdateRequestWithLimitResultDto } from "./dtos/updateRequestWithLimitResult.dto";
 import { AssignedTreePlant, TreePlant, UpdateTree } from "./schemas";
-import axios from "axios";
-import { getSubmittedQuery } from "src/common/graphQuery/getSubmittedQuery";
-import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class PlantService {
@@ -86,8 +86,6 @@ export class PlantService {
     )
       throw new ForbiddenException(PlantErrorMessage.SUPPLY_ERROR);
 
-    delete dto.signature;
-
     const createdData = await this.treePlantRepository.create({
       ...dto,
       signer: user.walletAddress,
@@ -97,6 +95,8 @@ export class PlantService {
     await this.userService.updateUserById(user.userId, {
       plantingNonce: userData.plantingNonce + 1,
     });
+
+    createdData.signature = undefined;
 
     return createdData;
   }
@@ -179,7 +179,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
-    delete plantData.signature;
+    plantData.signature = undefined;
 
     return plantData;
   }
@@ -264,6 +264,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
+    assignedPlant.signature = undefined;
     return assignedPlant;
   }
 
@@ -325,6 +326,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
+    assignedPlantData.signature = undefined;
     return assignedPlantData;
   }
 
@@ -411,6 +413,7 @@ export class PlantService {
       plantingNonce: userData.plantingNonce + 1,
     });
 
+    createdData.signature = undefined;
     return createdData;
   }
 
@@ -477,7 +480,7 @@ export class PlantService {
     if (signer !== user.walletAddress)
       throw new ForbiddenException(AuthErrorMessages.INVALID_SIGNER);
 
-    const result = await this.updateTreeRepository.updateOne(
+    await this.updateTreeRepository.updateOne(
       { _id: recordId },
       { ...dto, nonce: userData.plantingNonce }
     );
@@ -491,6 +494,7 @@ export class PlantService {
       updatedAt: new Date(),
     });
 
+    updateData.signature = undefined;
     return updateData;
   }
 
@@ -691,6 +695,7 @@ export class PlantService {
     skip: number,
     limit: number
   ): Promise<any> {
+    
     if (limit > 30) {
       throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
@@ -703,16 +708,32 @@ export class PlantService {
       );
     }
 
+    let localLimit = Number(limit) + 1;
+
+    let localSkip = Number(limit) * skip;
+
     try {
       const postBody = JSON.stringify({
-        query: getSubmittedQuery(planterAddress, skip, limit),
+        query: getSubmittedQuery(planterAddress, localSkip, localLimit),
         variables: null,
       });
 
       const res = await axios.post(theGraphUrl, postBody);
 
+
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
+        
+        let hasMore = false
+
+        if(data.length == localLimit){
+          hasMore = true
+        }
+
+
+        data.pop();
+
+
 
         data = await Promise.all(
           data.map(async (ele) => {
@@ -755,7 +776,7 @@ export class PlantService {
           })
         );
 
-        return data;
+        return {hasMore:hasMore,data:data};
       } else {
         throw new InternalServerErrorException();
       }
