@@ -708,28 +708,31 @@ export class PlantService {
       );
     }
 
-    limit = limit + 1;
-
-
     console.log("limit",limit)
+
+
+    let localLimit = limit + 1;
+
+
+    console.log("localLimit",localLimit)
 
 
     try {
       const postBody = JSON.stringify({
-        query: getSubmittedQuery(planterAddress, skip, limit),
+        query: getSubmittedQuery(planterAddress, skip, localLimit),
         variables: null,
       });
 
       const res = await axios.post(theGraphUrl, postBody);
 
-      console.log("getSubmittedQuery(planterAddress, skip, limit)",getSubmittedQuery(planterAddress, skip, limit))
+      console.log("getSubmittedQuery(planterAddress, skip, limit)",getSubmittedQuery(planterAddress, skip, localLimit))
 
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
         
         let hasMore = false
 
-        if(data.length == limit){
+        if(data.length == localLimit){
           hasMore = true
         }
 
