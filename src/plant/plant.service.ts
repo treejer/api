@@ -708,13 +708,13 @@ export class PlantService {
       );
     }
 
-    console.log("limit",limit)
 
 
-    let localLimit = limit + 1;
+
+    let localLimit = Number(limit) + 1;
 
 
-    console.log("localLimit",localLimit)
+
 
 
     try {
