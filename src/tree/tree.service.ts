@@ -7,9 +7,10 @@ import {
 
 import axios from "axios";
 
-import { generateTreeAttributes } from "src/common/helpers";
-import { treeTemplate, TreeErrorMessage } from "./../common/constants";
 import { ConfigService } from "@nestjs/config";
+import { generateTreeAttributes } from "src/common/helpers";
+import { PlantService } from "src/plant/plant.service";
+import { PlantStatus, TreeErrorMessage, submittedQueryEnum, treeTemplate } from "./../common/constants";
 import { TreeDataResultDto } from "./dto/tree-data.dto";
 
 const fs = require("fs");
@@ -23,7 +24,7 @@ const crownColor = JSON.parse(
 );
 @Injectable()
 export class TreeService {
-  public constructor(private configService: ConfigService) {}
+  public constructor(private configService: ConfigService,private plantService:PlantService) {}
 
   async getTree(treeId: string): Promise<TreeDataResultDto> {
     let hexTreeId: string;
@@ -145,6 +146,40 @@ export class TreeService {
         });
       }
 
+
+      if (Number(tree.treeStatus) < 4) {
+        let assignedCount = await this.plantService.getAssignPendingListCount({
+          treeId: parseInt(tree.id, 16),
+          status: PlantStatus.PENDING,
+        });
+
+        if (assignedCount > 0) {
+          tree.status = submittedQueryEnum.Pending;
+        } else {
+          tree.status = submittedQueryEnum.Assigned;
+        }
+      } else if (Number(tree.treeStatus) >= 4) {
+        let updatedCount = await this.plantService.getUpdatePendingListCount({
+          treeId: parseInt(tree.id, 16),
+          status: PlantStatus.PENDING,
+        });
+
+        if (updatedCount > 0) {
+          tree.status = submittedQueryEnum.Pending;
+        } else {
+          if (
+            Math.floor(new Date().getTime() / 1000) <
+            Number(tree.plantDate) +
+              Number(tree.treeStatus) * 3600 +
+              604800
+          ) {
+            tree.status = submittedQueryEnum.Verified;
+          } else {
+            tree.status = submittedQueryEnum.CanUpdate;
+          }
+        }
+      }
+      
       return tree;
     } catch (err) {
       throw new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
