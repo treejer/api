@@ -19,8 +19,7 @@ import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
 import { DownloadService } from "src/download/download.service";
 import { SmsService } from "src/sms/sms.service";
 import { UserService } from "src/user/user.service";
-import { GetUserResultDto } from "./dto";
-
+import { GetPaginateUserResultDto, GetUserResultDto } from "./dto";
 @Injectable()
 export class AdminService {
   constructor(
@@ -52,6 +51,23 @@ export class AdminService {
     } catch (error) {
       throw new InternalServerErrorException(error.toString());
     }
+  }
+
+  async getUserWithPaginate(
+    skip,
+    limit,
+    filter,
+    sortOption
+  ): Promise<GetPaginateUserResultDto> {
+    const data = await this.userService.getUserDataWithPaginate(
+      skip * limit,
+      limit,
+      filter,
+      sortOption,
+      {}
+    );
+    const count = await this.userService.getUserCount(filter);
+    return { data, count };
   }
 
   async getUserById(userId: string): Promise<GetUserResultDto> {

@@ -274,4 +274,24 @@ export class UserService {
       plantingNonce: 1,
     });
   }
+
+  async getUserDataWithPaginate(
+    skip: number,
+    limit: number,
+    filter,
+    sortOption,
+    projection?
+  ) {
+    return this.userRepository.findWithPaginate(
+      skip,
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+  }
+
+  async getUserCount(filter) {
+    return this.userRepository.count(filter);
+  }
 }

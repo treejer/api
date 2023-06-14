@@ -18,12 +18,17 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import { HasRoles } from "src/auth/decorators";
 import { RolesGuard } from "src/auth/strategies";
-import { GetUserResultDto, UserVerificationByAdminDto } from "./dto";
+import {
+  GetPaginateUserResultDto,
+  GetUserResultDto,
+  UserVerificationByAdminDto,
+} from "./dto";
 import { ApplicationResultDto } from "src/application/dtos";
 
 @ApiTags("admin")
@@ -65,6 +70,62 @@ export class AdminController {
   async getUsers(@Query("filters") filters: string) {
     if (!filters || filters.length === 0) filters = "{}";
     return this.adminService.getUsers(JSON.parse(decodeURIComponent(filters)));
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get user data with pagination" })
+  @ApiResponse({
+    status: 200,
+    description: "get user data with pagination successfully.",
+    type: [GetPaginateUserResultDto],
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiQuery({ name: "filters", required: false, type: String })
+  @ApiQuery({ name: "sort", required: false, type: String })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("users/paginate")
+  async getUsersWithPaginate(
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("filters") filters?: string,
+    @Query("sort") sort?: string
+  ) {
+    if (!filters || filters.length === 0) filters = "{}";
+    if (!sort || sort.length === 0) sort = "{}";
+    try {
+      filters = JSON.parse(decodeURIComponent(filters));
+    } catch (error) {
+      filters = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    try {
+      sort = JSON.parse(decodeURIComponent(sort));
+    } catch (error) {
+      sort = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    return this.adminService.getUserWithPaginate(skip, limit, filters, sort);
   }
 
   //------------------------------------------ ************************ ------------------------------------------//
