@@ -790,18 +790,31 @@ export class PlantService {
     filter,
     sortOption
   ): Promise<string[]> {
-    return await this.assignedTreePlantRepository.sort(filter,sortOption, {
+    
+    let list = await this.assignedTreePlantRepository.sort(filter,sortOption, {
       _id: 1
     });
+
+    list = list.map(item=>{
+      return item._id
+    })
+
+    return list;
   }
 
   async getUpdateTreeRequestsJustId(
     filter,
     sortOption
   ): Promise<string[]> {
-    return await this.updateTreeRepository.sort(filter,sortOption, {
+    let list = await this.updateTreeRepository.sort(filter,sortOption, {
       _id:1
     });
+
+    list = list.map(item=>{
+      return item._id
+    })
+
+    return list;
   }
 
   

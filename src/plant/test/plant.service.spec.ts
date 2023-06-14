@@ -2597,14 +2597,14 @@ describe("App e2e", () => {
     expect(result.length).toBe(4);
 
     for (let index = 0; index < result.length; index++) {
-      let user = await mongoConnection.db
+      let req = await mongoConnection.db
       .collection(CollectionNames.ASSIGNED_TREE_PLANT)
       .findOne({
         _id: result[index],
       });
 
-      expect(user.signer).toBe(getCheckedSumAddress(account1));        
-      expect(user.status).toBe(PlantStatus.PENDING);        
+      expect(req.signer).toBe(getCheckedSumAddress(account1));        
+      expect(req.status).toBe(PlantStatus.PENDING);        
 
     }
   });
