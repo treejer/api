@@ -2543,14 +2543,11 @@ describe("App e2e", () => {
   });
 
 
-  it("get assigned plant requests", async () => {
+  it("get assigned plant requests id list", async () => {
     let account1 = "0x5783AfB718C79e2303584BA798849D35A3739461";
     let account2 = "0xddD9F49481e2b8Bea35407A69CBB88C301128FA1";
     
     let account = await web3.eth.accounts.create();
-
-    let account1Nonces = [1, 3, 5, 9];
-    let account2Nonces = [4, 8, 10];
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
