@@ -695,7 +695,6 @@ export class PlantService {
     skip: number,
     limit: number
   ): Promise<any> {
-    
     if (limit > 30) {
       throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
@@ -720,20 +719,16 @@ export class PlantService {
 
       const res = await axios.post(theGraphUrl, postBody);
 
-
       if (res.status == 200 && res.data.data) {
         let data = res.data.data.trees;
-        
-        let hasMore = false
 
-        if(data.length == localLimit){
-          hasMore = true
+        let hasMore = false;
+
+        if (data.length == localLimit) {
+          hasMore = true;
         }
 
-
         data.pop();
-
-
 
         data = await Promise.all(
           data.map(async (ele) => {
@@ -776,7 +771,7 @@ export class PlantService {
           })
         );
 
-        return {hasMore:hasMore,data:data};
+        return { hasMore: hasMore, data: data };
       } else {
         throw new InternalServerErrorException();
       }
@@ -785,39 +780,30 @@ export class PlantService {
     }
   }
 
-
-  async getAssignedTreeRequestsJustId(
-    filter,
-    sortOption
-  ): Promise<string[]> {
-    
-    let list = await this.assignedTreePlantRepository.sort(filter,sortOption, {
-      _id: 1
+  async getAssignedTreeRequestsJustId(filter, sortOption): Promise<string[]> {
+    let list: string[] = (
+      await this.assignedTreePlantRepository.sort(filter, sortOption, {
+        _id: 1,
+      })
+    ).map((item) => {
+      return item._id;
     });
-
-    list = list.map(item=>{
-      return item._id
-    })
 
     return list;
   }
 
-  async getUpdateTreeRequestsJustId(
-    filter,
-    sortOption
-  ): Promise<string[]> {
-    let list = await this.updateTreeRepository.sort(filter,sortOption, {
-      _id:1
+  async getUpdateTreeRequestsJustId(filter, sortOption): Promise<string[]> {
+    let list: string[] = (
+      await this.updateTreeRepository.sort(filter, sortOption, {
+        _id: 1,
+      })
+    ).map((item) => {
+      return item._id;
     });
-
-    list = list.map(item=>{
-      return item._id
-    })
 
     return list;
   }
 
-  
   async getAssignPendingListCount(filter): Promise<number> {
     return await this.assignedTreePlantRepository.count({
       ...filter,
