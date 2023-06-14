@@ -786,7 +786,7 @@ export class PlantService {
         treeId: 1,
       })
     ).map((item) => {
-      return item.treeId;
+      return "0x" + parseInt(item.treeId).toString(16);
     });
 
     return list;
@@ -798,7 +798,7 @@ export class PlantService {
         treeId: 1,
       })
     ).map((item) => {
-      return item.treeId;
+      return "0x" + parseInt(item.treeId).toString(16);
     });
 
     return list;
