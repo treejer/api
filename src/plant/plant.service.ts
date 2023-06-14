@@ -785,6 +785,26 @@ export class PlantService {
     }
   }
 
+
+  async getAssignedTreeRequestsJustId(
+    filter,
+    sortOption
+  ): Promise<string[]> {
+    return await this.assignedTreePlantRepository.sort(filter,sortOption, {
+      _id: 1
+    });
+  }
+
+  async getUpdateTreeRequestsJustId(
+    filter,
+    sortOption
+  ): Promise<string[]> {
+    return await this.updateTreeRepository.sort(filter,sortOption, {
+      _id:1
+    });
+  }
+
+  
   async getAssignPendingListCount(filter): Promise<number> {
     return await this.assignedTreePlantRepository.count({
       ...filter,

@@ -1,8 +1,8 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common";
-import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "./../../app.module";
-import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Connection, Types, connect } from "mongoose";
+import { AppModule } from "./../../app.module";
 import {
   AuthErrorMessages,
   CollectionNames,
@@ -10,9 +10,9 @@ import {
   Role,
 } from "./../../common/constants";
 
-import { getEIP712Sign } from "./../../common/helpers";
-import { PlantService } from "../plant.service";
 import { Web3Service } from "src/web3/web3.service";
+import { PlantService } from "../plant.service";
+import { getEIP712Sign } from "./../../common/helpers";
 const Web3 = require("web3");
 
 const request = require("supertest");

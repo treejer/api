@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
+import { Document, FilterQuery, Model, UpdateQuery } from "mongoose";
 import { IUpdateOne } from "./interfaces";
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
@@ -7,6 +7,18 @@ export abstract class EntityRepository<T extends Document> {
   async find(
     entityFilterQuery: FilterQuery<T>,
     projection?: Record<string, null>
+  ): Promise<T[]> {
+    try {
+      return await this.entityModel.find(entityFilterQuery, { ...projection });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+
+  async findId(
+    entityFilterQuery: FilterQuery<T>,
+    projection?: Record<string, number>
   ): Promise<T[]> {
     try {
       return await this.entityModel.find(entityFilterQuery, { ...projection });

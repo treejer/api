@@ -32,6 +32,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { getCheckedSumAddress } from "src/common/helpers";
 import {
   AssignedRequestResultDto,
   CreateAssignedRequestDto,
@@ -1061,4 +1062,74 @@ export class PlantController {
   ) {
     return this.plantService.getSubmittedData(user.walletAddress, skip, limit);
   }
+
+  
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get user all update tree requests" })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("update_requests/me/ids")
+  getUpdateTreeRequestsJustId(@User() user: JwtUserDto) {
+    return this.plantService.getUpdateTreeRequestsJustId(
+      { status: PlantStatus.PENDING,signer: getCheckedSumAddress(user.walletAddress) },
+      {}
+    );
+  }
+
+
+    //------------------------------------------ ************************ ------------------------------------------//
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "get user all assigned tree requests" })
+    @ApiResponse({
+      status: 401,
+      description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+      content: {
+        "text/plain": {
+          schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+        },
+      },
+    })
+    @ApiResponse({
+      status: 500,
+      description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+      content: {
+        "text/plain": {
+          schema: {
+            format: "text/plain",
+            example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+          },
+        },
+      },
+    })
+    @HasRoles(Role.PLANTER)
+    @UseGuards(AuthGuard("jwt"), RolesGuard)
+    @Get("assigned_requests/me/ids")
+    getAssignTreeRequestsJustId(@User() user: JwtUserDto) {
+      return this.plantService.getAssignedTreeRequestsJustId(
+        { status: PlantStatus.PENDING,signer: getCheckedSumAddress(user.walletAddress) },
+        {}
+      );
+    }
 }
