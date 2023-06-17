@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 
-import * as CircleOfHop from "./contracts/CircleOfHop.json";
+import * as ITreeFactory from "./contracts/ITreeFactory.json";
 
 import { ConfigService } from "@nestjs/config";
 import { Web3Service } from "src/web3/web3.service";
@@ -79,7 +79,7 @@ export class TreeFactoryListener {
       {
         name: this.configService.get<string>("LISTENER_CONTRACT_NAME"),
         address: this.configService.get<string>("LISTENER_CONTRACT_ADDRESS"),
-        abi: CircleOfHop.abi,
+        abi: ITreeFactory.abi,
         events: this.configService
           .get<string>("LISTENER_CONTRACT_EVENTS")
           .split(" "),
@@ -113,7 +113,7 @@ export class TreeFactoryListener {
                 if (event.name === EventName.TREE_ASSIGNED) {
                   try {
                     await this.plantVerificationService.verifyAssignedTree(
-                      Number(event.values._treeId),
+                      Number(event.values.treeId),
                     );
                   } catch (error) {
                     console.log("TREE_ASSIGNED error", error);
@@ -130,7 +130,7 @@ export class TreeFactoryListener {
                 } else if (event.name === EventName.TREE_UPDATE) {
                   try {
                     await this.plantVerificationService.verifyUpdate(
-                      Number(event.values._treeId),
+                      Number(event.values.treeId),
                     );
                   } catch (error) {
                     console.log("TREE_UPDATE error", error);

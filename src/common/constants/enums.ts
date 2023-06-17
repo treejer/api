@@ -30,9 +30,9 @@ export enum UserStatus {
 }
 
 export enum EventName {
-  TREE_ASSIGNED = "AssignedTreeVerified",
-  TREE_UPDATE = "TreeUpdatedVerified",
-  TREE_PLANT = "TreeVerified",
+  TREE_ASSIGNED = "AssignedTreeVerifiedWithSign",
+  TREE_UPDATE = "TreeUpdatedVerifiedWithSign",
+  TREE_PLANT = "TreeVerifiedWithSign",
 }
 
 export enum ApplicationTypes {
