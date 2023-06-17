@@ -550,7 +550,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $ne: PlantStatus.DELETE },
+      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
     };
 
     const data = await this.treePlantRepository.findWithPaginate(
@@ -605,7 +605,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $ne: PlantStatus.DELETE },
+      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
     };
 
     const data = await this.assignedTreePlantRepository.findWithPaginate(
@@ -651,7 +651,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $ne: PlantStatus.DELETE },
+      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED] },
     };
 
     const data = await this.updateTreeRepository.findWithPaginate(
