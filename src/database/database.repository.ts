@@ -15,7 +15,6 @@ export abstract class EntityRepository<T extends Document> {
     }
   }
 
-
   async findId(
     entityFilterQuery: FilterQuery<T>,
     projection?: Record<string, number>
@@ -180,6 +179,19 @@ export abstract class EntityRepository<T extends Document> {
     try {
       const deleteResult = await this.entityModel.deleteOne(entityFilterQuery);
       return deleteResult.deletedCount > 0;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async replaceOne(filter, replacement) {
+    try {
+      const replacementResult = await this.entityModel.replaceOne(
+        filter,
+        replacement
+      );
+
+      console.log("repppppp", replacementResult);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

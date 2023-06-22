@@ -19,6 +19,7 @@ import { TreeModule } from "./tree/tree.module";
 import { AdminModule } from "./admin/admin.module";
 import { ApplicationModule } from "./application/application.module";
 import { GraphModule } from "./graph/graph.module";
+import { SettingsModule } from "./settings/settings.module";
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { GraphModule } from "./graph/graph.module";
     GraphModule,
     AdminModule,
     ApplicationModule,
+    SettingsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),
