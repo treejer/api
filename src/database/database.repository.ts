@@ -186,12 +186,9 @@ export abstract class EntityRepository<T extends Document> {
 
   async replaceOne(filter, replacement) {
     try {
-      const replacementResult = await this.entityModel.replaceOne(
-        filter,
-        replacement
-      );
+      const result = await this.entityModel.replaceOne(filter, replacement);
 
-      console.log("repppppp", replacementResult);
+      return result.acknowledged;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

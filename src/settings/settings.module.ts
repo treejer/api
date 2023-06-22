@@ -4,15 +4,17 @@ import { SettingsController } from "./settings.controller";
 import { SettingsRepository } from "./settings.repository";
 import { SettingsService } from "./settings.service";
 import { Settings, SettingsSchema } from "./schema";
+import { UserModule } from "src/user/user.module";
 
 @Module({
-  providers: [SettingsService, SettingsRepository],
   imports: [
+    UserModule,
     MongooseModule.forFeature([
       { name: Settings.name, schema: SettingsSchema },
     ]),
   ],
   controllers: [SettingsController],
+  providers: [SettingsService, SettingsRepository],
   exports: [SettingsService],
 })
 export class SettingsModule {}

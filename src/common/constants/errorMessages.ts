@@ -50,6 +50,10 @@ export const PlantErrorMessage = {
   UPDATE_DATA_NOT_EXIST: "update data not exist",
 };
 
+export const SettingErrorMessage = {
+  SETTING_NOT_EXIST: "setting not exists",
+};
+
 export const EmailMessage = {
   INVALID_TOKEN: "Invalid token",
   ALREADY_VERIFIED: "Already verified",
@@ -83,8 +87,6 @@ export const AdminErrorMessage = {
   INVALID_USER_STATUS: "Invalid User Status",
 };
 
-
 export const CommonErrorMessage = {
-  SKIP_LIMIT: "skip must be lt 30"
+  SKIP_LIMIT: "skip must be lt 30",
 };
-
