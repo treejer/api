@@ -21,7 +21,6 @@ import { HasRoles } from "src/auth/decorators";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/auth/strategies";
 import { GetSettingResultDto } from "./dto";
-import { boolean } from "yargs";
 
 @Controller("settings")
 @ApiTags("settings")
@@ -54,18 +53,6 @@ export class SettingsController {
     },
   })
   @ApiResponse({
-    status: 404,
-    description: "plant request not exist",
-    content: {
-      "text/plain": {
-        schema: {
-          format: "text/plain",
-          example: SettingErrorMessage.SETTING_NOT_EXIST,
-        },
-      },
-    },
-  })
-  @ApiResponse({
     status: 500,
     description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
     content: {
@@ -79,9 +66,9 @@ export class SettingsController {
   })
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Patch(":id")
-  updateSetting(@Param("id") id: string, @Body() setting: UpdateSettingDto) {
-    return this.settingsService.updateSettingWithKey(id, setting);
+  @Patch()
+  updateSetting(@Body() setting: UpdateSettingDto) {
+    return this.settingsService.updateSetting(setting);
   }
 
   @ApiOperation({ summary: "get settings" })
@@ -102,17 +89,8 @@ export class SettingsController {
       },
     },
   })
-  @ApiQuery({ name: "filters", required: false, type: String })
   @Get()
-  getSetting(@Query("filters") filters?: string) {
-    if (!filters || filters.length === 0) filters = "{}";
-
-    try {
-      filters = JSON.parse(decodeURIComponent(filters));
-    } catch (error) {
-      filters = JSON.parse(decodeURIComponent("{}"));
-    }
-
-    return this.settingsService.getSetting(filters);
+  getSetting() {
+    return this.settingsService.getSetting();
   }
 }

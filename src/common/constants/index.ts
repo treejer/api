@@ -5,3 +5,4 @@ export * from "./numbers";
 export * from "./constantValues";
 export * from "./swaggerErrors";
 export * from "./serviceMessages";
+export * from "./configConstants";
