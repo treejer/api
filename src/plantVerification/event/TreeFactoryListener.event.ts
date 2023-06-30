@@ -97,6 +97,7 @@ export class TreeFactoryListener {
 
     this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
+    console.log("await this.plantVerificationService.loadLastState()",await this.plantVerificationService.loadLastState())
     this.ethereumEvents.start(
       await this.plantVerificationService.loadLastState(),
     );
