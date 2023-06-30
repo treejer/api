@@ -7,6 +7,7 @@ import { Web3Service } from "src/web3/web3.service";
 import { PlantVerificationService } from "../plantVerification.service";
 import { EventName } from "src/common/constants";
 import { Command, Positional, Option } from "nestjs-command";
+import { eventNames } from "process";
 
 const EthereumEvents = require("ethereum-events");
 
@@ -80,9 +81,7 @@ export class TreeFactoryListener {
         name: this.configService.get<string>("LISTENER_CONTRACT_NAME"),
         address: this.configService.get<string>("LISTENER_CONTRACT_ADDRESS"),
         abi: ITreeFactory.abi,
-        events: this.configService
-          .get<string>("LISTENER_CONTRACT_EVENTS")
-          .split(" "),
+        events: [EventName.TREE_PLANT,EventName.TREE_ASSIGNED,EventName.TREE_UPDATE],
       },
     ];
 
