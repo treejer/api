@@ -97,7 +97,6 @@ export class TreeFactoryListener {
 
     this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
 
-    console.log("await this.plantVerificationService.loadLastState()",await this.plantVerificationService.loadLastState())
     this.ethereumEvents.start(
       await this.plantVerificationService.loadLastState(),
     );
@@ -121,7 +120,7 @@ export class TreeFactoryListener {
                 } else if (event.name === EventName.TREE_PLANT) {
                   try {
                     await this.plantVerificationService.verifyPlant(
-                      event.values.signer,
+                      event.values.planter,
                       Number(event.values.nonce),
                     );
                   } catch (error) {
