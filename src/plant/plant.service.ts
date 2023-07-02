@@ -550,7 +550,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.treePlantRepository.findWithPaginate(
@@ -605,7 +605,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.assignedTreePlantRepository.findWithPaginate(
@@ -651,7 +651,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED] },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.updateTreeRepository.findWithPaginate(
@@ -699,7 +699,7 @@ export class PlantService {
       throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
 
-    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
+    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL_TEST");
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(

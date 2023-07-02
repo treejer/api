@@ -10,7 +10,12 @@ import axios from "axios";
 import { ConfigService } from "@nestjs/config";
 import { generateTreeAttributes } from "src/common/helpers";
 import { PlantService } from "src/plant/plant.service";
-import { PlantStatus, TreeErrorMessage, submittedQueryEnum, treeTemplate } from "./../common/constants";
+import {
+  PlantStatus,
+  TreeErrorMessage,
+  submittedQueryEnum,
+  treeTemplate,
+} from "./../common/constants";
 import { TreeDataResultDto } from "./dto/tree-data.dto";
 
 const fs = require("fs");
@@ -24,7 +29,10 @@ const crownColor = JSON.parse(
 );
 @Injectable()
 export class TreeService {
-  public constructor(private configService: ConfigService,private plantService:PlantService) {}
+  public constructor(
+    private configService: ConfigService,
+    private plantService: PlantService
+  ) {}
 
   async getTree(treeId: string): Promise<TreeDataResultDto> {
     let hexTreeId: string;
@@ -35,7 +43,7 @@ export class TreeService {
       throw new BadRequestException(TreeErrorMessage.INVALID_INPUT);
     }
 
-    const theGraphUrl = this.configService.get<string>("THE_GRAPH_URL");
+    const theGraphUrl = this.configService.get<string>("THE_GRAPH_URL_TEST");
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(
@@ -86,7 +94,7 @@ export class TreeService {
         if (tree.id > 0) {
           tree.name = "Genesis Tree #" + treeId;
         } else {
-          tree.name = "TREE OF LIFE"; 
+          tree.name = "TREE OF LIFE";
         }
       } else {
         tree.name = "Tree #" + treeId;
@@ -146,7 +154,6 @@ export class TreeService {
         });
       }
 
-
       if (Number(tree.treeStatus) < 4) {
         let assignedCount = await this.plantService.getAssignPendingListCount({
           treeId: parseInt(tree.id, 16),
@@ -169,9 +176,7 @@ export class TreeService {
         } else {
           if (
             Math.floor(new Date().getTime() / 1000) <
-            Number(tree.plantDate) +
-              Number(tree.treeStatus) * 3600 +
-              604800
+            Number(tree.plantDate) + Number(tree.treeStatus) * 3600 + 604800
           ) {
             tree.status = submittedQueryEnum.Verified;
           } else {
@@ -179,7 +184,7 @@ export class TreeService {
           }
         }
       }
-      
+
       return tree;
     } catch (err) {
       throw new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
