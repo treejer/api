@@ -93,9 +93,9 @@ export class TreeFactoryListener {
       backoff,
     };
 
-    let web3S = this.web3Service.getWeb3SInstance(url);
+    let web3 = this.web3Service.getWeb3Instance();
 
-    this.ethereumEvents = new EthereumEvents(web3S, contracts, options);
+    this.ethereumEvents = new EthereumEvents(web3, contracts, options);
 
     this.ethereumEvents.start(
       await this.plantVerificationService.loadLastState(),
