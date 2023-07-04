@@ -17,6 +17,9 @@ export class AssignedTreePlant extends Document {
   @Prop({ type: String, required: true })
   treeSpecs;
 
+  @Prop({ type: String, required: true })
+  treeSpecsJSON;
+
   @Prop({ type: Number, required: true })
   birthDate;
 
@@ -37,6 +40,7 @@ export class AssignedTreePlant extends Document {
 
   @Prop({ type: Date, required: true, default: Date.now })
   updatedAt;
+
 }
 
 export const AssignedTreePlantSchema =

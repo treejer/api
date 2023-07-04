@@ -23,6 +23,10 @@ export class AssignedRequestResultDto {
   treeSpecs: string;
 
   @ApiResponseProperty()
+  @IsString()
+  treeSpecsJSON: string;
+
+  @ApiResponseProperty()
   @IsNumber()
   birthDate: number;
 

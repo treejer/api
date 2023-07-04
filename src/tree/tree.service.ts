@@ -61,8 +61,6 @@ export class TreeService {
     try {
       const tree = res.data.data.tree;
 
-      console.log("tree", tree);
-
       if (!tree) {
         throw new NotFoundException(TreeErrorMessage.TREE_NOT_FOUND);
       }

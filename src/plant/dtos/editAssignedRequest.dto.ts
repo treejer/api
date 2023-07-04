@@ -7,6 +7,10 @@ export class EditAssignedRequestDto {
   treeSpecs: string;
 
   @ApiProperty()
+  @IsString()
+  treeSpecsJSON: string;
+
+  @ApiProperty()
   @IsNumber()
   birthDate: number;
 
