@@ -12,5 +12,9 @@ export class CreateUpdateRequestDto {
 
   @ApiProperty()
   @IsString()
+  treeSpecsJSON: string;
+
+  @ApiProperty()
+  @IsString()
   signature: string;
 }

@@ -15,6 +15,9 @@ export class TreePlant extends Document {
   @Prop({ type: String, required: true })
   treeSpecs;
 
+  @Prop({ type: String, required: true })
+  treeSpecsJSON;
+
   @Prop({ type: Number, required: true })
   birthDate;
 

@@ -8,5 +8,9 @@ export class EditUpdateRequestDto {
 
   @ApiProperty()
   @IsString()
+  treeSpecsJSON: string;
+
+  @ApiProperty()
+  @IsString()
   signature: string;
 }

@@ -19,6 +19,10 @@ export class PlantRequestResultDto {
   treeSpecs: string;
 
   @ApiResponseProperty()
+  @IsString()
+  treeSpecsJSON: string;
+
+  @ApiResponseProperty()
   @IsNumber()
   birthDate: number;
 

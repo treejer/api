@@ -532,6 +532,7 @@ export class PlantService {
       signer: 1,
       nonce: 1,
       treeSpecs: 1,
+      treeSpecsJSON: 1,
       birthDate: 1,
       countryCode: 1,
       status: 1,
@@ -550,7 +551,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.treePlantRepository.findWithPaginate(
@@ -563,6 +564,7 @@ export class PlantService {
         signer: 1,
         nonce: 1,
         treeSpecs: 1,
+        treeSpecsJSON: 1,
         birthDate: 1,
         countryCode: 1,
         status: 1,
@@ -605,7 +607,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED]  },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.assignedTreePlantRepository.findWithPaginate(
@@ -651,7 +653,7 @@ export class PlantService {
     const filterQuery = {
       ...filter,
       signer,
-      status: { $nin: [PlantStatus.DELETE,PlantStatus.VERIFIED] },
+      status: { $nin: [PlantStatus.DELETE, PlantStatus.VERIFIED] },
     };
 
     const data = await this.updateTreeRepository.findWithPaginate(
@@ -665,6 +667,7 @@ export class PlantService {
         nonce: 1,
         treeId: 1,
         treeSpecs: 1,
+        treeSpecsJSON: 1,
         status: 1,
         createdAt: 1,
         updatedAt: 1,

@@ -19,6 +19,9 @@ export class UpdateTree extends Document {
   treeSpecs;
 
   @Prop({ type: String, required: true })
+  treeSpecsJSON;
+
+  @Prop({ type: String, required: true })
   signature;
 
   @Prop({ type: Number, required: true, default: PlantStatus.PENDING })

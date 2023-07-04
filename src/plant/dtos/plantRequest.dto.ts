@@ -7,6 +7,10 @@ export class PlantRequestDto {
   treeSpecs: string;
 
   @ApiProperty()
+  @IsString()
+  treeSpecsJSON: string;
+
+  @ApiProperty()
   @IsNumber()
   birthDate: number;
 
