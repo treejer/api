@@ -1212,6 +1212,7 @@ describe("App e2e", () => {
     const treeId = 110;
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -1264,7 +1265,7 @@ describe("App e2e", () => {
     );
 
     let plantAssignedTreeResult = await plantService.plantAssignedTree(
-      { treeId, treeSpecs, birthDate, countryCode, signature: sign },
+      { treeId, treeSpecs,treeSpecsJSON, birthDate, countryCode, signature: sign },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account.address,
@@ -1291,6 +1292,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign,
@@ -1333,7 +1335,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.plantAssignedTree(
-        { treeId, treeSpecs, birthDate, countryCode, signature: sign2 },
+        { treeId, treeSpecs,treeSpecsJSON, birthDate, countryCode, signature: sign2 },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account.address,
@@ -1354,6 +1356,7 @@ describe("App e2e", () => {
     const treeId: number = 1;
     const treeId2: number = 2;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -1400,6 +1403,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: await getEIP712Sign(
@@ -1431,6 +1435,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: await getEIP712Sign(
@@ -1485,6 +1490,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign,
@@ -1528,6 +1534,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign,
@@ -1571,6 +1578,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign,
@@ -1614,6 +1622,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign,
@@ -1645,6 +1654,7 @@ describe("App e2e", () => {
       {
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1672,6 +1682,7 @@ describe("App e2e", () => {
         {
           treeId: treeId2,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign2,
@@ -1703,6 +1714,7 @@ describe("App e2e", () => {
       {
         treeId: treeId2,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign2,
@@ -1726,6 +1738,7 @@ describe("App e2e", () => {
     const treeId: number = 1;
     const treeId2: number = 2;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -1791,6 +1804,7 @@ describe("App e2e", () => {
       {
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1805,6 +1819,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign,
@@ -1852,6 +1867,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign2,
@@ -1885,6 +1901,7 @@ describe("App e2e", () => {
         {
           treeId,
           treeSpecs,
+          treeSpecsJSON,
           birthDate,
           countryCode,
           signature: sign3,
@@ -1910,6 +1927,7 @@ describe("App e2e", () => {
       {
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign3,
@@ -1923,6 +1941,7 @@ describe("App e2e", () => {
     expect(plantAssignedTreeResult2).toMatchObject({
       treeId,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign3,
@@ -1936,6 +1955,7 @@ describe("App e2e", () => {
     const nonce: number = 1;
     const treeId: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -1974,6 +1994,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account.address),
         nonce,
         status: PlantStatus.PENDING,
@@ -2027,6 +2048,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       status: PlantStatus.DELETE,
@@ -2059,6 +2081,8 @@ describe("App e2e", () => {
     const treeId: number = 1;
     const treeSpecs: string = "ipfs";
     const treeSpecs2: string = "ipfs2";
+    const treeSpecsJSON: string = "ipfsJSON";
+    const treeSpecs2JSON: string = "ipfs2JSON";
 
     const birthDate: number = 1;
     const birthDate2: number = 2;
@@ -2128,6 +2152,7 @@ describe("App e2e", () => {
       {
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -2159,6 +2184,7 @@ describe("App e2e", () => {
         "63f78643c2784efb7b83db74",
         {
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON,
           birthDate,
           countryCode: countryCode2,
           signature: sign2,
@@ -2194,6 +2220,7 @@ describe("App e2e", () => {
         plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON,
           birthDate,
           countryCode: countryCode2,
           signature: sign3,
@@ -2229,6 +2256,7 @@ describe("App e2e", () => {
         plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON,
           birthDate,
           countryCode: countryCode2,
           signature: sign4,
@@ -2249,6 +2277,7 @@ describe("App e2e", () => {
       plantAssignedTreeResult._id,
       {
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         birthDate,
         countryCode: countryCode2,
         signature: sign2,
@@ -2263,6 +2292,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce: nonce2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
       signature: sign2,
@@ -2279,6 +2309,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce: nonce2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
       signature: sign2,
@@ -2311,6 +2342,7 @@ describe("App e2e", () => {
       plantAssignedTreeResult._id,
       {
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         birthDate: birthDate2,
         countryCode: countryCode,
         signature: sign5,
@@ -2325,6 +2357,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce: 12,
       treeSpecs: treeSpecs,
+      treeSpecsJSON:treeSpecsJSON,
       birthDate: birthDate2,
       countryCode: countryCode,
       signature: sign5,
@@ -2341,6 +2374,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account.address),
       nonce: 12,
       treeSpecs: treeSpecs,
+      treeSpecsJSON:treeSpecsJSON,
       birthDate: birthDate2,
       countryCode: countryCode,
       signature: sign5,
@@ -2365,6 +2399,7 @@ describe("App e2e", () => {
         plantAssignedTreeResult._id,
         {
           treeSpecs: treeSpecs,
+          treeSpecsJSON:treeSpecsJSON,
           birthDate: birthDate2,
           countryCode: countryCode,
           signature: sign5,
@@ -2392,6 +2427,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2416,6 +2452,7 @@ describe("App e2e", () => {
           countryCode,
           signature: sign,
           treeSpecs,
+          treeSpecsJSON,
           signer:
             i % 2 == 0
               ? getCheckedSumAddress(account1)
@@ -2472,6 +2509,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2496,6 +2534,7 @@ describe("App e2e", () => {
           countryCode,
           signature: sign,
           treeSpecs,
+          treeSpecsJSON,
           signer:
             i % 2 == 0
               ? getCheckedSumAddress(account1)
@@ -2550,6 +2589,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2558,6 +2598,7 @@ describe("App e2e", () => {
       {
         nonce: nonce,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -2574,6 +2615,7 @@ describe("App e2e", () => {
           countryCode,
           signature: sign,
           treeSpecs,
+          treeSpecsJSON,
           signer:
             i % 2 == 0
               ? getCheckedSumAddress(account1)
@@ -2617,6 +2659,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2639,6 +2682,7 @@ describe("App e2e", () => {
         .insertOne({
           signature: sign,
           treeSpecs,
+          treeSpecsJSON,
           signer:
             i % 2 == 0
               ? getCheckedSumAddress(account1)
@@ -2693,6 +2737,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2715,6 +2760,7 @@ describe("App e2e", () => {
         .insertOne({
           signature: sign,
           treeSpecs,
+          treeSpecsJSON,
           signer:
             i % 2 == 0
               ? getCheckedSumAddress(account1)
@@ -2753,6 +2799,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2774,6 +2821,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account.address),
         nonce: 1,
         status: PlantStatus.PENDING,
@@ -2789,6 +2837,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.PENDING,
@@ -2808,6 +2857,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.REJECTED,
@@ -2817,6 +2867,7 @@ describe("App e2e", () => {
     let account = await web3.eth.accounts.create();
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
     const sign = await getEIP712Sign(
@@ -2837,6 +2888,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account.address),
         nonce: 1,
         status: PlantStatus.PENDING,
@@ -2854,6 +2906,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.PENDING,
@@ -2876,6 +2929,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       treeId: 1,
@@ -2887,6 +2941,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2906,6 +2961,7 @@ describe("App e2e", () => {
       .insertOne({
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account.address),
         nonce: 1,
         status: PlantStatus.PENDING,
@@ -2921,6 +2977,7 @@ describe("App e2e", () => {
     expect(updatePlantData).toMatchObject({
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.PENDING,
@@ -2939,6 +2996,7 @@ describe("App e2e", () => {
     expect(updatePlantDataAfterReject).toMatchObject({
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.REJECTED,
@@ -2951,6 +3009,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -2970,6 +3029,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.PENDING,
@@ -2981,6 +3041,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.REJECTED,
@@ -2998,6 +3059,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: getCheckedSumAddress(account.address),
       nonce: 1,
       status: PlantStatus.PENDING,
@@ -3016,6 +3078,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account.address),
         nonce: 1,
         status: PlantStatus.PENDING,

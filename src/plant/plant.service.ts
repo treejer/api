@@ -589,6 +589,7 @@ export class PlantService {
       nonce: 1,
       treeId: 1,
       treeSpecs: 1,
+      treeSpecsJSON:1,
       birthDate: 1,
       countryCode: 1,
       status: 1,
@@ -621,6 +622,7 @@ export class PlantService {
         nonce: 1,
         treeId: 1,
         treeSpecs: 1,
+        treeSpecsJSON:1,
         birthDate: 1,
         countryCode: 1,
         status: 1,
@@ -702,7 +704,7 @@ export class PlantService {
       throw new ForbiddenException(CommonErrorMessage.SKIP_LIMIT);
     }
 
-    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
+    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL_TEST");
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(

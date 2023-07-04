@@ -79,6 +79,7 @@ describe("App e2e", () => {
     const treeId = 110;
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -114,6 +115,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -130,6 +132,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -181,6 +184,7 @@ describe("App e2e", () => {
       .send({
         treeId: 15,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -196,6 +200,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -206,6 +211,7 @@ describe("App e2e", () => {
     expect(res.body).toMatchObject({
       treeId,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign,
@@ -218,6 +224,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -231,6 +238,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         signature: sign,
       });
@@ -248,6 +256,9 @@ describe("App e2e", () => {
     const treeSpecs: string = "ipfs";
     const treeSpecs2: string = "ipfs2";
 
+    const treeSpecsJSON: string = "ipfsJSON";
+    const treeSpecs2JSON: string = "ipfs2JSON";
+
     const birthDate: number = 1;
     const countryCode: number = 1;
     const countryCode2: number = 2;
@@ -270,6 +281,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -283,6 +295,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -298,6 +311,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -349,6 +363,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -360,6 +375,7 @@ describe("App e2e", () => {
         nonce: nonce2,
         treeId: treeId,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         birthDate: birthDate,
         countryCode: countryCode2,
       },
@@ -373,6 +389,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         birthDate,
         countryCode: countryCode2,
         signature: sign2,
@@ -382,6 +399,7 @@ describe("App e2e", () => {
 
     expect(res.body).toMatchObject({
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
       signature: sign2,
@@ -392,6 +410,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         countryCode: countryCode2,
         signature: sign2,
       });
@@ -403,6 +422,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         countryCode: countryCode2,
       });
 
@@ -417,7 +437,9 @@ describe("App e2e", () => {
     const nonce2: number = 2;
 
     const treeSpecs: string = "ipfs";
-    const treeSpecs2: string = "ipfs2";
+    
+    const treeSpecsJSON: string = "ipfsJSON";
+    
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -441,6 +463,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -454,6 +477,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -469,6 +493,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -520,6 +545,7 @@ describe("App e2e", () => {
       .send({
         treeId,
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -545,6 +571,7 @@ describe("App e2e", () => {
 
     const treeId1: number = 1;
     const treeSpecs: string = "treeSpecs";
+    const treeSpecsJSON: string = "treeSpecsJSON";
     const nonce1: number = 1;
 
     let res = await request(httpServer).get(`/nonce/${account1.address}`);
@@ -565,6 +592,7 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON
       },
       3
     );
@@ -592,6 +620,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         signature: sign,
       });
 
@@ -606,6 +635,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -629,6 +659,7 @@ describe("App e2e", () => {
       .send({
         treeId: 321,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -642,6 +673,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -650,6 +682,7 @@ describe("App e2e", () => {
     expect(res.body).toMatchObject({
       treeId: treeId1,
       treeSpecs,
+      treeSpecsJSON,
       signature: sign,
     });
 
@@ -660,6 +693,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -681,8 +715,11 @@ describe("App e2e", () => {
 
     const treeId1: number = 1;
     const treeSpecs: string = "treeSpecs";
+    const treeSpecsJSON: string = "treeSpecsJSON";
     const nonce1: number = 1;
     const treeSpecs2: string = "ipfs 2";
+    const treeSpecs2JSON: string = "ipfs 2JSON";
+
     const nonce: number = 2;
 
     let res = await request(httpServer).get(`/nonce/${account1.address}`);
@@ -703,6 +740,7 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
       },
       3
     );
@@ -719,6 +757,7 @@ describe("App e2e", () => {
         plantDate: 1,
         birthDate: 1,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON
       })
     );
 
@@ -730,6 +769,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -744,6 +784,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -767,6 +808,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -779,6 +821,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId1,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON
       },
       3
     );
@@ -789,11 +832,12 @@ describe("App e2e", () => {
       .send({
         signature: sign2,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON
       });
 
     expect(res.status).toEqual(200);
 
-    expect(res.body).toMatchObject({ signature: sign2, treeSpecs: treeSpecs2 });
+    expect(res.body).toMatchObject({ signature: sign2, treeSpecs: treeSpecs2,treeSpecsJSON:treeSpecs2JSON });
 
     res = await request(httpServer)
       .patch(`/update_requests/${recordId}`)
@@ -809,6 +853,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON
       });
 
     expect(res.status).toEqual(400);
@@ -819,8 +864,11 @@ describe("App e2e", () => {
 
     const treeId1: number = 1;
     const treeSpecs: string = "treeSpecs";
+    const treeSpecsJSON: string = "treeSpecsJSON";
+    
     const nonce1: number = 1;
     const treeSpecs2: string = "ipfs 2";
+    const treeSpecs2JSON: string = "ipfs 2JSON";
     const nonce: number = 2;
 
     let res = await request(httpServer).get(`/nonce/${account1.address}`);
@@ -841,6 +889,7 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON
       },
       3
     );
@@ -857,6 +906,7 @@ describe("App e2e", () => {
         plantDate: 1,
         birthDate: 1,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON
       })
     );
 
@@ -895,6 +945,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
+        treeSpecsJSON,
         signature: sign,
       });
 
@@ -920,6 +971,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -954,6 +1006,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -969,6 +1022,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1006,6 +1060,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: "invalid ipfs hash",
+        treeSpecsJSON:"invalid ipfs hashJSON",
         birthDate,
         countryCode,
         signature: sign,
@@ -1020,6 +1075,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1029,6 +1085,7 @@ describe("App e2e", () => {
 
     expect(res.body).toMatchObject({
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign,
@@ -1040,6 +1097,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         signature: sign,
       });
@@ -1051,6 +1109,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         signature: sign,
       });
@@ -1063,6 +1122,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -1084,6 +1144,7 @@ describe("App e2e", () => {
       {
         nonce: nonce,
         treeSpecs: treeSpecs,
+        treeSpecsJSON:treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -1131,6 +1192,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1159,6 +1221,12 @@ describe("App e2e", () => {
 
     const treeSpecs: string = "ipfs";
     const treeSpecs2: string = "ipfs2";
+
+
+
+    const treeSpecsJSON: string = "ipfsJSON";
+    const treeSpecs2JSON: string = "ipfs2JSON";
+
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -1194,6 +1262,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + "fake accessToken" })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -1209,6 +1278,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         countryCode,
         birthDate,
         signature: sign,
@@ -1246,6 +1316,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs,
+        treeSpecsJSON,
         birthDate,
         countryCode,
         signature: sign,
@@ -1256,6 +1327,7 @@ describe("App e2e", () => {
       {
         nonce: nonce2,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         birthDate: birthDate,
         countryCode: countryCode2,
       },
@@ -1269,6 +1341,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         birthDate,
         countryCode: countryCode2,
         signature: sign2,
@@ -1278,6 +1351,7 @@ describe("App e2e", () => {
 
     expect(res.body).toMatchObject({
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
       signature: sign2,
@@ -1288,6 +1362,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         countryCode: countryCode2,
         signature: sign2,
       });
@@ -1299,6 +1374,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON,
         countryCode: countryCode2,
       });
 

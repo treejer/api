@@ -17,7 +17,7 @@ export class GraphService {
   async getPlanterData(
     planterAddress: string
   ): Promise<GetPlanterDataResultDto> {
-    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
+    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL_TEST");
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(
@@ -73,7 +73,7 @@ export class GraphService {
       throw new BadRequestException(TreeErrorMessage.INVALID_INPUT);
     }
 
-    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL");
+    const theGraphUrl = this.config.get<string>("THE_GRAPH_URL_TEST");
 
     if (!theGraphUrl) {
       throw new InternalServerErrorException(
