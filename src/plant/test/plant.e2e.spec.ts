@@ -10,9 +10,9 @@ import {
   Role,
 } from "./../../common/constants";
 
-import { Web3Service } from "src/web3/web3.service";
 import { PlantService } from "../plant.service";
 import { getEIP712Sign } from "./../../common/helpers";
+import { GraphService } from "src/graph/graph.service";
 const Web3 = require("web3");
 
 const request = require("supertest");
@@ -25,7 +25,7 @@ describe("App e2e", () => {
   let web3;
   let httpServer: any;
   let plantService: PlantService;
-  let web3Service: Web3Service;
+  let graphService: GraphService;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -34,10 +34,11 @@ describe("App e2e", () => {
     }).compile();
 
     config = moduleRef.get<ConfigService>(ConfigService);
-    web3Service = moduleRef.get<Web3Service>(Web3Service);
+    graphService = moduleRef.get<GraphService>(GraphService);
+
     plantService = moduleRef.get<PlantService>(PlantService);
 
-    web3 = new Web3("http://localhost:8545");
+    web3 = new Web3();
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
       .connection;
@@ -152,29 +153,23 @@ describe("App e2e", () => {
 
     //------------------------------------------> Success
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "1",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "1",
         planter: account.address,
-        species: 0,
-        countryCode: 0,
-        saleType: 1,
-        treeStatus: 2,
-        plantDate: 0,
-        birthDate: 0,
-        treeSpecs: "",
+        treeStatus: "2",
+        plantDate: "0",
       })
     );
 
@@ -214,7 +209,6 @@ describe("App e2e", () => {
       treeSpecsJSON,
       birthDate,
       countryCode,
-      signature: sign,
     });
 
     //----------------------------------------------
@@ -281,7 +275,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON,
+        treeSpecsJSON: treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -331,29 +325,23 @@ describe("App e2e", () => {
 
     //------------------------------------------> Success
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "2",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "2",
         planter: account.address,
-        species: 0,
-        countryCode: 0,
-        saleType: 1,
-        treeStatus: 2,
-        plantDate: 0,
-        birthDate: 0,
-        treeSpecs: "",
+        treeStatus: "2",
+        plantDate: "0",
       })
     );
 
@@ -375,7 +363,7 @@ describe("App e2e", () => {
         nonce: nonce2,
         treeId: treeId,
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         birthDate: birthDate,
         countryCode: countryCode2,
       },
@@ -389,7 +377,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         birthDate,
         countryCode: countryCode2,
         signature: sign2,
@@ -399,10 +387,9 @@ describe("App e2e", () => {
 
     expect(res.body).toMatchObject({
       treeSpecs: treeSpecs2,
-      treeSpecsJSON:treeSpecs2JSON,
+      treeSpecsJSON: treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
-      signature: sign2,
     });
 
     res = await request(httpServer)
@@ -410,7 +397,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         countryCode: countryCode2,
         signature: sign2,
       });
@@ -422,7 +409,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         countryCode: countryCode2,
       });
 
@@ -437,9 +424,8 @@ describe("App e2e", () => {
     const nonce2: number = 2;
 
     const treeSpecs: string = "ipfs";
-    
+
     const treeSpecsJSON: string = "ipfsJSON";
-    
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -463,7 +449,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON,
+        treeSpecsJSON: treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -513,29 +499,23 @@ describe("App e2e", () => {
 
     //------------------------------------------> Success
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "3",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "3",
         planter: account.address,
-        species: 0,
-        countryCode: 0,
-        saleType: 1,
-        treeStatus: 2,
-        plantDate: 0,
-        birthDate: 0,
-        treeSpecs: "",
+        treeStatus: "2",
+        plantDate: "0",
       })
     );
 
@@ -592,23 +572,19 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON
+        treeSpecsJSON: treeSpecsJSON,
       },
       3
     );
 
     //---------------successful update
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "4",
         planter: account1.address,
-        species: 1,
-        countryCode: 1,
-        saleType: 1,
-        treeStatus: 4,
-        plantDate: 1,
-        birthDate: 1,
-        treeSpecs: treeSpecs,
+        treeStatus: "4",
+        plantDate: "1",
       })
     );
 
@@ -620,7 +596,7 @@ describe("App e2e", () => {
       .send({
         treeId: treeId1,
         treeSpecs,
-        treeSpecsJSON:treeSpecsJSON,
+        treeSpecsJSON: treeSpecsJSON,
         signature: sign,
       });
 
@@ -683,7 +659,6 @@ describe("App e2e", () => {
       treeId: treeId1,
       treeSpecs,
       treeSpecsJSON,
-      signature: sign,
     });
 
     //----------------------------------------------
@@ -740,24 +715,19 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON,
+        treeSpecsJSON: treeSpecsJSON,
       },
       3
     );
 
     //---------------successful update
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "5",
         planter: account1.address,
-        species: 1,
-        countryCode: 1,
-        saleType: 1,
-        treeStatus: 4,
-        plantDate: 1,
-        birthDate: 1,
-        treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON
+        treeStatus: "4",
+        plantDate: "1",
       })
     );
 
@@ -821,7 +791,7 @@ describe("App e2e", () => {
         nonce: nonce,
         treeId: treeId1,
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON
+        treeSpecsJSON: treeSpecs2JSON,
       },
       3
     );
@@ -832,12 +802,15 @@ describe("App e2e", () => {
       .send({
         signature: sign2,
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON
+        treeSpecsJSON: treeSpecs2JSON,
       });
 
     expect(res.status).toEqual(200);
 
-    expect(res.body).toMatchObject({ signature: sign2, treeSpecs: treeSpecs2,treeSpecsJSON:treeSpecs2JSON });
+    expect(res.body).toMatchObject({
+      treeSpecs: treeSpecs2,
+      treeSpecsJSON: treeSpecs2JSON,
+    });
 
     res = await request(httpServer)
       .patch(`/update_requests/${recordId}`)
@@ -853,7 +826,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON
+        treeSpecsJSON: treeSpecs2JSON,
       });
 
     expect(res.status).toEqual(400);
@@ -865,7 +838,7 @@ describe("App e2e", () => {
     const treeId1: number = 1;
     const treeSpecs: string = "treeSpecs";
     const treeSpecsJSON: string = "treeSpecsJSON";
-    
+
     const nonce1: number = 1;
     const treeSpecs2: string = "ipfs 2";
     const treeSpecs2JSON: string = "ipfs 2JSON";
@@ -889,24 +862,19 @@ describe("App e2e", () => {
         nonce: nonce1,
         treeId: treeId1,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON
+        treeSpecsJSON: treeSpecsJSON,
       },
       3
     );
 
     //---------------successful update
 
-    jest.spyOn(web3Service, "getTreeData").mockReturnValue(
+    jest.spyOn(graphService, "getTreeData").mockReturnValue(
       Promise.resolve({
+        id: "6",
         planter: account1.address,
-        species: 1,
-        countryCode: 1,
-        saleType: 1,
-        treeStatus: 4,
-        plantDate: 1,
-        birthDate: 1,
-        treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON
+        treeStatus: "4",
+        plantDate: "1",
       })
     );
 
@@ -1042,16 +1010,14 @@ describe("App e2e", () => {
 
     //------------------------------------------> Success
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "4",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
@@ -1060,7 +1026,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: "invalid ipfs hash",
-        treeSpecsJSON:"invalid ipfs hashJSON",
+        treeSpecsJSON: "invalid ipfs hashJSON",
         birthDate,
         countryCode,
         signature: sign,
@@ -1088,7 +1054,7 @@ describe("App e2e", () => {
       treeSpecsJSON,
       birthDate,
       countryCode,
-      signature: sign,
+
       status: PlantStatus.PENDING,
     });
 
@@ -1144,7 +1110,7 @@ describe("App e2e", () => {
       {
         nonce: nonce,
         treeSpecs: treeSpecs,
-        treeSpecsJSON:treeSpecsJSON,
+        treeSpecsJSON: treeSpecsJSON,
         birthDate: birthDate,
         countryCode: countryCode,
       },
@@ -1174,16 +1140,14 @@ describe("App e2e", () => {
         { $set: { userRole: Role.PLANTER } }
       );
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "5",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
@@ -1222,11 +1186,8 @@ describe("App e2e", () => {
     const treeSpecs: string = "ipfs";
     const treeSpecs2: string = "ipfs2";
 
-
-
     const treeSpecsJSON: string = "ipfsJSON";
     const treeSpecs2JSON: string = "ipfs2JSON";
-
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -1298,16 +1259,14 @@ describe("App e2e", () => {
 
     //------------------------------------------> Success
 
-    jest.spyOn(web3Service, "getPlanterData").mockReturnValue(
+    jest.spyOn(graphService, "getPlanterData").mockReturnValue(
       Promise.resolve({
-        planterType: 1,
-        status: 1,
-        countryCode: 1,
-        score: 0,
-        supplyCap: 2,
-        plantedCount: 1,
-        longitude: 1,
-        latitude: 1,
+        id: "6",
+        memberOf: "0x0",
+        plantedCount: "1",
+        planterType: "1",
+        status: "1",
+        supplyCap: "2",
       })
     );
 
@@ -1327,7 +1286,7 @@ describe("App e2e", () => {
       {
         nonce: nonce2,
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         birthDate: birthDate,
         countryCode: countryCode2,
       },
@@ -1341,7 +1300,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         birthDate,
         countryCode: countryCode2,
         signature: sign2,
@@ -1351,10 +1310,9 @@ describe("App e2e", () => {
 
     expect(res.body).toMatchObject({
       treeSpecs: treeSpecs2,
-      treeSpecsJSON:treeSpecs2JSON,
+      treeSpecsJSON: treeSpecs2JSON,
       birthDate,
       countryCode: countryCode2,
-      signature: sign2,
     });
 
     res = await request(httpServer)
@@ -1362,7 +1320,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         countryCode: countryCode2,
         signature: sign2,
       });
@@ -1374,7 +1332,7 @@ describe("App e2e", () => {
       .set({ Authorization: "Bearer " + accessToken })
       .send({
         treeSpecs: treeSpecs2,
-        treeSpecsJSON:treeSpecs2JSON,
+        treeSpecsJSON: treeSpecs2JSON,
         countryCode: countryCode2,
       });
 
