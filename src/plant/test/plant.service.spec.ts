@@ -96,6 +96,9 @@ describe("App e2e", () => {
     const treeSpecs: string = "treeSpecs";
     const treeSpecs2: string = "treeSpecs 2";
 
+    const treeSpecsJSON: string = "treeSpecsJSON";
+    const treeSpecs2JSON: string = "treeSpecs 2JSON";
+
     const nonce1: number = 1;
     const nonce2: number = 2;
 
@@ -148,7 +151,7 @@ describe("App e2e", () => {
     //----------- fail with invalid signer
     await expect(
       plantService.updateTree(
-        { signature: invalidSign, treeId: treeId1, treeSpecs },
+        { signature: invalidSign, treeId: treeId1, treeSpecs,treeSpecsJSON },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -174,7 +177,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.updateTree(
-        { signature: sign, treeId: treeId1, treeSpecs },
+        { signature: sign, treeId: treeId1, treeSpecs , treeSpecsJSON },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -200,7 +203,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.updateTree(
-        { signature: sign, treeId: treeId1, treeSpecs },
+        { signature: sign, treeId: treeId1, treeSpecs , treeSpecsJSON},
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -226,7 +229,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.updateTree(
-        { signature: sign, treeId: treeId1, treeSpecs },
+        { signature: sign, treeId: treeId1, treeSpecs , treeSpecsJSON },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -251,7 +254,7 @@ describe("App e2e", () => {
     );
 
     let updateResult = await plantService.updateTree(
-      { signature: sign, treeId: treeId1, treeSpecs },
+      { signature: sign, treeId: treeId1, treeSpecs , treeSpecsJSON },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
@@ -262,6 +265,7 @@ describe("App e2e", () => {
       signature: sign,
       treeId: treeId1,
       treeSpecs,
+      treeSpecsJSON
     });
 
     let updatedData = await mongoConnection.db
@@ -275,6 +279,7 @@ describe("App e2e", () => {
       nonce: nonce1,
       treeId: treeId1,
       treeSpecs,
+      treeSpecsJSON,
       signature: sign,
       status: PlantStatus.PENDING,
     });
@@ -300,7 +305,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.updateTree(
-        { signature: sign2, treeId: treeId1, treeSpecs: treeSpecs2 },
+        { signature: sign2, treeId: treeId1, treeSpecs: treeSpecs2 ,treeSpecsJSON:treeSpecs2JSON },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -320,6 +325,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const treeId: number = 1;
 
     let createdUser = await mongoConnection.db
@@ -345,6 +351,7 @@ describe("App e2e", () => {
       .insertOne({
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         treeId,
         signer: getCheckedSumAddress(account1.address),
         nonce,
@@ -357,6 +364,7 @@ describe("App e2e", () => {
       .insertOne({
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         treeId,
         signer: getCheckedSumAddress(account1.address),
         nonce,
@@ -450,10 +458,12 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const treeId: number = 1;
 
     const invalidNonce: number = 2;
     const treeSpecs2: string = "ipfs 2";
+    const treeSpecs2JSON: string = "ipfs 2JSON";
 
     let createdUser = await mongoConnection.db
       .collection(CollectionNames.USER)
@@ -498,6 +508,7 @@ describe("App e2e", () => {
       .insertOne({
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         treeId,
@@ -510,6 +521,7 @@ describe("App e2e", () => {
       .insertOne({
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         treeId,
@@ -532,6 +544,7 @@ describe("App e2e", () => {
     expect(pendingUpdatedData).toMatchObject({
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -547,6 +560,7 @@ describe("App e2e", () => {
         {
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -568,6 +582,7 @@ describe("App e2e", () => {
         {
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: insertedPendingUpdateData.insertedId.toString(),
@@ -588,6 +603,7 @@ describe("App e2e", () => {
         {
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -609,6 +625,7 @@ describe("App e2e", () => {
         {
           signature: invalidSign,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -627,6 +644,7 @@ describe("App e2e", () => {
       {
         signature: sign2,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON
       },
       {
         userId: createdUser.insertedId.toString(),
@@ -643,6 +661,7 @@ describe("App e2e", () => {
     expect(editPlantResult).toMatchObject({
       signature: sign2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -651,6 +670,7 @@ describe("App e2e", () => {
     expect(plantedDataAfterEdit).toMatchObject({
       signature: sign2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -664,6 +684,7 @@ describe("App e2e", () => {
     const nonce: number = 1;
     const nonce2: number = 2;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
 
     const birthDate: number = 1;
     const countryCode: number = 1;
@@ -731,7 +752,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.plant(
-        { birthDate, countryCode, signature: invalidSign, treeSpecs },
+        { birthDate, countryCode, signature: invalidSign, treeSpecs , treeSpecsJSON},
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -759,7 +780,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.plant(
-        { birthDate, countryCode, signature: sign, treeSpecs },
+        { birthDate, countryCode, signature: sign, treeSpecs , treeSpecsJSON },
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -784,7 +805,7 @@ describe("App e2e", () => {
     );
 
     const plantResult = await plantService.plant(
-      { birthDate, countryCode, signature: sign, treeSpecs },
+      { birthDate, countryCode, signature: sign, treeSpecs , treeSpecsJSON },
       {
         userId: createdUser.insertedId.toString(),
         walletAddress: account1.address,
@@ -796,6 +817,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON
     });
 
     let plantedData = await mongoConnection.db
@@ -808,6 +830,7 @@ describe("App e2e", () => {
       signer: getCheckedSumAddress(account1.address),
       nonce,
       treeSpecs,
+      treeSpecsJSON,
       birthDate,
       countryCode,
       signature: sign,
@@ -824,7 +847,7 @@ describe("App e2e", () => {
 
     await expect(
       plantService.plant(
-        { birthDate, countryCode, signature: sign2, treeSpecs },
+        { birthDate, countryCode, signature: sign2, treeSpecs ,treeSpecsJSON},
         {
           userId: createdUser.insertedId.toString(),
           walletAddress: account1.address,
@@ -844,6 +867,7 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
@@ -873,6 +897,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         status: PlantStatus.PENDING,
@@ -886,6 +911,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         status: PlantStatus.VERIFIED,
@@ -974,11 +1000,13 @@ describe("App e2e", () => {
 
     const nonce: number = 1;
     const treeSpecs: string = "ipfs";
+    const treeSpecsJSON: string = "ipfsJSON";
     const birthDate: number = 1;
     const countryCode: number = 1;
 
     const nonce2: number = 2;
     const treeSpecs2: string = "ipfs 2";
+    const treeSpecs2JSON: string = "ipfs 2JSON";
     const birthDate2: number = 2;
     const countryCode2: number = 2;
 
@@ -1030,6 +1058,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         status: PlantStatus.PENDING,
@@ -1043,6 +1072,7 @@ describe("App e2e", () => {
         countryCode,
         signature: sign,
         treeSpecs,
+        treeSpecsJSON,
         signer: getCheckedSumAddress(account1.address),
         nonce,
         status: PlantStatus.VERIFIED,
@@ -1066,6 +1096,7 @@ describe("App e2e", () => {
       countryCode,
       signature: sign,
       treeSpecs,
+      treeSpecsJSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -1082,6 +1113,7 @@ describe("App e2e", () => {
           countryCode: countryCode2,
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -1105,6 +1137,7 @@ describe("App e2e", () => {
           countryCode: countryCode2,
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: insertedPendingPlantData.insertedId.toString(),
@@ -1127,6 +1160,7 @@ describe("App e2e", () => {
           countryCode: countryCode2,
           signature: sign2,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -1150,6 +1184,7 @@ describe("App e2e", () => {
           countryCode: countryCode2,
           signature: invalidSign,
           treeSpecs: treeSpecs2,
+          treeSpecsJSON:treeSpecs2JSON
         },
         {
           userId: createdUser.insertedId.toString(),
@@ -1170,6 +1205,7 @@ describe("App e2e", () => {
         countryCode: countryCode2,
         signature: sign2,
         treeSpecs: treeSpecs2,
+        treeSpecsJSON:treeSpecs2JSON
       },
       {
         userId: createdUser.insertedId.toString(),
@@ -1188,6 +1224,7 @@ describe("App e2e", () => {
       countryCode: countryCode2,
       signature: sign2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
@@ -1198,6 +1235,7 @@ describe("App e2e", () => {
       countryCode: countryCode2,
       signature: sign2,
       treeSpecs: treeSpecs2,
+      treeSpecsJSON:treeSpecs2JSON,
       signer: account1.address,
       nonce,
       status: PlantStatus.PENDING,
