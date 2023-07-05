@@ -1,6 +1,7 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { Document, FilterQuery, Model, UpdateQuery } from "mongoose";
 import { IUpdateOne } from "./interfaces";
+import { CollectionNames, PlantStatus } from "src/common/constants";
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
 
@@ -193,4 +194,70 @@ export abstract class EntityRepository<T extends Document> {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  // async aggregate() {
+  //   const q = this.entityModel
+  //     .aggregate([
+  //       {
+  //         $match: {
+  //           status: PlantStatus.PENDING,
+  //         },
+  //       },
+  //       {
+  //         $project: {
+  //           nonce: 1,
+  //           signer: 1,
+  //           status: 1,
+  //           type: "plant",
+  //         },
+  //       },
+  //       {
+  //         $unionWith: {
+  //           coll: CollectionNames.ASSIGNED_TREE_PLANT,
+  //           pipeline: [
+  //             {
+  //               $match: {
+  //                 status: PlantStatus.PENDING,
+  //               },
+  //             },
+
+  //             {
+  //               $project: {
+  //                 nonce: 1,
+  //                 signer: 1,
+  //                 treeId: 1,
+  //                 status: 1,
+  //                 type: "assigned",
+  //               },
+  //             },
+  //           ],
+  //         },
+  //       },
+  //       {
+  //         $unionWith: {
+  //           coll: CollectionNames.UPDATE_TREES,
+  //           pipeline: [
+  //             {
+  //               $match: {
+  //                 status: PlantStatus.PENDING,
+  //               },
+  //             },
+
+  //             {
+  //               $project: {
+  //                 nonce: 1,
+  //                 signer: 1,
+  //                 type: "update",
+  //               },
+  //             },
+  //           ],
+  //         },
+  //       },
+  //     ])
+  //     .sort({ signer: 1, nonce: -1 })
+  //     .skip(0);
+
+  //   q.limit(700);
+  //   return await q;
+  // }
 }
