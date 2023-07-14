@@ -8,73 +8,34 @@ import { PlantVerificationService } from "../plantVerification.service";
 import { EventName } from "src/common/constants";
 import { Command, Positional, Option } from "nestjs-command";
 import { eventNames } from "process";
+import { BugsnagService } from "src/bugsnag/bugsnag.service";
 
 const EthereumEvents = require("ethereum-events");
 
 @Injectable()
 export class TreeFactoryListener {
-  private ethereumEvents;
 
   constructor(
     private web3Service: Web3Service,
     private plantVerificationService: PlantVerificationService,
     private configService: ConfigService,
+    private bugsnag: BugsnagService,
+
   ) {}
 
   @Command({
     command: "listener:run",
     describe: "TreeFactory listener run",
   })
-  async configure(
-    @Option({
-      name: "pollInterval",
-      describe: "period between polls in milliseconds (default: 13000)",
-      type: "number",
-      required: false,
-    })
-    pollInterval: number = Number(
-      this.configService.get<string>("POLL_INTERVAL"),
-    ),
-
-    @Option({
-      name: "confirmations",
-      describe: "n° of confirmation blocks (default: 12)",
-      type: "number",
-      required: false,
-    })
-    confirmations: number = Number(
-      this.configService.get<string>("CONFIRMATIONS"),
-    ),
-    @Option({
-      name: "chunkSize",
-      describe: "n° of blocks to fetch at a time (default: 10000)",
-      type: "number",
-      required: false,
-    })
-    chunkSize: number = Number(this.configService.get<string>("CHUNK_SIZE")),
-    @Option({
-      name: "concurrency",
-      describe: "maximum n° of concurrent web3 requests (default: 10)",
-      type: "number",
-      required: false,
-    })
-    concurrency: number = Number(this.configService.get<string>("CONCURRENCY")),
-    @Option({
-      name: "backoff",
-      describe: "retry backoff in milliseconds (default: 1000)",
-      type: "number",
-      required: false,
-    })
-    backoff: number = Number(this.configService.get<string>("BACK_OFF")),
-    @Option({
-      name: "url",
-      describe: "web3 provider url",
-      type: "string",
-      required: false,
-    })
+  async createWeb3S(
     url: string,
   ) {
-    console.log("VerifyPlant run");
+    console.log("Web3 Instance Created !!");
+
+    this.web3Service.createWeb3SInstance(url,this.runTreeFacoryEventListener.bind(this));
+  }
+
+  async runTreeFacoryEventListener(web3){
 
     const contracts = [
       {
@@ -85,69 +46,97 @@ export class TreeFactoryListener {
       },
     ];
 
-    const options = {
-      pollInterval,
-      confirmations,
-      chunkSize,
-      concurrency,
-      backoff,
-    };
+    console.log("config.get<string>",this.configService.get<string>("POLL_INTERVAL"))
+    
 
-    let web3 = this.web3Service.getWeb3Instance();
+    let ethereumEvents = new EthereumEvents(web3, contracts,{
+      pollInterval:Number(this.configService.get<string>("POLL_INTERVAL")),
+      confirmations:Number(this.configService.get<string>("CONFIRMATIONS")),
+      chunkSize:Number(this.configService.get<string>("CHUNK_SIZE")),
+      concurrency:Number(this.configService.get<string>("CONCURRENCY")),
+      backoff:Number(this.configService.get<string>("BACK_OFF")),
+    });
 
-    this.ethereumEvents = new EthereumEvents(web3, contracts, options);
-
-    this.ethereumEvents.start(
-      await this.plantVerificationService.loadLastState(),
+    ethereumEvents.start(
+      await this.plantVerificationService.loadLastState()
     );
 
-    try {
-      this.ethereumEvents.on(
-        "block.confirmed",
-        async (blockNumber, events, done) => {
-          console.log("block.confirmed", blockNumber);
-          await new Promise(async (resolve, reject) => {
-            if (events.length > 0) {
-              for (let event of events) {
-                if (event.name === EventName.TREE_ASSIGNED) {
-                  try {
-                    await this.plantVerificationService.verifyAssignedTree(
-                      Number(event.values.treeId),
-                    );
-                  } catch (error) {
-                    console.log("TREE_ASSIGNED error", error);
-                  }
-                } else if (event.name === EventName.TREE_PLANT) {
-                  try {
-                    await this.plantVerificationService.verifyPlant(
-                      event.values.planter,
-                      Number(event.values.nonce),
-                    );
-                  } catch (error) {
-                    console.log("TREE_PLANT error", error);
-                  }
-                } else if (event.name === EventName.TREE_UPDATE) {
-                  try {
-                    await this.plantVerificationService.verifyUpdate(
-                      Number(event.values.treeId),
-                    );
-                  } catch (error) {
-                    console.log("TREE_UPDATE error", error);
-                  }
+    let lastErrorTime = new Date();
+
+
+    ethereumEvents.on(
+      "block.confirmed",
+      async (blockNumber, events, done) => {
+        
+        console.log("block.confirmed", blockNumber);
+
+        lastErrorTime = new Date();
+
+        await new Promise(async (resolve, reject) => {
+          if (events.length > 0) {
+            for (let event of events) {
+              if (event.name === EventName.TREE_ASSIGNED) {
+                try {
+                  await this.plantVerificationService.verifyAssignedTree(
+                    Number(event.values.treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_ASSIGNED error", error);
+                }
+              } else if (event.name === EventName.TREE_PLANT) {
+                try {
+                  await this.plantVerificationService.verifyPlant(
+                    event.values.planter,
+                    Number(event.values.nonce),
+                  );
+                } catch (error) {
+                  console.log("TREE_PLANT error", error);
+                }
+              } else if (event.name === EventName.TREE_UPDATE) {
+                try {
+                  await this.plantVerificationService.verifyUpdate(
+                    Number(event.values.treeId),
+                  );
+                } catch (error) {
+                  console.log("TREE_UPDATE error", error);
                 }
               }
             }
+          }
 
-            await this.plantVerificationService.saveLastState(blockNumber);
+          await this.plantVerificationService.saveLastState(blockNumber);
 
-            resolve("done");
-          });
+          resolve("done");
+        });
+        
+        done();
+      },
+    );
 
-          done();
-        },
+    ethereumEvents.on('error', err => {
+      const currentTime = new Date();
+      const minutesToCheck = 1;
+
+      const diffMinutes = Math.round(
+        (currentTime.getTime() - lastErrorTime.getTime()) / (1000 * 60)
       );
-    } catch (e) {
-      console.log("listener error", e);
-    }
+
+      console.log("not time",diffMinutes)
+      
+      if (diffMinutes >= minutesToCheck) {
+
+        lastErrorTime = currentTime;
+
+        this.bugsnag.notify("it's timeeeeeeeeeeeeeeeeee    " + err);
+
+        console.log("it's timeeeeeeeeeeeeeeeeee")
+      
+        this.web3Service.createWeb3SInstance('',this.runTreeFacoryEventListener.bind(this));  
+      }
+  
+    });
+
+    return ethereumEvents;
+      
   }
 }

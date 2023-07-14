@@ -12,10 +12,12 @@ import { TreeFactoryListener } from "./event/TreeFactoryListener.event";
 import { MongooseModule } from "@nestjs/mongoose";
 import { LastState, LastStateSchema } from "./schemas";
 import { LastStateRepository } from "./plantVerification.repository";
+import { BugsnagModule } from "src/bugsnag/bugsnag.module";
 
 @Module({
   imports: [
     PlantModule,
+    BugsnagModule,
     AuthModule,
     UserModule,
     Web3Module,
