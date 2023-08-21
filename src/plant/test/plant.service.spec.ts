@@ -60,10 +60,11 @@ describe("App e2e", () => {
     );
 
     await app.init();
-    await app.listen(3333);
+    // await app.listen(process.env.PORT || 3000);
   });
 
   afterAll(async () => {
+    console.log("afterAll");
     await mongoConnection.dropDatabase();
     await mongoConnection.close();
     await app.close();

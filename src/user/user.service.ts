@@ -272,6 +272,7 @@ export class UserService {
       mobileVerifiedAt: 1,
       userStatus: 1,
       plantingNonce: 1,
+      walletAddress: 1,
     });
   }
 

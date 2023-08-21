@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AppModule } from "./app.module";
 import { Connection, connect, Types } from "mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { CollectionNames, Role } from "./common/constants";
+import { CollectionNames, Messages, Role } from "./common/constants";
 import { getEIP712Sign } from "./common/helpers";
 const Web3 = require("web3");
 
@@ -27,9 +27,7 @@ describe("App e2e", () => {
 
     config = moduleRef.get<ConfigService>(ConfigService);
 
-    console.log("ganache.provider()", ganache.provider());
-
-    web3 = new Web3("http://localhost:8545");
+    web3 = new Web3(process.env.WEB3_PROVIDER_TEST || ganache.provider());
 
     mongoConnection = (await connect(config.get("MONGO_TEST_CONNECTION")))
       .connection;
@@ -45,7 +43,7 @@ describe("App e2e", () => {
     );
 
     await app.init();
-    await app.listen(3333);
+    // await app.listen(process.env.PORT || 3000);
   });
 
   afterAll(async () => {
@@ -55,9 +53,8 @@ describe("App e2e", () => {
   });
 
   afterEach(async () => {
-    const collections = mongoConnection.collections;
-    for (const key in collections) {
-      const collection = collections[key];
+    const collections = await mongoConnection.db.collections();
+    for (const collection of collections) {
       await collection.deleteMany({});
     }
   });
@@ -71,18 +68,15 @@ describe("App e2e", () => {
     const birthDate: number = 1;
     const countryCode: number = 1;
 
-    console.log("acc", account);
-
     let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
-    console.log("accessToken", accessToken);
 
     let decodedAccessToken = Jwt.decode(accessToken);
 
@@ -121,7 +115,7 @@ describe("App e2e", () => {
       });
   });
 
-  it.skip("test plant", async () => {
+  it.only("test plant", async () => {
     let account = await web3.eth.accounts.create();
 
     const nonce: number = 1;
@@ -135,7 +129,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/login/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const accessToken: string = loginResult.body.access_token;
@@ -172,69 +166,69 @@ describe("App e2e", () => {
       .send({ treeSpecs, birthDate, countryCode, signature: sign });
   });
 
-  it.skip("get nonce successfully", async () => {
-    // let account1 = await web3.eth.accounts.create();
-    // let account2 = await web3.eth.accounts.create();
-    // let getNonceResult1 = await request(httpServer).get(
-    //   `/auth/nonce/${account1.address}`,
-    // );
-    // //-----check status code
-    // expect(getNonceResult1.statusCode).toBe(200);
-    // //-----check body format
-    // expect(getNonceResult1.body).toMatchObject({
-    //   message: expect.any(String),
-    //   userId: expect.any(String),
-    // });
-    // //------------- check user insert
-    // let user = await mongoConnection.db
-    //   .collection("users")
-    //   .findOne({ _id: new Types.ObjectId(getNonceResult1.body.userId) });
-    // expect(user).toBeTruthy();
-    // expect(user.walletAddress).toBe(account1.address);
-    // expect(`${Messages.SIGN_MESSAGE}${user.nonce}`).toBe(
-    //   getNonceResult1.body.message,
-    // );
-    // //check user collection count (must be 1 [newUser Added!])
-    // let usersCountAfterFirstGetNonceForAccount1 = await mongoConnection.db
-    //   .collection("users")
-    //   .countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount1).toBe(1);
-    // ///// ---------------------- get nonce for account1 and nonce must be the same
-    // let getNonceResult2 = await request(httpServer).get(
-    //   `/auth/nonce/${account1.address}`,
-    // );
-    // expect(getNonceResult2.body.message).toBe(getNonceResult1.body.message);
-    // //check user collection count (must be 1 [no user Added!])
-    // let usersCountAfterFirstGetNonceForAccount2: number =
-    //   await mongoConnection.db.collection("users").countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount2).toBe(1);
-    // //--------------- get nonce for new user (create new user)
-    // let getNonceResult3 = await request(httpServer).get(
-    //   `/auth/nonce/${account2.address}`,
-    // );
-    // //-----check status code
-    // expect(getNonceResult3.statusCode).toBe(200);
-    // //-----check body format
-    // expect(getNonceResult3.body).toMatchObject({
-    //   message: expect.any(String),
-    //   userId: expect.any(String),
-    // });
-    // let user2 = await mongoConnection.db
-    //   .collection("users")
-    //   .findOne({ _id: new Types.ObjectId(getNonceResult3.body.userId) });
-    // expect(user2).toBeTruthy();
-    // expect(user2.walletAddress).toBe(account2.address);
-    // expect(`${Messages.SIGN_MESSAGE}${user2.nonce}`).toBe(
-    //   getNonceResult3.body.message,
-    // );
-    // //check user collection count (must be 2 [newUser Added!])
-    // let usersCountAfterFirstGetNonceForAccount3: number =
-    //   await mongoConnection.db.collection("users").countDocuments();
-    // expect(usersCountAfterFirstGetNonceForAccount3).toBe(2);
+  it.only("get nonce successfully", async () => {
+    let account1 = await web3.eth.accounts.create();
+    let account2 = await web3.eth.accounts.create();
+    let getNonceResult1 = await request(httpServer).get(
+      `/nonce/${account1.address}`,
+    );
+    //-----check status code
+    expect(getNonceResult1.statusCode).toBe(200);
+    //-----check body format
+    expect(getNonceResult1.body).toMatchObject({
+      message: expect.any(String),
+      userId: expect.any(String),
+    });
+    //------------- check user insert
+    let user = await mongoConnection.db
+      .collection("users")
+      .findOne({ _id: new Types.ObjectId(getNonceResult1.body.userId) });
+    expect(user).toBeTruthy();
+    expect(user.walletAddress).toBe(account1.address);
+    expect(`${Messages.SIGN_MESSAGE}${user.nonce}`).toBe(
+      getNonceResult1.body.message,
+    );
+    //check user collection count (must be 1 [newUser Added!])
+    let usersCountAfterFirstGetNonceForAccount1 = await mongoConnection.db
+      .collection("users")
+      .countDocuments();
+    expect(usersCountAfterFirstGetNonceForAccount1).toBe(1);
+    ///// ---------------------- get nonce for account1 and nonce must be the same
+    let getNonceResult2 = await request(httpServer).get(
+      `/nonce/${account1.address}`,
+    );
+    expect(getNonceResult2.body.message).toBe(getNonceResult1.body.message);
+    //check user collection count (must be 1 [no user Added!])
+    let usersCountAfterFirstGetNonceForAccount2: number =
+      await mongoConnection.db.collection("users").countDocuments();
+    expect(usersCountAfterFirstGetNonceForAccount2).toBe(1);
+    //--------------- get nonce for new user (create new user)
+    let getNonceResult3 = await request(httpServer).get(
+      `/nonce/${account2.address}`,
+    );
+    //-----check status code
+    expect(getNonceResult3.statusCode).toBe(200);
+    //-----check body format
+    expect(getNonceResult3.body).toMatchObject({
+      message: expect.any(String),
+      userId: expect.any(String),
+    });
+    let user2 = await mongoConnection.db
+      .collection("users")
+      .findOne({ _id: new Types.ObjectId(getNonceResult3.body.userId) });
+    expect(user2).toBeTruthy();
+    expect(user2.walletAddress).toBe(account2.address);
+    expect(`${Messages.SIGN_MESSAGE}${user2.nonce}`).toBe(
+      getNonceResult3.body.message,
+    );
+    //check user collection count (must be 2 [newUser Added!])
+    let usersCountAfterFirstGetNonceForAccount3: number =
+      await mongoConnection.db.collection("users").countDocuments();
+    expect(usersCountAfterFirstGetNonceForAccount3).toBe(2);
   });
 
-  it.skip("fail to get nonce", async () => {
-    let getNonceResult1 = await request(httpServer).get(`/auth/nonce/${1}`);
+  it.only("fail to get nonce", async () => {
+    let getNonceResult1 = await request(httpServer).get(`/nonce/${1}`);
 
     expect(getNonceResult1.statusCode).toBe(400);
 
@@ -243,7 +237,7 @@ describe("App e2e", () => {
     expect(getNonceResult1.body.message).toBe("invalid wallet");
 
     let getNonceResult2 = await request(httpServer).get(
-      `/auth/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`
+      `/nonce/${0x4111d150e622d079dea00f25f130fd733f1e7180}`
     );
 
     expect(getNonceResult2.statusCode).toBe(400);
@@ -253,7 +247,7 @@ describe("App e2e", () => {
     expect(getNonceResult2.body.message).toBe("invalid wallet");
 
     let getNonceResult3 = await request(httpServer).get(
-      `/auth/nonce/${"not wallet address"}`
+      `/nonce/${"not wallet address"}`
     );
 
     expect(getNonceResult3.statusCode).toBe(400);
@@ -263,10 +257,10 @@ describe("App e2e", () => {
     expect(getNonceResult3.body.message).toBe("invalid wallet");
   });
 
-  it.skip("signin with wallet", async () => {
+  it.only("signin with wallet", async () => {
     let account = await web3.eth.accounts.create();
 
-    let res = await request(httpServer).get(`/auth/nonce/${account.address}`);
+    let res = await request(httpServer).get(`/nonce/${account.address}`);
 
     const userBeforeLogin = await mongoConnection.db
       .collection("users")
@@ -275,7 +269,7 @@ describe("App e2e", () => {
     let signResult = account.sign(res.body.message);
 
     let loginResult = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account.address}`)
+      .post(`/login/${account.address}`)
       .send({ signature: signResult.signature });
 
     const userAfterLogin = await mongoConnection.db
@@ -299,7 +293,7 @@ describe("App e2e", () => {
     expect(userAfterLogin.nonce).not.toBe(userBeforeLogin.nonce);
   });
 
-  it.skip("fail to signin with wallet", async () => {
+  it.only("fail to signin with wallet", async () => {
     const account1 = await web3.eth.accounts.create();
 
     const account2 = await web3.eth.accounts.create();
@@ -307,12 +301,12 @@ describe("App e2e", () => {
     const invalidMessageToSign: string = "invalid message to sign";
 
     let getNonceResultForAccount1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`
+      `/nonce/${account1.address}`
     );
 
     //fail because signature is not string
     let loginResult1 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: 1 });
 
     expect(loginResult1.body.statusCode).toBe(400);
@@ -321,7 +315,7 @@ describe("App e2e", () => {
     //fail because of invalid wallet
 
     let loginResult2 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${1}`)
+      .post(`/login/${1}`)
       .send({ signature: "string" });
 
     expect(loginResult2.statusCode).toBe(400);
@@ -331,7 +325,7 @@ describe("App e2e", () => {
     expect(loginResult2.body.message).toBe("invalid wallet");
 
     let loginResult3 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${"invaid wallet"}`)
+      .post(`/login/${"invaid wallet"}`)
       .send({ signature: "string" });
 
     expect(loginResult3.statusCode).toBe(400);
@@ -342,7 +336,7 @@ describe("App e2e", () => {
 
     // not found user
     let loginResult4 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account2.address}`)
+      .post(`/login/${account2.address}`)
       .send({ signature: "string" });
 
     expect(loginResult4.statusCode).toBe(404);
@@ -355,7 +349,7 @@ describe("App e2e", () => {
     let invalidSignatureResult1 = await account1.sign(invalidMessageToSign);
 
     let loginResult5 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: invalidSignatureResult1.signature });
 
     expect(loginResult5.statusCode).toBe(403);
@@ -366,7 +360,7 @@ describe("App e2e", () => {
 
     // other user sign with another user's nonce
     let getNonceResultForAccount2 = await request(httpServer).get(
-      `/auth/nonce/${account2.address}`
+      `/nonce/${account2.address}`
     );
 
     let invalidSignatureResult2 = await account2.sign(
@@ -374,7 +368,7 @@ describe("App e2e", () => {
     );
 
     let loginResult6 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account2.address}`)
+      .post(`/login/${account2.address}`)
       .send({ signature: invalidSignatureResult2.signature });
 
     expect(loginResult6.statusCode).toBe(403);
@@ -392,32 +386,32 @@ describe("App e2e", () => {
     );
 
     let loginResult7 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: signatureResult1.signature });
 
     expect(loginResult7.statusCode).toBe(201);
 
     let loginResult8 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account2.address}`)
+      .post(`/login/${account2.address}`)
       .send({ signature: signatureResult2.signature });
     expect(loginResult8.statusCode).toBe(201);
   });
 
-  it.skip("get my profile", async () => {
+  it.only("get my profile", async () => {
     const account1 = await web3.eth.accounts.create();
 
     const getNonceResult1 = await request(httpServer).get(
-      `/auth/nonce/${account1.address}`
+      `/nonce/${account1.address}`
     );
 
     let signResult1 = account1.sign(getNonceResult1.body.message);
 
     let loginResult1 = await request(httpServer)
-      .post(`/auth/signinWithWallet/${account1.address}`)
+      .post(`/login/${account1.address}`)
       .send({ signature: signResult1.signature });
 
     const getMeResult1 = await request(httpServer)
-      .get("/auth/me")
+      .get("/users/me")
       .set({ Authorization: "invalid jwt" });
 
     expect(getMeResult1.statusCode).toBe(401);
@@ -425,7 +419,7 @@ describe("App e2e", () => {
     expect(getMeResult1.body.message).toBe("Unauthorized");
 
     const getMeResult2 = await request(httpServer)
-      .get("/auth/me")
+      .get("/users/me")
       .set({ Authorization: loginResult1.body.access_token });
 
     expect(getMeResult2.statusCode).toBe(401);
@@ -433,7 +427,7 @@ describe("App e2e", () => {
     expect(getMeResult2.body.message).toBe("Unauthorized");
 
     const getMeResult3 = await request(httpServer)
-      .get("/auth/me")
+      .get("/users/me")
       .set({ Authorization: "Bearer " + loginResult1.body.access_token });
 
     expect(getMeResult3.statusCode).toBe(200);
