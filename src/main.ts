@@ -31,8 +31,7 @@ async function bootstrap() {
     .addTag("plant")
     .setContact("Treejer", "https://treejer.com/contact", "")
     .addBearerAuth()
-    // .addServer("http://localhost:3333")
-    .addServer("https://nestapi.treejer.com")
+    .addServer(process.env.APP_URL || "http://localhost:3000")
     .build();
 
   const options: SwaggerDocumentOptions = {
@@ -44,7 +43,7 @@ async function bootstrap() {
 
   app.enableCors();
 
-  await app.listen(3333);
+  await app.listen(process.env.PORT || 3000);
 }
 
 bootstrap();
