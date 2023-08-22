@@ -37,6 +37,7 @@ jobs:
         run: |
               touch .env
               echo NODE_ENV=${{ secrets.NODE_ENV }} >> .env
+              cat .env
               echo MONGO_TEST_CONNECTION=${{ secrets.MONGO_TEST_CONNECTION }} >> .env
               echo MONGO_CONNECTION=${{ secrets.MONGO_CONNECTION }} >> .env
               echo VERIFYING_CONTRACT=${{ secrets.VERIFYING_CONTRACT }} >> .env
