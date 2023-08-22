@@ -35,8 +35,7 @@ jobs:
 
       - name: create env file
         run: |
-            touch .env
-            echo "${{ secrets.ALL_ENV }}" >> .env
+            echo '${{ secrets.ALL_ENV }}' > .env
 
 
       - name: 'Docker build'
