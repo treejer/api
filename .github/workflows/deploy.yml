@@ -37,6 +37,10 @@ jobs:
         run: |
             echo '${{ secrets.ALL_ENV }}' > .env
 
+      - name: test env file
+        run: |
+          head -1 .env      
+
 
       - name: 'Docker build'
         run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA -f ./.docker/prod.Dockerfile .'
