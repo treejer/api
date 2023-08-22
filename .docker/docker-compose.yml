@@ -1,0 +1,69 @@
+version: '3.3'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    networks:
+      - api-network
+    restart: always
+  mongodb-test:
+    image: mongo:latest
+    container_name: mongodb-test
+    ports:
+      - 27018:27017
+    networks:
+      - api-test-network
+    restart: always  
+  dev:
+    container_name: api_dev
+    image: api-dev:0.1.0
+    build:
+      context: ..
+      dockerfile: .docker/dev.Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - api-network
+    depends_on:
+      - mongodb
+    volumes:
+      - ../src:/app/src
+    restart: unless-stopped
+  test:
+    container_name: api_test
+    image: api-test:0.1.0
+    build:
+      context: ..
+      dockerfile: .docker/test.Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - api-test-network
+    depends_on:
+      - mongodb-test
+  ganache:
+    container_name: ganache
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8545:8545"
+    # volumes:
+    #   - ./ganache_data:/ganache_data
+    entrypoint:
+      - node
+      - /app/ganache-core.docker.cli.js
+      - --deterministic
+      - --db=/ganache_data
+      # - --mnemonic
+      # - 'minimum symptom minute gloom tragic situate silver mechanic salad amused elite beef'
+      - --networkId
+      - '5777'
+      - --hostname
+      - '0.0.0.0'
+      - --debug    
+networks:
+  api-network:
+    driver: bridge
+  api-test-network:
+    driver: bridge
