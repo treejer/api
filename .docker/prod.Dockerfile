@@ -6,7 +6,8 @@ FROM node:18-alpine As development
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node package.json ./
+COPY --chown=node:node package-lock.json ./
 
 RUN npm ci
 
@@ -22,7 +23,8 @@ FROM node:18-alpine As build
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node package.json ./
+COPY --chown=node:node package-lock.json ./
 
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
