@@ -23,6 +23,7 @@
   "dependencies": {
     "@bugsnag/js": "^7.20.0",
     "@bugsnag/plugin-express": "^7.19.0",
+    "@google-cloud/storage": "^7.0.1",
     "@magic-sdk/admin": "^1.9.2",
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs-plus/discovery": "^2.0.2",

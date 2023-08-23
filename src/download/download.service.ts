@@ -17,6 +17,8 @@ import { CreateFileDto } from "./dtos";
 import { Validator, validateOrReject } from "class-validator";
 import { FieldObjectDto } from "./dtos/filedObject.dto";
 import { plainToClass } from "class-transformer";
+const {Storage} = require('@google-cloud/storage');
+
 
 const busboy = require("busboy");
 const fs = require("fs");
@@ -41,6 +43,79 @@ export class DownloadService {
   }
 
   async downloadFile(filename: string, response: Response, user: JwtUserDto) {
+    if(this.configService.get<string>("STORAGE_PROVIDER") === "google"){
+      return this.downloadFileGoogle(filename, response, user);
+    } 
+    return this.downloadFileLocal(filename, response, user);
+  }
+
+  async downloadFileGoogle(filename: string, response: Response, user: JwtUserDto) {
+    let findUser = await this.userService.findUserById(user.userId, {
+      _id: 1,
+      userRole: 1,
+    });
+
+    const file = await this.fileRepository.findOne({ filename: filename });
+
+    if (!file) {
+      throw new NotFoundException(DownloadMessage.FILE_NOT_EXIST);
+    }
+
+    if (!(findUser.userRole == Role.ADMIN || file.userId == findUser._id)) {
+      throw new ForbiddenException(AuthErrorMessages.INVALID_ACCESS);
+    }
+
+    const storage = new Storage({
+      credentials: JSON.parse(
+        this.configService.get<string>("GOOGLE_STORAGE_KEY")
+      ),
+    });
+
+    const bucketName = this.configService.get<string>("GOOGLE_STORAGE_BUCKET");
+
+    const bucket = storage.bucket(bucketName);
+
+    const blob = bucket.file(file.filename);
+
+    const blobStream = blob.createReadStream();
+
+    blobStream.on("error", (err) => {
+      throw new BadRequestException(err);
+    });
+
+    blobStream.pipe(response);
+
+    return response;
+  }
+
+  async downloadFileSimpleGoogle(filename: string, response: Response) {
+
+    const storage = new Storage({
+      credentials: JSON.parse(
+        this.configService.get<string>("GOOGLE_STORAGE_KEY")
+      ),
+    });
+
+    const bucketName = this.configService.get<string>("GOOGLE_STORAGE_BUCKET");
+
+    const bucket = storage.bucket(bucketName);
+
+    const blob = bucket.file(filename);
+
+    const blobStream = blob.createReadStream();
+
+    blobStream.on("error", (err) => {
+      throw new BadRequestException(err);
+    });
+
+    blobStream.pipe(response);
+
+    return response;
+  }
+
+
+
+  async downloadFileLocal(filename: string, response: Response, user: JwtUserDto) {
     let findUser = await this.userService.findUserById(user.userId, {
       _id: 1,
       userRole: 1,
@@ -68,6 +143,128 @@ export class DownloadService {
   }
 
   async uploadFile(@Req() req) {
+
+    if(this.configService.get<string>("STORAGE_PROVIDER") === "google"){
+      return this.uploadFileGoogle(req);
+    } 
+    return this.uploadFileLocal(req);
+    
+  }
+
+  async uploadFileGoogle(@Req() req) {
+    const storage = new Storage({
+      credentials: JSON.parse(
+        this.configService.get<string>("GOOGLE_STORAGE_KEY")
+      ),
+    });
+
+    const bucketName = this.configService.get<string>("GOOGLE_STORAGE_BUCKET");
+
+    const bb = busboy({
+      headers: req.headers,
+      limits: {
+        files: 1,
+        fileSize: 1e7,
+      },
+    });
+
+    let returnObj: FileObject = {
+      originalname: "",
+      encoding: "",
+      mimetype: "",
+      size: 0,
+      filename: "",
+    };
+
+    let field = new FieldObjectDto();
+
+    try {
+      let ext;
+
+      await new Promise((resolve, reject) => {
+        bb.on("file", (name, file, info) => {
+          returnObj.originalname = info.filename;
+          returnObj.encoding = info.encoding;
+          returnObj.mimetype = info.mimeType;
+
+          ext = mime.extension(info.mimeType);
+          
+          file.on("data", async (data) => {
+            returnObj.size = data.length;
+          });
+          
+          let random = `${Date.now()}-${info.filename}`;
+
+          returnObj.filename = random;
+
+          const bucket = storage.bucket(bucketName);
+          const blob = bucket.file(random);
+
+          const blobStream = blob.createWriteStream({
+            resumable: false,
+          });
+
+          file.pipe(blobStream);
+
+          blobStream.on("error", (err) => {
+            reject(err);
+          });
+
+          blobStream.on("finish", async () => {
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+            returnObj.filename = publicUrl;
+
+            resolve("");
+          });
+        });
+
+        bb.on("close", async () => {
+          if (!["jpg", "png", "jpeg"].includes(ext)) {
+            reject("File type is not correct");
+            return;
+          }
+
+          if (returnObj.size == 1e7) {
+            reject("File size is not correct");
+
+            return;
+          }
+          try {
+            field = plainToClass(FieldObjectDto, field);
+
+            await validateOrReject(field);
+          } catch (errors) {
+            let errorsMessage = [];
+            errors.map((error) => {
+
+              Object.keys(error.constraints).forEach(function (key, index) {
+                errorsMessage.push(error.constraints[key]);
+              });
+            });
+
+            reject(errorsMessage);
+            return;
+          }
+
+          resolve("");
+          console.log("Done parsing form!");
+        });
+
+        bb.on("field", (name, val, info) => {
+          field[name] = val;
+        });
+
+        req.pipe(bb);
+      });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+
+    return { file: returnObj, field };
+  }
+
+  async uploadFileLocal(@Req() req) {
     const bb = busboy({
       headers: req.headers,
       limits: {
@@ -174,6 +371,7 @@ export class DownloadService {
 
     return { file: returnObj, field };
   }
+  
 
   async create(file: CreateFileDto) {
     const createdData = await this.fileRepository.create({ ...file });
