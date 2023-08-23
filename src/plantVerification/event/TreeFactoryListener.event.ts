@@ -114,6 +114,9 @@ export class TreeFactoryListener {
     );
 
     ethereumEvents.on('error', err => {
+
+      console.log("error",err)
+
       const currentTime = new Date();
       const minutesToCheck = 1;
 

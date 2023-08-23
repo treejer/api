@@ -10,6 +10,7 @@ env:
   PROJECT_ID: ${{ secrets.GCR_PROJECT }}
   RUN_REGION: ${{ secrets.GCR_REGION }}
   SERVICE_NAME: apidev
+  SERVICE_NAME_LISTENER: apidev-listener
 jobs:
   deploy-gcr:
     name: Deploy to GCR - DEV
@@ -35,11 +36,17 @@ jobs:
       - name: 'Docker build'
         run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA -f ./.docker/prod.Dockerfile .'
 
+      - name: 'Docker build listener'
+        run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME_LISTENER }}:$GITHUB_SHA -f ./.docker/listener-prod.Dockerfile .'  
+
       - name: 'Gcloud auth configure-docker'
         run: 'gcloud auth configure-docker'
 
       - name: 'Docker push to GCR'
         run: 'docker push gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA'
+
+      - name: 'Docker push listener to GCR'
+        run: 'docker push gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME_LISTENER }}:$GITHUB_SHA'  
 
       - name: Deploy to Cloud Run
         id: deploy
@@ -48,3 +55,11 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.RUN_REGION }}
           image: 'gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}'
+
+      - name: Deploy listener to Cloud Run
+        id: deploy-listener
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: ${{ env.SERVICE_NAME_LISTENER }}
+          region: ${{ env.RUN_REGION }}
+          image: 'gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME_LISTENER }}:${{ github.sha }}'

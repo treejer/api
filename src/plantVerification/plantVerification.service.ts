@@ -13,12 +13,14 @@ import {
   PlantRequestStatusEditResultDto,
   UpdateRequestStatusEditResultDto,
 } from "src/plant/dtos";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class PlantVerificationService {
   constructor(
     private plantService: PlantService,
-    private lastStateRepository: LastStateRepository
+    private lastStateRepository: LastStateRepository,
+    private configService: ConfigService
   ) {}
 
   async verifyPlant(
@@ -166,11 +168,17 @@ export class PlantVerificationService {
   }
 
   async loadLastState(): Promise<number> {
+    const startBlockNumber = Number(this.configService.get("START_BLOCK_NUMBER"));
+
     let result = await this.lastStateRepository.findOne(
       {},
       { lastBlockNumber: 1, _id: 0 }
     );
 
-    return result ? result.lastBlockNumber : 1;
+    return result
+      ? result.lastBlockNumber > startBlockNumber
+        ? result.lastBlockNumber
+        : startBlockNumber
+      : startBlockNumber;
   }
 }
