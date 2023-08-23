@@ -19,11 +19,6 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@main
 
-      - name: 'Debugging variables'
-        run: |
-          echo "SERVICE_NAME: ${{ env.SERVICE_NAME }}"
-          echo "GITHUB_SHA: $GITHUB_SHA"
-
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
@@ -36,11 +31,6 @@ jobs:
       - name: create env file
         run: |
             echo '${{ secrets.ALL_ENV }}' > .env
-
-      - name: test env file
-        run: |
-          head -1 .env      
-
 
       - name: 'Docker build'
         run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA -f ./.docker/prod.Dockerfile .'
