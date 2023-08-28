@@ -36,17 +36,11 @@ jobs:
       - name: 'Docker build'
         run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA -f ./.docker/prod.Dockerfile .'
 
-      - name: 'Docker build listener'
-        run: 'docker build -t gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME_LISTENER }}:$GITHUB_SHA -f ./.docker/listener-prod.Dockerfile .'  
-
       - name: 'Gcloud auth configure-docker'
         run: 'gcloud auth configure-docker'
 
       - name: 'Docker push to GCR'
         run: 'docker push gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME }}:$GITHUB_SHA'
-
-      - name: 'Docker push listener to GCR'
-        run: 'docker push gcr.io/$PROJECT_ID/${{ env.SERVICE_NAME_LISTENER }}:$GITHUB_SHA'  
 
       - name: Deploy to Cloud Run
         id: deploy
@@ -56,10 +50,18 @@ jobs:
           region: ${{ env.RUN_REGION }}
           image: 'gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}'
 
-      - name: Deploy listener to Cloud Run
+      - name: Deploy listener job to Cloud Run
         id: deploy-listener
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          service: ${{ env.SERVICE_NAME_LISTENER }}
-          region: ${{ env.RUN_REGION }}
-          image: 'gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME_LISTENER }}:${{ github.sha }}'
+        run: |
+          command_to_run="gcloud run jobs list"
+          search_string="${{ env.SERVICE_NAME_LISTENER }}"
+          response=$(eval "$command_to_run")
+          if [[ $response =~ $search_string ]]; then
+              echo "Job exists."
+              gcloud run jobs delete ${{ env.SERVICE_NAME_LISTENER }} --region ${{ env.RUN_REGION }}
+              gcloud run jobs create ${{ env.SERVICE_NAME_LISTENER }} --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} --region ${{ env.RUN_REGION }} --tasks 1 --max-retries 10 --task-timeout 24h --parallelism 0 --args="node dist/cli listener:run" --cpu 1 --memory 2G
+          else
+              echo "Job does not exist."
+              gcloud run jobs create ${{ env.SERVICE_NAME_LISTENER }} --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} --region ${{ env.RUN_REGION }} --tasks 1 --max-retries 10 --task-timeout 24h --parallelism 0 --args="node dist/cli listener:run" --cpu 1 --memory 2G
+          fi
+        
