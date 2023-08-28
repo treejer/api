@@ -61,7 +61,13 @@ jobs:
           execute_job_command="gcloud run jobs execute ${{ env.SERVICE_NAME_LISTENER }} --region ${{ env.RUN_REGION }}"
           if [[ $response =~ $search_string ]]; then
               echo "Job exists."
+
+              command_to_run_latest_name="gcloud run jobs describe ${{ env.SERVICE_NAME_LISTENER }} --format='value(status.latestCreatedExecution.name)' --region ${{ env.RUN_REGION }}"
+              latest_execution=$(eval "$command_to_run_latest_name")
+              gcloud run jobs executions delete $latest_execution --region ${{ env.RUN_REGION }}
+              
               $delete_job_command
+              
               $create_job_command
               $execute_job_command
           else
