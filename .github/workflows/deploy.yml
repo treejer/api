@@ -57,7 +57,7 @@ jobs:
           search_string="${{ env.SERVICE_NAME_LISTENER }}"
           response=$(eval "$command_to_run")
           delete_job_command=gcloud run jobs delete ${{ env.SERVICE_NAME_LISTENER }} --region ${{ env.RUN_REGION }}
-          create_job_command=gcloud run jobs create ${{ env.SERVICE_NAME_LISTENER }} --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} --region ${{ env.RUN_REGION }} --tasks 1 --max-retries 10 --task-timeout 24h --parallelism 0 --args="node dist/cli listener:run" --cpu 1 --memory 2G
+          create_job_command=gcloud run jobs create ${{ env.SERVICE_NAME_LISTENER }} --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} --region ${{ env.RUN_REGION }} --tasks 1 --max-retries 10 --task-timeout 24h --parallelism 0 --args node,dist/cli,listener:run --cpu 1 --memory 2G
           execute_job_command=gcloud run jobs execute ${{ env.SERVICE_NAME_LISTENER }} --region ${{ env.RUN_REGION }}
           if [[ $response =~ $search_string ]]; then
               echo "Job exists."
