@@ -13,6 +13,7 @@ import {
   AdminErrorMessage,
   AdminServiceMessage,
   AuthErrorMessages,
+  Role,
   UserStatus,
 } from "src/common/constants";
 import { checkPublicKey, getCheckedSumAddress } from "src/common/helpers";
@@ -134,6 +135,7 @@ export class AdminService {
     try {
       await this.userService.updateUserById(user._id, {
         userStatus: UserStatus.VERIFIED,
+        userRole: Role.PLANTER,
       });
 
       if (user.mobile) {
