@@ -10,3 +10,6 @@ export * from "./plantRequestStatusEditResult.dto";
 export * from "./plantRequest.dto";
 export * from "./updateRequestResult.dto";
 export * from "./updateRequestStatusEditResult.dto";
+export * from "./admin-plant-request-result.dto";
+export * from "./admin-assigned-request-result.dto";
+export * from "./admin-update-request-result.dto";
