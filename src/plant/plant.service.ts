@@ -6,6 +6,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import {
+  AdminAssignedRequestResultDto,
+  AdminAssignedRequestsWithPaginateResult,
+  AdminPlantRequestResultDto,
+  AdminPlantRequestsWithPaginateResult,
+  AdminUpdateRequestResultDto,
+  AdminUpdateRequestsWithPaginateResult,
   CreateAssignedRequestDto,
   CreateUpdateRequestDto,
   EditAssignedRequestDto,
@@ -526,19 +532,56 @@ export class PlantService {
     return await this.updateTreeRepository.findOne(filter);
   }
 
-  async getPlantRequests(filter, sortOption): Promise<TreePlant[]> {
-    return await this.treePlantRepository.sort(filter, sortOption, {
-      _id: 1,
-      signer: 1,
-      nonce: 1,
-      treeSpecs: 1,
-      treeSpecsJSON: 1,
-      birthDate: 1,
-      countryCode: 1,
-      status: 1,
-      createdAt: 1,
-      updatedAt: 1,
+  async getPlantRequests(
+    skip,
+    limit,
+    filter,
+    sortOption,
+    projection?
+  ): Promise<AdminPlantRequestsWithPaginateResult> {
+    const result = await this.treePlantRepository.findWithPaginate(
+      skip * limit,
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+
+    const data: any = await Promise.all(
+      result.map((el) => {
+        return new Promise(async (resolve, reject) => {
+          resolve({
+            request: el,
+            user: await this.userService.findUserByWallet(el.signer, {
+              firstName: 1,
+              lastName: 1,
+              _id: 1,
+            }),
+          });
+        });
+      })
+    );
+
+    const count = await this.treePlantRepository.count(filter);
+    // @ts-ignore
+    return { data, count };
+  }
+
+  async getPlantRequestWithId(requestId) {
+    const result = await this.treePlantRepository.findOne({
+      _id: requestId,
     });
+
+    let user = await this.userService.findUserByWallet(result.signer, {
+      _id: 1,
+      firstName: 1,
+      lastName: 1,
+    });
+
+    return {
+      request: result,
+      user,
+    };
   }
 
   async getPlantRequestsWithLimit(
@@ -580,22 +623,54 @@ export class PlantService {
   }
 
   async getAssignedTreeRequests(
+    skip,
+    limit,
     filter,
-    sortOption
-  ): Promise<AssignedTreePlant[]> {
-    return await this.assignedTreePlantRepository.sort(filter, sortOption, {
-      _id: 1,
-      signer: 1,
-      nonce: 1,
-      treeId: 1,
-      treeSpecs: 1,
-      treeSpecsJSON:1,
-      birthDate: 1,
-      countryCode: 1,
-      status: 1,
-      createdAt: 1,
-      updatedAt: 1,
+    sortOption,
+    projection?
+  ): Promise<AdminAssignedRequestsWithPaginateResult> {
+    const result = await this.assignedTreePlantRepository.findWithPaginate(
+      skip * limit,
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+    const data: any = await Promise.all(
+      result.map((el) => {
+        return new Promise(async (resolve, reject) => {
+          resolve({
+            request: el,
+            user: await this.userService.findUserByWallet(el.signer, {
+              firstName: 1,
+              lastName: 1,
+              _id: 1,
+            }),
+          });
+        });
+      })
+    );
+
+    const count = await this.assignedTreePlantRepository.count(filter);
+    // @ts-ignore
+    return { data, count };
+  }
+
+  async getAssignedTreeRequestWithId(requestId) {
+    const result = await this.assignedTreePlantRepository.findOne({
+      _id: requestId,
     });
+
+    let user = await this.userService.findUserByWallet(result.signer, {
+      _id: 1,
+      firstName: 1,
+      lastName: 1,
+    });
+
+    return {
+      request: result,
+      user,
+    };
   }
 
   async getAssignedTreeRequestsWithLimit(
@@ -622,7 +697,7 @@ export class PlantService {
         nonce: 1,
         treeId: 1,
         treeSpecs: 1,
-        treeSpecsJSON:1,
+        treeSpecsJSON: 1,
         birthDate: 1,
         countryCode: 1,
         status: 1,
@@ -638,13 +713,56 @@ export class PlantService {
   }
 
   async getUpdateTreeRequests(
+    skip,
+    limit,
     filter,
     sortOption,
     projection?
-  ): Promise<UpdateTree[]> {
-    return await this.updateTreeRepository.sort(filter, sortOption, projection);
+  ): Promise<AdminUpdateRequestsWithPaginateResult> {
+    const result = await this.updateTreeRepository.findWithPaginate(
+      skip,
+      limit,
+      filter,
+      sortOption,
+      projection
+    );
+
+    const data: any = await Promise.all(
+      result.map((el) => {
+        return new Promise(async (resolve, reject) => {
+          resolve({
+            request: el,
+            user: await this.userService.findUserByWallet(el.signer, {
+              firstName: 1,
+              lastName: 1,
+              _id: 1,
+            }),
+          });
+        });
+      })
+    );
+
+    const count = await this.updateTreeRepository.count(filter);
+    // @ts-ignore
+    return { data, count };
   }
 
+  async getUpdateTreeRequestWithId(requestId) {
+    const result = await this.updateTreeRepository.findOne({
+      _id: requestId,
+    });
+
+    let user = await this.userService.findUserByWallet(result.signer, {
+      _id: 1,
+      firstName: 1,
+      lastName: 1,
+    });
+
+    return {
+      request: result,
+      user,
+    };
+  }
   async getUpdateTreeRequestsWithLimit(
     signer,
     skip,

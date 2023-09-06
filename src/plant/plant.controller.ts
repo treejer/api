@@ -34,6 +34,12 @@ import {
 } from "@nestjs/swagger";
 import { getCheckedSumAddress } from "src/common/helpers";
 import {
+  AdminAssignedRequestResultDto,
+  AdminAssignedRequestsWithPaginateResult,
+  AdminPlantRequestResultDto,
+  AdminPlantRequestsWithPaginateResult,
+  AdminUpdateRequestResultDto,
+  AdminUpdateRequestsWithPaginateResult,
   AssignedRequestResultDto,
   CreateAssignedRequestDto,
   CreateUpdateRequestDto,
@@ -276,7 +282,7 @@ export class PlantController {
     status: 200,
     description: "get plant requests for verification",
     isArray: true,
-    type: PlantRequestResultDto,
+    type: AdminPlantRequestsWithPaginateResult,
   })
   @ApiResponse({
     status: 401,
@@ -299,12 +305,21 @@ export class PlantController {
       },
     },
   })
+  @ApiQuery({ name: "signer", required: false, type: String })
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("plant_requests/verification")
-  getPlantRequests() {
+  @Get("plant_requests")
+  getPlantRequests(
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("signer") signer?: string
+  ) {
     return this.plantService.getPlantRequests(
-      { status: PlantStatus.PENDING },
+      skip,
+      limit,
+      signer
+        ? { status: PlantStatus.PENDING, signer: getCheckedSumAddress(signer) }
+        : { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 }
     );
   }
@@ -342,7 +357,7 @@ export class PlantController {
   @ApiQuery({ name: "sort", required: false, type: String })
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("plant_requests/verification/me")
+  @Get("plant_requests/me")
   getMyPlantRequests(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
@@ -371,6 +386,43 @@ export class PlantController {
       filters,
       sort
     );
+  }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get plant request with id" })
+  @ApiResponse({
+    status: 200,
+    description: "get plant request with id",
+
+    type: AdminPlantRequestResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("plant_requests/:id")
+  getPlantRequestsById(@Param("id") id: string) {
+    return this.plantService.getPlantRequestWithId(id);
   }
 
   //------------------------------------------ ************************ ------------------------------------------//
@@ -615,7 +667,7 @@ export class PlantController {
     status: 200,
     description: "get assigned requests for verification",
     isArray: true,
-    type: AssignedRequestResultDto,
+    type: AdminAssignedRequestsWithPaginateResult,
   })
   @ApiResponse({
     status: 401,
@@ -638,12 +690,21 @@ export class PlantController {
       },
     },
   })
+  @ApiQuery({ name: "signer", required: false, type: String })
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("assigned_requests/verification")
-  getAssignedTreeRequests() {
+  @Get("assigned_requests")
+  getAssignedTreeRequests(
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("signer") signer?: string
+  ) {
     return this.plantService.getAssignedTreeRequests(
-      { status: PlantStatus.PENDING },
+      skip,
+      limit,
+      signer
+        ? { status: PlantStatus.PENDING, signer: getCheckedSumAddress(signer) }
+        : { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 }
     );
   }
@@ -682,7 +743,7 @@ export class PlantController {
   @ApiQuery({ name: "sort", required: false, type: String })
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("assigned_requests/verification/me")
+  @Get("assigned_requests/me")
   getMyAssignedTreeRequests(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
@@ -711,6 +772,43 @@ export class PlantController {
       filters,
       sort
     );
+  }
+
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get assigned request with id" })
+  @ApiResponse({
+    status: 200,
+    description: "get assigned request with id",
+
+    type: AdminAssignedRequestResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("assigned_requests/:id")
+  getAssignedTreeRequestsById(@Param("id") id: string) {
+    return this.plantService.getAssignedTreeRequestWithId(id);
   }
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
@@ -950,7 +1048,7 @@ export class PlantController {
     status: 200,
     description: "get update requests for verification",
     isArray: true,
-    type: UpdateRequestResultDto,
+    type: AdminUpdateRequestsWithPaginateResult,
   })
   @ApiResponse({
     status: 401,
@@ -973,12 +1071,21 @@ export class PlantController {
       },
     },
   })
+  @ApiQuery({ name: "signer", required: false, type: String })
   @HasRoles(Role.ADMIN)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("update_requests/verification")
-  getUpdateRequests() {
+  @Get("update_requests")
+  getUpdateRequests(
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("signer") signer?: string
+  ) {
     return this.plantService.getUpdateTreeRequests(
-      { status: PlantStatus.PENDING },
+      skip,
+      limit,
+      signer
+        ? { status: PlantStatus.PENDING, signer: getCheckedSumAddress(signer) }
+        : { status: PlantStatus.PENDING },
       { signer: 1, nonce: 1 },
       {}
     );
@@ -1018,7 +1125,7 @@ export class PlantController {
   @ApiQuery({ name: "sort", required: false, type: String })
   @HasRoles(Role.PLANTER)
   @UseGuards(AuthGuard("jwt"), RolesGuard)
-  @Get("update_requests/verification/me")
+  @Get("update_requests/me")
   getMyUpdateRequests(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
@@ -1048,7 +1155,43 @@ export class PlantController {
       sort
     );
   }
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get update request with id" })
+  @ApiResponse({
+    status: 200,
+    description: "get update request with id",
 
+    type: AdminUpdateRequestResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @HasRoles(Role.ADMIN)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("update_requests/:id")
+  getUpdateTreeRequestsById(@Param("id") id: string) {
+    return this.plantService.getUpdateTreeRequestWithId(id);
+  }
+  //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "get graph trees data (pagenation)" })
   @HasRoles(Role.PLANTER)
@@ -1063,7 +1206,6 @@ export class PlantController {
     return this.plantService.getSubmittedData(user.walletAddress, skip, limit);
   }
 
-  
   //------------------------------------------ ************************ ------------------------------------------//
   @ApiBearerAuth()
   @ApiOperation({ summary: "get user all update tree requests" })
@@ -1093,43 +1235,48 @@ export class PlantController {
   @Get("update_requests/me/ids")
   getUpdateTreeRequestsJustId(@User() user: JwtUserDto) {
     return this.plantService.getUpdateTreeRequestsJustId(
-      { status: PlantStatus.PENDING,signer: getCheckedSumAddress(user.walletAddress) },
+      {
+        status: PlantStatus.PENDING,
+        signer: getCheckedSumAddress(user.walletAddress),
+      },
       {}
     );
   }
 
-
-    //------------------------------------------ ************************ ------------------------------------------//
-    @ApiBearerAuth()
-    @ApiOperation({ summary: "get user all assigned tree requests" })
-    @ApiResponse({
-      status: 401,
-      description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
-      content: {
-        "text/plain": {
-          schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+  //------------------------------------------ ************************ ------------------------------------------//
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get user all assigned tree requests" })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
         },
       },
-    })
-    @ApiResponse({
-      status: 500,
-      description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
-      content: {
-        "text/plain": {
-          schema: {
-            format: "text/plain",
-            example: SwaggerErrors.INTERNAL_SERVER_ERROR,
-          },
-        },
+    },
+  })
+  @HasRoles(Role.PLANTER)
+  @UseGuards(AuthGuard("jwt"), RolesGuard)
+  @Get("assigned_requests/me/ids")
+  getAssignTreeRequestsJustId(@User() user: JwtUserDto) {
+    return this.plantService.getAssignedTreeRequestsJustId(
+      {
+        status: PlantStatus.PENDING,
+        signer: getCheckedSumAddress(user.walletAddress),
       },
-    })
-    @HasRoles(Role.PLANTER)
-    @UseGuards(AuthGuard("jwt"), RolesGuard)
-    @Get("assigned_requests/me/ids")
-    getAssignTreeRequestsJustId(@User() user: JwtUserDto) {
-      return this.plantService.getAssignedTreeRequestsJustId(
-        { status: PlantStatus.PENDING,signer: getCheckedSumAddress(user.walletAddress) },
-        {}
-      );
-    }
+      {}
+    );
+  }
 }
