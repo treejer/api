@@ -17,8 +17,7 @@ export class Web3Service {
   private connectionStatus;
   private ethereumEvents;
 
-
-  constructor(private config: ConfigService,private bugsnag: BugsnagService ) {
+  constructor(private config: ConfigService, private bugsnag: BugsnagService) {
     this.web3Instance = new Web3(
       config.get<string>("NODE_ENV") === "test"
         ? config.get<string>("WEB3_PROVIDER_TEST")
@@ -88,14 +87,31 @@ export class Web3Service {
     return tree;
   }
 
+  async getPlanterNonce(planterAddress: string) {
+    let planterNonce = 0;
+    try {
+      const instance = new this.web3Instance.eth.Contract(
+        TreeFactory.abi,
+        this.config.get<string>("CONTRACT_TREE_FACTORY_ADDRESS")
+      );
+
+      planterNonce = await instance.methods
+        .plantersNonce(planterAddress)
+        .call();
+    } catch (error) {
+      console.log("getPlanterNonce func : ", error);
+
+      throw new InternalServerErrorException(error.message);
+    }
+
+    return Number(planterNonce);
+  }
   getWeb3Instance() {
     return this.web3Instance;
   }
-  
 
-  createWeb3SInstance(url,func) {
-
-    if(this.web3SInstance){
+  createWeb3SInstance(url, func) {
+    if (this.web3SInstance) {
       this.web3SInstance.currentProvider.disconnect();
     }
 
@@ -113,14 +129,12 @@ export class Web3Service {
       console.log("web3SInstance: reconnected");
       this.connectionStatus = true;
 
-      if(this.ethereumEvents){
-        this.ethereumEvents.stop()
+      if (this.ethereumEvents) {
+        this.ethereumEvents.stop();
       }
-      
-      this.ethereumEvents = await func(this.web3SInstance)
-    });
 
-    
+      this.ethereumEvents = await func(this.web3SInstance);
+    });
 
     provider.on("close", () => {
       console.log("web3SInstance: connection closed");
@@ -129,19 +143,16 @@ export class Web3Service {
         if (!this.connectionStatus) {
           console.log("closed getWeb3SInstance");
 
-          if(this.ethereumEvents){
-            this.ethereumEvents.stop()
+          if (this.ethereumEvents) {
+            this.ethereumEvents.stop();
           }
 
           this.bugsnag.notify("closed getWeb3SInstance");
 
-          this.createWeb3SInstance(url,func)
+          this.createWeb3SInstance(url, func);
         }
       }, 10000);
-
     });
-
-
 
     this.web3SInstance.eth.net
       .isListening()
