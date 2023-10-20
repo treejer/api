@@ -38,6 +38,8 @@ async function seedData() {
       .find()
       .toArray();
 
+    console.log("list", list);
+
     let res = await new Promise(async (resolve, reject) => {
       if (list.length > 0) {
         for (let user of list) {
