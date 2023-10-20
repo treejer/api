@@ -73,76 +73,14 @@ async function seedData() {
             break;
           }
 
-          let plantReq = await plantService.getPlantRequests(
-            0,
-            1000000,
-            { signer: user.walletAddress },
-            { nonce: 1 }
+          console.log("planterContractNonce", planterContractNonce);
+
+          await mongoConnection.db.collection(CollectionNames.USER).updateOne(
+            { _id: user._id },
+            {
+              $set: { plantingNonce: planterContractNonce + 1 },
+            }
           );
-
-          console.log("plantReq", plantReq.data);
-
-          let updateReq = await plantService.getUpdateTreeRequests(
-            0,
-            1000000,
-            { signer: user.walletAddress },
-            { nonce: 1 }
-          );
-
-          console.log("updateReq", updateReq.data);
-
-          let assignReq = await plantService.getAssignedTreeRequests(
-            0,
-            1000000,
-            { signer: user.walletAddress },
-            { nonce: 1 }
-          );
-
-          console.log("assignReq", assignReq.data);
-
-          let newNonce = planterContractNonce + 1;
-
-          // for (let i = 0; i < plantReq.data.length; i++) {
-          //   await mongoConnection.db
-          //     .collection(CollectionNames.TREE_PLANT)
-          //     .updateOne(
-          //       // @ts-ignore
-          //       { _id: plantReq.data[i]._id },
-          //       {
-          //         $set: { nonce: newNonce },
-          //       }
-          //     );
-
-          //   newNonce++;
-          // }
-
-          // for (let i = 0; i < updateReq.data.length; i++) {
-          //   await mongoConnection.db
-          //     .collection(CollectionNames.UPDATE_TREES)
-          //     .updateOne(
-          //       // @ts-ignore
-          //       { _id: updateReq.data[i]._id },
-          //       {
-          //         $set: { nonce: newNonce },
-          //       }
-          //     );
-
-          //   newNonce++;
-          // }
-
-          // for (let i = 0; i < assignReq.data.length; i++) {
-          //   await mongoConnection.db
-          //     .collection(CollectionNames.ASSIGNED_TREE_PLANT)
-          //     .updateOne(
-          //       // @ts-ignore
-          //       { _id: assignReq.data[i]._id },
-          //       {
-          //         $set: { nonce: newNonce },
-          //       }
-          //     );
-
-          //   newNonce++;
-          // }
         }
       }
       resolve("done");
