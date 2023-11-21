@@ -6,17 +6,14 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import {
-  AdminAssignedRequestResultDto,
   AdminAssignedRequestsWithPaginateResult,
-  AdminPlantRequestResultDto,
   AdminPlantRequestsWithPaginateResult,
-  AdminUpdateRequestResultDto,
   AdminUpdateRequestsWithPaginateResult,
   CreateAssignedRequestDto,
   CreateUpdateRequestDto,
   EditAssignedRequestDto,
   EditUpdateRequestDto,
-  PlantRequestDto,
+  PlantRequestDto
 } from "./dtos";
 
 import {
@@ -395,11 +392,11 @@ export class PlantService {
     if (signer !== getCheckedSumAddress(tree.planter))
       throw new ForbiddenException(PlantErrorMessage.INVALID_PLANTER);
 
-    if (
-      Math.floor(new Date().getTime() / 1000) <
-      Number(tree.plantDate) + Number(tree.treeStatus) * 3600 + 604800
-    )
-      throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
+    // if (
+    //   Math.floor(new Date().getTime() / 1000) <
+    //   Number(tree.plantDate) + Number(tree.treeStatus) * 3600 + 604800
+    // )
+    //   throw new ForbiddenException(PlantErrorMessage.EARLY_UPDATE);
 
     if (
       (await this.updateTreeRepository.count({
